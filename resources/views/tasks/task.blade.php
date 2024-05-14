@@ -56,7 +56,7 @@
 
         <div class="flex space-x-2 flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
-                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
+                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title . ' (' . $task->order . ')' }}</h3>
 
             @if($task->priority->name != 'Aucune')
                 <x-filament::dropdown>
@@ -90,11 +90,11 @@
 @if ($task->children->isNotEmpty())
     <ul class="list-none mx-1"
         x-data="{
-            saveOrder: (item, position) => {
-                 $wire.saveTaskOrder(item, position);
+            saveOrder: (item, position, toGroupId) => {
+                 $wire.saveTaskOrder(item, position, toGroupId);
             }
         }"
-        x-sort="saveOrder($item, $position)"
+        x-sort="saveOrder($item, $position, {{ $task->group_id }})"
         x-sort:group="tasks">
         @each('tasks.task', $task->children, 'task')
     </ul>

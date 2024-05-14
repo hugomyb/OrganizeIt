@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\ProjectResource\Widgets\TasksTree;
+use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
@@ -194,36 +195,63 @@ class ShowProject extends Page
         $task->update(['priority_id' => $priorityId]);
     }
 
-    public function saveTaskOrder($taskId, $newPosition)
+    public function saveTaskOrder($taskId, $newPosition, $toGroupId)
     {
         $task = Task::find($taskId);
+        $fromGroupId = $task->group_id;
         $currentPosition = $task->order;
 
-        if ($newPosition == $currentPosition) {
-            return; // Aucun changement nécessaire si la position n'a pas changé.
-        }
+        if ($fromGroupId == $toGroupId) {
+            if ($newPosition == $currentPosition) {
+                return; // Aucun changement nécessaire si la position n'a pas changé.
+            }
 
-        // Détermine si la tâche est déplacée vers le haut ou le bas dans la liste
-        $direction = $newPosition > $currentPosition ? 'down' : 'up';
+            // Détermine si la tâche est déplacée vers le haut ou le bas dans la liste
+            $direction = $newPosition > $currentPosition ? 'down' : 'up';
 
-        // Récupère toutes les tâches qui pourraient être affectées par ce changement
-        $query = Task::query()
-            ->where('group_id', $task->group_id) // Assure-toi que cela correspond à ta structure de données
-            ->where('id', '!=', $taskId);
+            // Récupère toutes les tâches qui pourraient être affectées par ce changement
+            $query = Task::query()
+                ->where('group_id', $task->group_id)
+                ->where('id', '!=', $taskId);
 
-        if ($direction === 'up') {
-            // Déplacer vers le haut: Augmente l'ordre des tâches entre les anciennes et nouvelles positions
-            $query->whereBetween('order', [$newPosition, $currentPosition - 1])
-                ->increment('order');
+            if ($direction === 'up') {
+                // Déplacer vers le haut: Augmente l'ordre des tâches entre les anciennes et nouvelles positions
+                $query->whereBetween('order', [$newPosition, $currentPosition - 1])
+                    ->increment('order');
+            } else {
+                // Déplacer vers le bas: Diminue l'ordre des tâches entre les anciennes et nouvelles positions
+                $query->whereBetween('order', [$currentPosition + 1, $newPosition])
+                    ->decrement('order');
+            }
+
+            // Mise à jour de la position de la tâche déplacée seulement après ajustement des autres tâches
+            $task->order = $newPosition;
+            $task->save();
         } else {
-            // Déplacer vers le bas: Diminue l'ordre des tâches entre les anciennes et nouvelles positions
-            $query->whereBetween('order', [$currentPosition + 1, $newPosition])
-                ->decrement('order');
-        }
+            // Incrémenter l'ordre des tâches suivantes dans le groupe de destination
+            Task::where('group_id', $toGroupId)
+                ->where('order', '>=', $newPosition)
+                ->increment('order');
 
-        // Mise à jour de la position de la tâche déplacée seulement après ajustement des autres tâches
-        $task->order = $newPosition;
-        $task->save();
+            // Mise à jour du groupe et de l'ordre de la tâche déplacée
+            $task->group_id = $toGroupId;
+            $task->order = $newPosition;
+            $task->save();
+
+            // Réorganiser l'ordre des tâches dans l'ancien groupe et le nouveau groupe
+            $this->reorderTasksInGroup($fromGroupId);
+            $this->reorderTasksInGroup($toGroupId);
+        }
+    }
+
+    protected function reorderTasksInGroup($groupId)
+    {
+        $tasks = Task::where('group_id', $groupId)->orderBy('order')->get();
+        $order = 0;
+        foreach ($tasks as $task) {
+            $task->order = $order++;
+            $task->save();
+        }
     }
 
     public function getBreadcrumbs(): array
