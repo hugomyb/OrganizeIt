@@ -1,10 +1,11 @@
+<!-- Task Partial -->
 <li x-sort:item="{{ $task->id }}"
     class="flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm {{ $task->children->isEmpty() ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: {{ $task->depth > 0 ? $task->depth * 28 : 5 }}px;">
 
     <div class="flex space-x-6">
         <div class="flex">
-            <x-iconpark-drag x-sort:handle class="h-5 w-5 mx-1 text-gray-400"/>
+            <x-iconpark-drag x-sort:handle class="h-5 w-5 mx-1 text-gray-400 cursor-move"/>
 
             <x-filament::dropdown>
                 <x-slot name="trigger">
@@ -56,7 +57,7 @@
 
         <div class="flex space-x-2 flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
-                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title . ' (' . $task->order . ')' }}</h3>
+                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
             @if($task->priority->name != 'Aucune')
                 <x-filament::dropdown>
@@ -91,7 +92,7 @@
     <ul class="list-none mx-1"
         x-data="{
             saveOrder: (item, position, toGroupId) => {
-                 $wire.saveTaskOrder(item, position, toGroupId);
+                 $wire.saveTaskOrder(item, position, toGroupId, {{ $task->id }});
             }
         }"
         x-sort="saveOrder($item, $position, {{ $task->group_id }})"

@@ -195,13 +195,13 @@ class ShowProject extends Page
         $task->update(['priority_id' => $priorityId]);
     }
 
-    public function saveTaskOrder($taskId, $newPosition, $toGroupId)
+    public function saveTaskOrder($taskId, $newPosition, $toGroupId, $parentId = null)
     {
         $task = Task::find($taskId);
         $fromGroupId = $task->group_id;
         $currentPosition = $task->order;
 
-        if ($fromGroupId == $toGroupId) {
+        if ($fromGroupId == $toGroupId && $task->parent_id == $parentId) {
             if ($newPosition == $currentPosition) {
                 return; // Aucun changement nécessaire si la position n'a pas changé.
             }
@@ -212,6 +212,7 @@ class ShowProject extends Page
             // Récupère toutes les tâches qui pourraient être affectées par ce changement
             $query = Task::query()
                 ->where('group_id', $task->group_id)
+                ->where('parent_id', $task->parent_id)
                 ->where('id', '!=', $taskId);
 
             if ($direction === 'up') {
@@ -230,27 +231,49 @@ class ShowProject extends Page
         } else {
             // Incrémenter l'ordre des tâches suivantes dans le groupe de destination
             Task::where('group_id', $toGroupId)
+                ->where('parent_id', $parentId)
                 ->where('order', '>=', $newPosition)
                 ->increment('order');
 
-            // Mise à jour du groupe et de l'ordre de la tâche déplacée
+            // Mise à jour du groupe, de l'ordre et du parent de la tâche déplacée
             $task->group_id = $toGroupId;
             $task->order = $newPosition;
+            $task->parent_id = $parentId;
             $task->save();
 
-            // Réorganiser l'ordre des tâches dans l'ancien groupe et le nouveau groupe
+            // Réorganiser l'ordre des tâches dans l'ancien groupe
             $this->reorderTasksInGroup($fromGroupId);
+            // Réorganiser l'ordre des tâches dans le nouveau groupe
             $this->reorderTasksInGroup($toGroupId);
         }
+
+        // Réorganiser l'ordre des sous-tâches
+        $this->reorderSubTasks($task);
     }
 
     protected function reorderTasksInGroup($groupId)
     {
-        $tasks = Task::where('group_id', $groupId)->orderBy('order')->get();
+        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
         $order = 0;
         foreach ($tasks as $task) {
             $task->order = $order++;
             $task->save();
+
+            // Réorganiser les sous-tâches
+            $this->reorderSubTasks($task);
+        }
+    }
+
+    protected function reorderSubTasks($task)
+    {
+        $subTasks = $task->children;
+        $order = 0;
+        foreach ($subTasks as $subTask) {
+            $subTask->order = $order++;
+            $subTask->save();
+
+            // Réorganiser récursivement les sous-sous-tâches
+            $this->reorderSubTasks($subTask);
         }
     }
 

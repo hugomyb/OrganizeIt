@@ -8,11 +8,11 @@
 
                 <ul class="list-none mx-1"
                     x-data="{
-                        saveOrder: (item, position, toGroupId) => {
-                            $wire.saveTaskOrder(item, position, toGroupId);
+                        saveOrder: (item, position, toGroupId, parentId) => {
+                            $wire.saveTaskOrder(item, position, toGroupId, parentId);
                         }
                     }"
-                    x-sort="saveOrder($item, $position, {{ $group->id }})"
+                    x-sort="saveOrder($item, $position, {{ $group->id }}, null)"
                     x-sort:group="tasks">
                     @each('tasks.task', $group->tasks()->whereNull('parent_id')->get()->sortBy('order'), 'task')
                 </ul>
