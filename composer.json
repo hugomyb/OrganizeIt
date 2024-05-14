@@ -10,10 +10,12 @@
         "codeat3/blade-carbon-icons": "^2.23",
         "codeat3/blade-grommet-icons": "^1.9",
         "codeat3/blade-iconpark": "^1.6",
+        "codeat3/blade-phosphor-icons": "^2.2",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
-        "owenvoke/blade-fontawesome": "^2.6"
+        "owenvoke/blade-fontawesome": "^2.6",
+        "saade/blade-iconsax": "^1.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
