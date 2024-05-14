@@ -6,8 +6,15 @@
                     {{ $group->name }}
                 </x-slot>
 
-                <ul class="list-none mx-1">
-                    @each('tasks.task', $group->tasks()->whereNull('parent_id')->get(), 'task')
+                <ul class="list-none mx-1"
+                    x-data="{
+                        saveOrder: (item, position) => {
+                            $wire.saveTaskOrder(item, position);
+                        }
+                    }"
+                    x-sort="saveOrder($item, $position)"
+                    x-sort:group="tasks">
+                    @each('tasks.task', $group->tasks()->whereNull('parent_id')->get()->sortBy('order'), 'task')
                 </ul>
 
                 <div class="mx-3 mt-3 mb-2 text-xs">
@@ -25,4 +32,6 @@
             padding: 0 !important;
         }
     </style>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
 </x-filament-panels::page>

@@ -9,11 +9,9 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
-use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -45,59 +43,22 @@ class ShowProject extends Page
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            Action::make('headerCreateTask')
                 ->model(Task::class)
                 ->label('Ajouter une tâche')
                 ->icon('heroicon-o-plus')
                 ->modalHeading('Ajouter une tâche')
-                ->form([
-                    Hidden::make('project_id')
-                        ->default($this->record->id),
+                ->form($this->getTaskForm())
+                ->modalSubmitActionLabel('Ajouter')
+                ->action(function (array $data): void {
+                    $this->record->tasks()->create($data);
 
-                    Select::make('group_id')
-                        ->label('Groupe')
-                        ->required()
-                        ->preload()
-                        ->searchable()
-                        ->default($this->record->groups->first()->id)
-                        ->options($this->record->groups->pluck('name', 'id')),
-
-                    TextInput::make('title')
-                        ->autofocus()
-                        ->label('Titre')
-                        ->columnSpanFull()
-                        ->required(),
-
-                    RichEditor::make('description')
-                        ->columnSpanFull()
-                        ->label('Description'),
-
-                    Select::make('status_id')
-                        ->label('Statut')
-                        ->default(Status::whereName('À faire')->first()->id)
-                        ->options(Status::pluck('name', 'id'))
-                        ->preload()
-                        ->searchable()
-                        ->createOptionForm([
-                            TextInput::make('name')
-                                ->label('Nom')
-                                ->required(),
-                        ])
-                        ->required(),
-
-                    Select::make('priority_id')
-                        ->label('Priorité')
-                        ->default(Priority::whereName('Aucune')->first()->id)
-                        ->options(Priority::pluck('name', 'id'))
-                        ->preload()
-                        ->searchable()
-                        ->required(),
-
-                    FileUpload::make('attachments')
-                        ->columnSpanFull()
-                        ->multiple()
-                        ->label('Pièces jointes')
-                ])
+                    Notification::make()
+                        ->success()
+                        ->title('Tâche ajoutée')
+                        ->body('La tâche a été ajoutée avec succès.')
+                        ->send();
+                }),
         ];
     }
 
@@ -123,13 +84,14 @@ class ShowProject extends Page
             });
     }
 
-    public function getTaskForm(): array
+    public function getTaskForm($groupId = null): array
     {
         return [
             Select::make('group_id')
                 ->preload()
                 ->searchable()
                 ->label('Groupe')
+                ->default($groupId ?? $this->record->groups->first()->id)
                 ->required()
                 ->options($this->record->groups->pluck('name', 'id')),
 
@@ -160,6 +122,7 @@ class ShowProject extends Page
                 ->label('Priorité')
                 ->preload()
                 ->searchable()
+                ->default(Priority::whereName('Aucune')->first()->id)
                 ->options(Priority::pluck('name', 'id'))
                 ->required(),
 
@@ -179,51 +142,7 @@ class ShowProject extends Page
             ->form(function (array $arguments) {
                 $group_id = $arguments['group_id'];
 
-                return [
-                    Select::make('group_id')
-                        ->label('Groupe')
-                        ->required()
-                        ->preload()
-                        ->searchable()
-                        ->default($group_id)
-                        ->options($this->record->groups->pluck('name', 'id')),
-
-                    TextInput::make('title')
-                        ->autofocus()
-                        ->label('Titre')
-                        ->columnSpanFull()
-                        ->required(),
-
-                    RichEditor::make('description')
-                        ->columnSpanFull()
-                        ->label('Description'),
-
-                    Select::make('status_id')
-                        ->label('Statut')
-                        ->default(Status::whereName('À faire')->first()->id)
-                        ->options(Status::pluck('name', 'id'))
-                        ->preload()
-                        ->searchable()
-                        ->createOptionForm([
-                            TextInput::make('name')
-                                ->label('Nom')
-                                ->required(),
-                        ])
-                        ->required(),
-
-                    Select::make('priority_id')
-                        ->label('Priorité')
-                        ->default(Priority::whereName('Aucune')->first()->id)
-                        ->options(Priority::pluck('name', 'id'))
-                        ->preload()
-                        ->searchable()
-                        ->required(),
-
-                    FileUpload::make('attachments')
-                        ->columnSpanFull()
-                        ->multiple()
-                        ->label('Pièces jointes')
-                ];
+                return $this->getTaskForm($group_id);
             })
             ->action(function (array $data): void {
                 $this->record->tasks()->create($data);
@@ -273,6 +192,38 @@ class ShowProject extends Page
         $task = Task::find($taskId);
 
         $task->update(['priority_id' => $priorityId]);
+    }
+
+    public function saveTaskOrder($taskId, $newPosition)
+    {
+        $task = Task::find($taskId);
+        $currentPosition = $task->order;
+
+        if ($newPosition == $currentPosition) {
+            return; // Aucun changement nécessaire si la position n'a pas changé.
+        }
+
+        // Détermine si la tâche est déplacée vers le haut ou le bas dans la liste
+        $direction = $newPosition > $currentPosition ? 'down' : 'up';
+
+        // Récupère toutes les tâches qui pourraient être affectées par ce changement
+        $query = Task::query()
+            ->where('group_id', $task->group_id) // Assure-toi que cela correspond à ta structure de données
+            ->where('id', '!=', $taskId);
+
+        if ($direction === 'up') {
+            // Déplacer vers le haut: Augmente l'ordre des tâches entre les anciennes et nouvelles positions
+            $query->whereBetween('order', [$newPosition, $currentPosition - 1])
+                ->increment('order');
+        } else {
+            // Déplacer vers le bas: Diminue l'ordre des tâches entre les anciennes et nouvelles positions
+            $query->whereBetween('order', [$currentPosition + 1, $newPosition])
+                ->decrement('order');
+        }
+
+        // Mise à jour de la position de la tâche déplacée seulement après ajustement des autres tâches
+        $task->order = $newPosition;
+        $task->save();
     }
 
     public function getBreadcrumbs(): array

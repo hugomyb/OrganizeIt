@@ -1,9 +1,10 @@
-<li class="flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm {{ $task->children->isEmpty() ? 'border-b dark:border-white/10' : '' }}"
+<li x-sort:item="{{ $task->id }}"
+    class="flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm {{ $task->children->isEmpty() ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: {{ $task->depth > 0 ? $task->depth * 28 : 5 }}px;">
 
     <div class="flex space-x-6">
         <div class="flex">
-            <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400"/>
+            <x-iconpark-drag x-sort:handle class="h-5 w-5 mx-1 text-gray-400"/>
 
             <x-filament::dropdown>
                 <x-slot name="trigger">
@@ -87,7 +88,14 @@
 </li>
 
 @if ($task->children->isNotEmpty())
-    <ul class="list-none mx-1">
+    <ul class="list-none mx-1"
+        x-data="{
+            saveOrder: (item, position) => {
+                 $wire.saveTaskOrder(item, position);
+            }
+        }"
+        x-sort="saveOrder($item, $position)"
+        x-sort:group="tasks">
         @each('tasks.task', $task->children, 'task')
     </ul>
 @endif
