@@ -83,3 +83,22 @@ html.dark .content-item:hover {
 html.dark .uk-nestable-item:hover {
     background: transparent;
 }
+
+/* delete button */
+.task-buttons button:last-child {
+    color: #f00;
+}
+
+.task-buttons button:last-child:hover {
+    color: #fff;
+    background: #f00;
+}
+
+html.dark .task-buttons button:last-child {
+    color: #f00;
+}
+
+html.dark .task-buttons button:last-child:hover {
+    color: #fff;
+    background: #f00;
+}

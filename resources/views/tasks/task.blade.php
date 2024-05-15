@@ -88,6 +88,7 @@
         <div class="task-buttons absolute flex hidden group-hover:flex">
             {{ ($this->editTaskTooltipAction)(['task_id' => $task->id]) }}
             {{ ($this->addSubtaskTooltipAction)(['parent_id' => $task->id, 'group_id' => $task->group_id]) }}
+            {{ ($this->deleteTaskTooltipAction)(['task_id' => $task->id]) }}
         </div>
     </div>
 

@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
+use Illuminate\Support\Str;
 
 trait InteractsWithTooltipActions
 {
@@ -51,6 +52,28 @@ trait InteractsWithTooltipActions
                     ->success()
                     ->title('Tâche ajoutée')
                     ->body('La tâche a été ajoutée avec succès.')
+                    ->send();
+            });
+    }
+
+    public function deleteTaskTooltipAction(): Action
+    {
+        return Action::make('deleteTaskTooltip')
+            ->tooltip('Supprimer')
+            ->iconButton()
+            ->iconSize(IconSize::Small)
+            ->color('danger')
+            ->icon('heroicon-o-trash')
+            ->requiresConfirmation()
+            ->modalHeading(fn (array $arguments) => 'Supprimer la tâche "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
+            ->record(fn(array $arguments) => Task::find($arguments['task_id']))
+            ->action(function (array $arguments): void {
+                Task::find($arguments['task_id'])->delete();
+
+                Notification::make()
+                    ->success()
+                    ->title('Tâche supprimée')
+                    ->body('La tâche a été supprimée avec succès.')
                     ->send();
             });
     }
