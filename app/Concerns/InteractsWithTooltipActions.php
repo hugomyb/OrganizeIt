@@ -4,7 +4,6 @@ namespace App\Concerns;
 
 use App\Models\Task;
 use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
@@ -65,7 +64,7 @@ trait InteractsWithTooltipActions
             ->color('danger')
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
-            ->modalHeading(fn (array $arguments) => 'Supprimer la tâche "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
+            ->modalHeading(fn(array $arguments) => 'Supprimer la tâche "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->action(function (array $arguments): void {
                 Task::find($arguments['task_id'])->delete();
