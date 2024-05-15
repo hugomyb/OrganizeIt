@@ -6,14 +6,16 @@
                     {{ $group->name }}
                 </x-slot>
 
-                <ul class="list-none mx-1"
+                <ul class="uk-nestable" data-uk-nestable=""
                     x-data="{
-                        saveOrder: (item, position, toGroupId, parentId) => {
-                            $wire.saveTaskOrder(item, position, toGroupId, parentId);
-                        }
-                    }"
-                    x-sort.ghost="saveOrder($item, $position, {{ $group->id }}, null)"
-                    x-sort:group="tasks">
+                    initNestable() {
+                        const nestable = UIkit.nestable($el);
+                        nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
+                            const serialized = nestable.serialize();
+                            $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
+                        });
+                    }
+                }" x-init="initNestable()">
                     @each('tasks.task', $group->tasks()->whereNull('parent_id')->get()->sortBy('order'), 'task')
                 </ul>
 
@@ -27,11 +29,18 @@
 
         <x-filament-actions::modals/>
     </div>
+
     <style>
         .fi-section-content {
             padding: 0 !important;
         }
+
+        .uk-nestable-item {
+            margin-top: 0 !important;
+        }
     </style>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </x-filament-panels::page>

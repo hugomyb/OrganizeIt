@@ -27,5 +27,11 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') == 'production') {
             URL::forceScheme('https');
         };
+
+        FilamentAsset::register([
+            Js::make('uikit-js', Vite::asset('resources/js/uikit.js')),
+            Js::make('nestable-js', Vite::asset('resources/js/components/nestable.js')),
+            Css::make('nestable-css', Vite::asset('resources/css/components/nestable.css')),
+        ]);
     }
 }

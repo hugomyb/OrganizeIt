@@ -18,6 +18,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Request;
+use Livewire\Attributes\On;
 
 class ShowProject extends Page
 {
@@ -31,12 +33,12 @@ class ShowProject extends Page
     {
         $this->record = Project::find($record);
 
-        foreach ($this->record->groups as $group) {
-            $this->reorderTasksInGroup($group->id);
-            foreach ($group->tasks as $task) {
-                $this->reorderSubTasks($task);
-            }
-        }
+//        foreach ($this->record->groups as $group) {
+//            $this->reorderTasksInGroup($group->id);
+//            foreach ($group->tasks as $task) {
+//                $this->reorderSubTasks($task);
+//            }
+//        }
     }
 
     /**
@@ -203,76 +205,58 @@ class ShowProject extends Page
         $task->update(['priority_id' => $priorityId]);
     }
 
-    public function saveTaskOrder($taskId, $newPosition, $toGroupId, $parentId = null)
+    public function updateTaskOrder($groupId, $nestableJson)
     {
-        $task = Task::find($taskId);
-        $fromGroupId = $task->group_id;
-        $currentPosition = $task->order;
+        $taskData = json_decode($nestableJson, true);
+        $this->updateOrder($taskData, $groupId);
+    }
 
-        if ($fromGroupId == $toGroupId && $task->parent_id == $parentId) {
-            if ($newPosition == $currentPosition) {
-                return;
+    private function updateOrder($tasks, $groupId)
+    {
+        foreach ($tasks as $index => $task) {
+            $this->updateTask($task, $groupId, null, $index);
+        }
+    }
+
+    private function updateTask($task, $groupId, $parentId, $order)
+    {
+        $taskModel = Task::find($task['id']);
+        $taskModel->order = $order;
+        $taskModel->group_id = $groupId;
+        $taskModel->parent_id = $parentId;
+        $taskModel->save();
+
+        if (isset($task['children'])) {
+            foreach ($task['children'] as $childIndex => $child) {
+                $this->updateTask($child, $groupId, $taskModel->id, $childIndex);
             }
-
-            $direction = $newPosition > $currentPosition ? 'down' : 'up';
-
-            $query = Task::query()
-                ->where('group_id', $task->group_id)
-                ->where('parent_id', $task->parent_id)
-                ->where('id', '!=', $taskId);
-
-            if ($direction === 'up') {
-                $query->whereBetween('order', [$newPosition, $currentPosition - 1])
-                    ->increment('order');
-            } else {
-                $query->whereBetween('order', [$currentPosition + 1, $newPosition])
-                    ->decrement('order');
-            }
-
-            $task->order = $newPosition;
-            $task->save();
-        } else {
-            Task::where('group_id', $toGroupId)
-                ->where('parent_id', $parentId)
-                ->where('order', '>=', $newPosition)
-                ->increment('order');
-
-            $task->group_id = $toGroupId;
-            $task->order = $newPosition;
-            $task->parent_id = $parentId;
-            $task->save();
-
-            $this->reorderTasksInGroup($fromGroupId);
-            $this->reorderTasksInGroup($toGroupId);
-        }
-
-        $this->reorderSubTasks($task);
-    }
-
-    protected function reorderTasksInGroup($groupId)
-    {
-        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
-        $order = 0;
-        foreach ($tasks as $task) {
-            $task->order = $order++;
-            $task->save();
-
-            // Réorganiser les sous-tâches
-            $this->reorderSubTasks($task);
         }
     }
 
-    protected function reorderSubTasks($task)
-    {
-        $subTasks = $task->children()->orderBy('order')->get();
-        $order = 0;
-        foreach ($subTasks as $subTask) {
-            $subTask->order = $order++;
-            $subTask->save();
-
-            $this->reorderSubTasks($subTask);
-        }
-    }
+//    protected function reorderTasksInGroup($groupId)
+//    {
+//        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
+//        $order = 0;
+//        foreach ($tasks as $task) {
+//            $task->order = $order++;
+//            $task->save();
+//
+//            // Réorganiser les sous-tâches
+//            $this->reorderSubTasks($task);
+//        }
+//    }
+//
+//    protected function reorderSubTasks($task)
+//    {
+//        $subTasks = $task->children()->orderBy('order')->get();
+//        $order = 0;
+//        foreach ($subTasks as $subTask) {
+//            $subTask->order = $order++;
+//            $subTask->save();
+//
+//            $this->reorderSubTasks($subTask);
+//        }
+//    }
 
     public function getBreadcrumbs(): array
     {
