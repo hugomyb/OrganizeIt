@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     <div class="flex justify-center items-center flex-col">
-        @foreach($record->groups()->with('tasks.children')->get() as $group)
+        @foreach($record->groups()->with('tasks.children', 'tasks.parent')->get() as $group)
             <x-filament::section collapsible style="margin-bottom: 30px; width: 100%" wire:key="group-{{ $group->id }}">
                 <x-slot name="heading">
                     {{ $group->name }}
@@ -12,7 +12,7 @@
                             $wire.saveTaskOrder(item, position, toGroupId, parentId);
                         }
                     }"
-                    x-sort="saveOrder($item, $position, {{ $group->id }}, null)"
+                    x-sort.ghost="saveOrder($item, $position, {{ $group->id }}, null)"
                     x-sort:group="tasks">
                     @each('tasks.task', $group->tasks()->whereNull('parent_id')->get()->sortBy('order'), 'task')
                 </ul>

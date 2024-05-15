@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\ProjectResource\Widgets\TasksTree;
-use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
@@ -34,6 +33,9 @@ class ShowProject extends Page
 
         foreach ($this->record->groups as $group) {
             $this->reorderTasksInGroup($group->id);
+            foreach ($group->tasks as $task) {
+                $this->reorderSubTasks($task);
+            }
         }
     }
 
@@ -56,7 +58,8 @@ class ShowProject extends Page
                 ->form($this->getTaskForm())
                 ->modalSubmitActionLabel('Ajouter')
                 ->action(function (array $data): void {
-                    $this->record->tasks()->create($data);
+                    $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
+                    $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
 
                     Notification::make()
                         ->success()
@@ -150,7 +153,8 @@ class ShowProject extends Page
                 return $this->getTaskForm($group_id);
             })
             ->action(function (array $data): void {
-                $this->record->tasks()->create($data);
+                $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
+                $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
 
                 Notification::make()
                     ->success()

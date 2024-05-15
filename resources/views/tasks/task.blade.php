@@ -1,6 +1,6 @@
-<!-- Task Partial -->
 <li x-sort:item="{{ $task->id }}"
-    class="flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm {{ $task->children->isEmpty() ? 'border-b dark:border-white/10' : '' }}"
+    class="flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm
+    {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: {{ $task->depth > 0 ? $task->depth * 28 : 5 }}px;">
 
     <div class="flex space-x-6">
@@ -39,8 +39,7 @@
                                         <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
                                         @break
                                     @case('Terminé')
-                                        <x-grommet-status-good class="h-5 w-5 mx-1"
-                                                               style="color: {{ $status->color }}"/>
+                                        <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
                                         @break
                                     @default
                                         <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
@@ -51,7 +50,6 @@
                         </x-filament::dropdown.list.item>
                     @endforeach
                 </x-filament::dropdown.list>
-
             </x-filament::dropdown>
         </div>
 
@@ -81,7 +79,6 @@
                             </x-filament::dropdown.list.item>
                         @endforeach
                     </x-filament::dropdown.list>
-
                 </x-filament::dropdown>
             @endif
         </div>
@@ -89,7 +86,7 @@
 </li>
 
 @if ($task->children->isNotEmpty())
-    <ul class="list-none mx-1"
+    <ul class="list-none mx-1 border-b dark:border-white/10"
         x-data="{
             saveOrder: (item, position, toGroupId) => {
                 $wire.saveTaskOrder(item, position, toGroupId, {{ $task->id }});

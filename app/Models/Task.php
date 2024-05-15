@@ -65,4 +65,19 @@ class Task extends Model
         }
         return $depth;
     }
+
+    public function isLastChild()
+    {
+        if ($this->parent_id === null) {
+            return false;
+        }
+
+        $lastChild = $this->parent->children->sortBy('order')->last();
+        return $lastChild && $lastChild->id === $this->id;
+    }
+
+    public function isFirstParent()
+    {
+        return $this->parent_id === null;
+    }
 }
