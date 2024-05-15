@@ -1,7 +1,12 @@
 <x-filament-panels::page>
     <div class="flex justify-center items-center flex-col">
         @foreach($record->groups()->with('tasks.children', 'tasks.parent')->get() as $group)
-            <x-filament::section collapsible style="margin-bottom: 30px; width: 100%" wire:key="group-{{ $group->id }}">
+            <x-filament::section
+                collapsible
+                persist-collapsed
+                style="margin-bottom: 30px; width: 100%"
+                wire:key="group-{{ $group->id }}"
+                id="group-{{ $group->id }}">
                 <x-slot name="heading">
                     {{ $group->name }}
                 </x-slot>
