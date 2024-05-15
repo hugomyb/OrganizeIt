@@ -1,0 +1,42 @@
+.fi-section-content {
+    padding: 0 !important;
+}
+
+.uk-nestable-item {
+    margin-top: 0 !important;
+    position: relative;
+}
+
+.uk-nestable-placeholder {
+    background-color: rgba(37, 99, 235, 0.25) !important;
+}
+
+.task-buttons {
+    display: none; /* Hide buttons by default */
+}
+
+.content-item:hover .task-buttons {
+    display: flex; /* Show buttons on hover */
+}
+
+.task-buttons {
+    position: absolute;
+    right: 10px; /* Adjust based on your layout */
+    top: 50%;
+    transform: translateY(-50%); /* Center vertically */
+    z-index: 10;
+}
+
+.task-buttons button {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 5px 10px;
+    margin-left: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.task-buttons button:hover {
+    background: rgba(255, 255, 255, 1);
+}

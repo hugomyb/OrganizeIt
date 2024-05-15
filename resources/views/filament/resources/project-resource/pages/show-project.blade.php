@@ -6,7 +6,7 @@
                     {{ $group->name }}
                 </x-slot>
 
-                <ul class="uk-nestable" data-uk-nestable="{group:'task-groups'}"
+                <ul class="uk-nestable" data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
                     x-data="{
                         initNestable() {
                             const nestable = UIkit.nestable($el);
@@ -35,20 +35,6 @@
 
         <x-filament-actions::modals/>
     </div>
-
-    <style>
-        .fi-section-content {
-            padding: 0 !important;
-        }
-
-        .uk-nestable-item {
-            margin-top: 0 !important;
-        }
-
-        .uk-nestable-placeholder {
-            background-color: rgba(37, 99, 235, 0.25) !important;
-        }
-    </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
             integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="

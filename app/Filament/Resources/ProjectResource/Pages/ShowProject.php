@@ -9,6 +9,8 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
@@ -18,8 +20,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Request;
-use Livewire\Attributes\On;
 
 class ShowProject extends Page
 {
@@ -47,6 +47,11 @@ class ShowProject extends Page
     public function getHeading(): string|Htmlable
     {
         return $this->record->name;
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [];
     }
 
     protected function getHeaderActions(): array
@@ -208,7 +213,7 @@ class ShowProject extends Page
     public function updateTaskOrder($groupId, $nestableJson)
     {
         $taskData = json_decode($nestableJson, true);
-        $taskData = array_filter($taskData, function($task) {
+        $taskData = array_filter($taskData, function ($task) {
             return $task['id'] !== 'placeholder';
         });
         $this->updateOrder($taskData, $groupId);
@@ -261,8 +266,5 @@ class ShowProject extends Page
         }
     }
 
-    public function getBreadcrumbs(): array
-    {
-        return [];
-    }
+    
 }

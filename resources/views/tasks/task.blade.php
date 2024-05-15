@@ -1,10 +1,11 @@
 <li data-id="{{ $task->id }}"
     class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: 8px;">
-    <div class="flex space-x-6 py-3">
+    <div class="flex space-x-6 py-3 content-item">
         <div class="flex">
             <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
 
+            <!-- Status dropdown -->
             <x-filament::dropdown>
                 <x-slot name="trigger">
                     @switch($task->status->name)
@@ -56,6 +57,7 @@
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
+            <!-- Priority dropdown -->
             @if($task->priority->name != 'Aucune')
                 <x-filament::dropdown>
                     <x-slot name="trigger" class="flex items-center mx-1">
@@ -80,6 +82,12 @@
                     </x-filament::dropdown.list>
                 </x-filament::dropdown>
             @endif
+        </div>
+
+        <!-- Boutons supplémentaires au survol -->
+        <div class="task-buttons absolute right-0 top-0 flex space-x-2 p-2 hidden group-hover:flex">
+            <button class="bg-blue-500 p-1 rounded">Edit</button>
+            <button class="bg-red-500 p-1 rounded">Delete</button>
         </div>
     </div>
 
