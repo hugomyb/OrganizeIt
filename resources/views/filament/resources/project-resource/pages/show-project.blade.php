@@ -7,8 +7,25 @@
                 style="margin-bottom: 30px; width: 100%"
                 wire:key="group-{{ $group->id }}"
                 id="group-{{ $group->id }}">
+
                 <x-slot name="heading">
                     {{ $group->name }}
+                </x-slot>
+
+                <x-slot name="headerEnd">
+                    <x-filament::icon-button
+                        icon="heroicon-o-pencil"
+                        wire:click="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' })"
+                        label="Edit label group"
+                        tooltip="Éditer groupe"
+                    />
+                    <x-filament::icon-button
+                        color="danger"
+                        icon="heroicon-o-trash"
+                        wire:click="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' })"
+                        label="Delete group"
+                        tooltip="Supprimer"
+                    />
                 </x-slot>
 
                 <ul class="uk-nestable" data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"

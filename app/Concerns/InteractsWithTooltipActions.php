@@ -18,7 +18,7 @@ trait InteractsWithTooltipActions
             ->tooltip('Éditer')
             ->modalWidth('5xl')
             ->modal()
-            ->modalHeading('Modifier la tâche')
+            ->modalHeading('Éditer la tâche')
             ->iconButton()
             ->iconSize(IconSize::Small)
             ->icon('heroicon-o-pencil')

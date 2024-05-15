@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
+use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
@@ -19,6 +20,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Str;
 
 class ShowProject extends Page
 {
@@ -28,6 +30,8 @@ class ShowProject extends Page
     protected static string $resource = ProjectResource::class;
 
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
+
+    protected ?string $maxContentWidth = '7xl';
 
     public $record;
 
@@ -102,6 +106,47 @@ class ShowProject extends Page
                     ->success()
                     ->title('Groupe créé')
                     ->body('Le groupe a été créé avec succès.')
+                    ->send();
+            });
+    }
+
+    public function editGroupAction(): Action
+    {
+        return EditAction::make('editGroup')
+            ->record(fn(array $arguments) => Group::find($arguments['group_id']))
+            ->modalHeading('Éditer le groupe')
+            ->form([
+                TextInput::make('name')
+                    ->autofocus()
+                    ->label('Nom')
+                    ->required(),
+            ])
+            ->action(function (array $data, array $arguments): void {
+                Group::find($arguments['group_id'])->update($data);
+
+                Notification::make()
+                    ->success()
+                    ->title('Groupe modifié')
+                    ->body('Le groupe a été modifié avec succès.')
+                    ->send();
+            });
+    }
+
+    public function deleteGroupAction(): Action
+    {
+        return Action::make('deleteGroup')
+            ->color('danger')
+            ->icon('heroicon-o-trash')
+            ->requiresConfirmation()
+            ->modalHeading(fn(array $arguments) => 'Supprimer le groupe "' . Str::limit(Group::find($arguments['group_id'])->name, 20) . '" ?')
+            ->record(fn(array $arguments) => Group::find($arguments['group_id']))
+            ->action(function (array $arguments): void {
+                Group::find($arguments['group_id'])->delete();
+
+                Notification::make()
+                    ->success()
+                    ->title('Groupe supprimé')
+                    ->body('Le groupe a été supprimé avec succès.')
                     ->send();
             });
     }
