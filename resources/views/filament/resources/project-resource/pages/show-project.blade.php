@@ -24,7 +24,7 @@
                     @forelse($group->tasks()->whereNull('parent_id')->get()->sortBy('order') as $task)
                         @include('tasks.task', ['task' => $task])
                     @empty
-                        <li class="uk-nestable-item placeholder" data-id="placeholder">
+                        <li class="uk-nestable-item placeholder dark:hover:bg-white/5" data-id="placeholder">
                             <div class="uk-nestable-content bg-transparent" style="height: 1px"></div>
                         </li>
                     @endforelse

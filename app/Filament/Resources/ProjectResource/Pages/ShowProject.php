@@ -41,6 +41,11 @@ class ShowProject extends Page
         }
     }
 
+    public function getTitle(): string|Htmlable
+    {
+        return $this->record->name;
+    }
+
     /**
      * @return string|Htmlable
      */
@@ -266,5 +271,5 @@ class ShowProject extends Page
         }
     }
 
-    
+
 }

@@ -48,3 +48,7 @@
 html.dark .content-item:hover {
     color: #77a2ff;
 }
+
+html.dark .uk-nestable-item:hover {
+    background: transparent;
+}
