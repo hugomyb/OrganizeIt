@@ -4,14 +4,12 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
-use App\Filament\Resources\ProjectResource\Widgets\TasksTree;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
@@ -24,6 +22,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class ShowProject extends Page
 {
+    use InteractsWithActions;
     use InteractsWithTooltipActions;
 
     protected static string $resource = ProjectResource::class;

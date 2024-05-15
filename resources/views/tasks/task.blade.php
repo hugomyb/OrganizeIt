@@ -85,8 +85,9 @@
         </div>
 
         <!-- actions task -->
-        <div class="task-buttons absolute right-0 top-0 flex space-x-2 p-2 hidden group-hover:flex">
+        <div class="task-buttons absolute flex hidden group-hover:flex">
             {{ ($this->editTaskTooltipAction)(['task_id' => $task->id]) }}
+            {{ ($this->addSubtaskTooltipAction)(['parent_id' => $task->id, 'group_id' => $task->group_id]) }}
         </div>
     </div>
 

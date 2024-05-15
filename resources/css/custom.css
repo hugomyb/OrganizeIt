@@ -4,7 +4,6 @@
 
 .uk-nestable-item {
     margin-top: 0 !important;
-    position: relative;
 }
 
 .uk-nestable-placeholder {
@@ -22,24 +21,41 @@
 .task-buttons {
     position: absolute;
     right: 10px; /* Adjust based on your layout */
-    top: 50%;
-    /*transform: translateY(-30%); !* Center vertically *!*/
+    bottom: 2%;
     z-index: 10;
 }
 
+.task-buttons {
+    border: 1px solid #d5d8dc;
+    box-shadow: 4px 24px 56px rgba(147,155,183,.24);
+    border-radius: 10px;
+    background-color: #fff;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 html.dark .task-buttons {
+    background: #1e1e1e;
+    border: 1px solid #2d2d2d;
+    box-shadow: 4px 24px 56px rgba(0,0,0,.24);
+}
+
+html.dark .task-buttons button {
     color: #fff;
     background: transparent;
 }
 
 .task-buttons button {
     background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 5px 10px;
-    margin-left: 5px;
-    border-radius: 3px;
+    border: none;
+    padding: 3px 6px;
+    margin: 1.5px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.3s;
+    color: #5d646e;
 }
 
 .task-buttons button:hover {
@@ -47,8 +63,17 @@ html.dark .task-buttons {
     color: #fff;
 }
 
+html.dark .task-buttons button:hover {
+    background: #77a2ff;
+    color: #fff;
+}
+
 .content-item:hover {
     color: rgb(15, 40, 93);
+}
+
+.content-item {
+    position: relative;
 }
 
 html.dark .content-item:hover {
