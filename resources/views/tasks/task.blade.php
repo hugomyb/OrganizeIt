@@ -1,7 +1,7 @@
 <li data-id="{{ $task->id }}"
-    class="uk-nestable-item flex flex-col justify-between py-3 dark:hover:bg-white/5 text-sm {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
+    class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: 8px;">
-    <div class="flex space-x-6">
+    <div class="flex space-x-6 py-3">
         <div class="flex">
             <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
 
@@ -84,7 +84,7 @@
     </div>
 
     @if ($task->children->isNotEmpty())
-        <ul class="uk-nestable-list">
+        <ul class="uk-nestable-list child-list">
             @each('tasks.task', $task->children, 'task')
         </ul>
     @endif

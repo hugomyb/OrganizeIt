@@ -38,6 +38,10 @@
         .uk-nestable-item {
             margin-top: 0 !important;
         }
+
+        .uk-nestable-placeholder {
+            background-color: rgba(37, 99, 235, 0.25);
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
