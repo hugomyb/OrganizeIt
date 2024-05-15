@@ -6,17 +6,23 @@
                     {{ $group->name }}
                 </x-slot>
 
-                <ul class="uk-nestable" data-uk-nestable=""
+                <ul class="uk-nestable" data-uk-nestable="{group:'task-groups'}"
                     x-data="{
-                    initNestable() {
-                        const nestable = UIkit.nestable($el);
-                        nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
-                            const serialized = nestable.serialize();
-                            $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
-                        });
-                    }
-                }" x-init="initNestable()">
-                    @each('tasks.task', $group->tasks()->whereNull('parent_id')->get()->sortBy('order'), 'task')
+                        initNestable() {
+                            const nestable = UIkit.nestable($el);
+                            nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
+                                const serialized = nestable.serialize().filter(item => item.id !== 'placeholder');
+                                $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
+                            });
+                        }
+                    }" x-init="initNestable()">
+                    @forelse($group->tasks()->whereNull('parent_id')->get()->sortBy('order') as $task)
+                        @include('tasks.task', ['task' => $task])
+                    @empty
+                        <li class="uk-nestable-item placeholder" data-id="placeholder">
+                            <div class="uk-nestable-content bg-transparent" style="height: 1px"></div>
+                        </li>
+                    @endforelse
                 </ul>
 
                 <div class="mx-3 mt-3 mb-2 text-xs">
@@ -40,7 +46,7 @@
         }
 
         .uk-nestable-placeholder {
-            background-color: rgba(37, 99, 235, 0.25);
+            background-color: rgba(37, 99, 235, 0.25) !important;
         }
     </style>
 

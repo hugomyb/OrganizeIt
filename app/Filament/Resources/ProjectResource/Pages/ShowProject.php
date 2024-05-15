@@ -33,12 +33,12 @@ class ShowProject extends Page
     {
         $this->record = Project::find($record);
 
-//        foreach ($this->record->groups as $group) {
-//            $this->reorderTasksInGroup($group->id);
-//            foreach ($group->tasks as $task) {
-//                $this->reorderSubTasks($task);
-//            }
-//        }
+        foreach ($this->record->groups as $group) {
+            $this->reorderTasksInGroup($group->id);
+            foreach ($group->tasks as $task) {
+                $this->reorderSubTasks($task);
+            }
+        }
     }
 
     /**
@@ -208,6 +208,9 @@ class ShowProject extends Page
     public function updateTaskOrder($groupId, $nestableJson)
     {
         $taskData = json_decode($nestableJson, true);
+        $taskData = array_filter($taskData, function($task) {
+            return $task['id'] !== 'placeholder';
+        });
         $this->updateOrder($taskData, $groupId);
     }
 
@@ -233,30 +236,30 @@ class ShowProject extends Page
         }
     }
 
-//    protected function reorderTasksInGroup($groupId)
-//    {
-//        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
-//        $order = 0;
-//        foreach ($tasks as $task) {
-//            $task->order = $order++;
-//            $task->save();
-//
-//            // Réorganiser les sous-tâches
-//            $this->reorderSubTasks($task);
-//        }
-//    }
-//
-//    protected function reorderSubTasks($task)
-//    {
-//        $subTasks = $task->children()->orderBy('order')->get();
-//        $order = 0;
-//        foreach ($subTasks as $subTask) {
-//            $subTask->order = $order++;
-//            $subTask->save();
-//
-//            $this->reorderSubTasks($subTask);
-//        }
-//    }
+    protected function reorderTasksInGroup($groupId)
+    {
+        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
+        $order = 0;
+        foreach ($tasks as $task) {
+            $task->order = $order++;
+            $task->save();
+
+            // Réorganiser les sous-tâches
+            $this->reorderSubTasks($task);
+        }
+    }
+
+    protected function reorderSubTasks($task)
+    {
+        $subTasks = $task->children()->orderBy('order')->get();
+        $order = 0;
+        foreach ($subTasks as $subTask) {
+            $subTask->order = $order++;
+            $subTask->save();
+
+            $this->reorderSubTasks($subTask);
+        }
+    }
 
     public function getBreadcrumbs(): array
     {
