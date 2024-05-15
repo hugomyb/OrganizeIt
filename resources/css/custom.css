@@ -27,8 +27,13 @@
     z-index: 10;
 }
 
+html.dark .task-buttons {
+    color: #fff;
+    background: transparent;
+}
+
 .task-buttons button {
-    background: rgba(255, 255, 255, 0.9);
+    background: transparent;
     border: 1px solid rgba(0, 0, 0, 0.1);
     padding: 5px 10px;
     margin-left: 5px;
@@ -38,7 +43,8 @@
 }
 
 .task-buttons button:hover {
-    background: rgba(255, 255, 255, 1);
+    background: #2563eb;
+    color: #fff;
 }
 
 .content-item:hover {

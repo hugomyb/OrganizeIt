@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
+use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\ProjectResource\Widgets\TasksTree;
 use App\Models\Priority;
@@ -23,6 +24,8 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class ShowProject extends Page
 {
+    use InteractsWithTooltipActions;
+
     protected static string $resource = ProjectResource::class;
 
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
@@ -195,10 +198,7 @@ class ShowProject extends Page
             ->modalWidth('5xl')
             ->label('Éditer')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->form($this->getTaskForm())
-            ->after(function () {
-                $this->dispatch('close-modal', 'viewTask');
-            });
+            ->form($this->getTaskForm());
     }
 
     public function setTaskStatus($taskId, $statusId)

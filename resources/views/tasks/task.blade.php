@@ -84,10 +84,9 @@
             @endif
         </div>
 
-        <!-- Boutons supplémentaires au survol -->
+        <!-- actions task -->
         <div class="task-buttons absolute right-0 top-0 flex space-x-2 p-2 hidden group-hover:flex">
-            <button class="bg-blue-500 p-1 rounded">Edit</button>
-            <button class="bg-red-500 p-1 rounded">Delete</button>
+            {{ ($this->editTaskTooltipAction)(['task_id' => $task->id]) }}
         </div>
     </div>
 
