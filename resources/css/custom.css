@@ -23,7 +23,7 @@
     position: absolute;
     right: 10px; /* Adjust based on your layout */
     top: 50%;
-    transform: translateY(-50%); /* Center vertically */
+    /*transform: translateY(-30%); !* Center vertically *!*/
     z-index: 10;
 }
 
@@ -39,4 +39,12 @@
 
 .task-buttons button:hover {
     background: rgba(255, 255, 255, 1);
+}
+
+.content-item:hover {
+    color: rgb(15, 40, 93);
+}
+
+html.dark .content-item:hover {
+    color: #77a2ff;
 }

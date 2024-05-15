@@ -62,7 +62,7 @@
                 <x-filament::dropdown>
                     <x-slot name="trigger" class="flex items-center mx-1">
                         <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
-                        <span class="text-xs font-bold"
+                        <span class="text-xs font-bold task-title"
                               style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
                     </x-slot>
 
