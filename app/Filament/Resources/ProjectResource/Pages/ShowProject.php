@@ -31,6 +31,10 @@ class ShowProject extends Page
     public function mount($record)
     {
         $this->record = Project::find($record);
+
+        foreach ($this->record->groups as $group) {
+            $this->reorderTasksInGroup($group->id);
+        }
     }
 
     /**
@@ -203,51 +207,41 @@ class ShowProject extends Page
 
         if ($fromGroupId == $toGroupId && $task->parent_id == $parentId) {
             if ($newPosition == $currentPosition) {
-                return; // Aucun changement nécessaire si la position n'a pas changé.
+                return;
             }
 
-            // Détermine si la tâche est déplacée vers le haut ou le bas dans la liste
             $direction = $newPosition > $currentPosition ? 'down' : 'up';
 
-            // Récupère toutes les tâches qui pourraient être affectées par ce changement
             $query = Task::query()
                 ->where('group_id', $task->group_id)
                 ->where('parent_id', $task->parent_id)
                 ->where('id', '!=', $taskId);
 
             if ($direction === 'up') {
-                // Déplacer vers le haut: Augmente l'ordre des tâches entre les anciennes et nouvelles positions
                 $query->whereBetween('order', [$newPosition, $currentPosition - 1])
                     ->increment('order');
             } else {
-                // Déplacer vers le bas: Diminue l'ordre des tâches entre les anciennes et nouvelles positions
                 $query->whereBetween('order', [$currentPosition + 1, $newPosition])
                     ->decrement('order');
             }
 
-            // Mise à jour de la position de la tâche déplacée seulement après ajustement des autres tâches
             $task->order = $newPosition;
             $task->save();
         } else {
-            // Incrémenter l'ordre des tâches suivantes dans le groupe de destination
             Task::where('group_id', $toGroupId)
                 ->where('parent_id', $parentId)
                 ->where('order', '>=', $newPosition)
                 ->increment('order');
 
-            // Mise à jour du groupe, de l'ordre et du parent de la tâche déplacée
             $task->group_id = $toGroupId;
             $task->order = $newPosition;
             $task->parent_id = $parentId;
             $task->save();
 
-            // Réorganiser l'ordre des tâches dans l'ancien groupe
             $this->reorderTasksInGroup($fromGroupId);
-            // Réorganiser l'ordre des tâches dans le nouveau groupe
             $this->reorderTasksInGroup($toGroupId);
         }
 
-        // Réorganiser l'ordre des sous-tâches
         $this->reorderSubTasks($task);
     }
 
@@ -266,13 +260,12 @@ class ShowProject extends Page
 
     protected function reorderSubTasks($task)
     {
-        $subTasks = $task->children;
+        $subTasks = $task->children()->orderBy('order')->get();
         $order = 0;
         foreach ($subTasks as $subTask) {
             $subTask->order = $order++;
             $subTask->save();
 
-            // Réorganiser récursivement les sous-sous-tâches
             $this->reorderSubTasks($subTask);
         }
     }

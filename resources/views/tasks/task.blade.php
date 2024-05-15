@@ -92,10 +92,10 @@
     <ul class="list-none mx-1"
         x-data="{
             saveOrder: (item, position, toGroupId) => {
-                 $wire.saveTaskOrder(item, position, toGroupId, {{ $task->id }});
+                $wire.saveTaskOrder(item, position, toGroupId, {{ $task->id }});
             }
         }"
-        x-sort="saveOrder($item, $position, {{ $task->group_id }})"
+        x-sort="saveOrder($item, $position, {{ $task->group_id }}, {{ $task->id }})"
         x-sort:group="tasks">
         @each('tasks.task', $task->children, 'task')
     </ul>
