@@ -323,7 +323,9 @@ class ShowProject extends Page
     {
         $task = Task::find($taskId);
         if ($task) {
-            $task->users()->attach($userId);
+            if (!$task->users()->where('user_id', $userId)->exists()) {
+                $task->users()->attach($userId);
+            }
         }
     }
 }

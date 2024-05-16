@@ -2,11 +2,15 @@
     class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
     style="padding-left: 8px;">
     <div class="flex py-3 content-item"
-         x-data
+         x-data="{ isOver: false }"
          x-on:drop.prevent="
             const userId = event.dataTransfer.getData('user-id');
-            $wire.assignUserToTask(userId, '{{ $task->id }}')"
-         x-on:dragover.prevent>
+            $wire.assignUserToTask(userId, '{{ $task->id }}');
+            isOver = false; // Enlever le surlignage après le drop
+        "
+         x-on:dragover.prevent="isOver = true"
+         x-on:dragleave="isOver = false"
+         :class="{ 'highlight': isOver }">
         <div class="flex">
             <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
 
@@ -93,7 +97,7 @@
                     @foreach($task->users as $user)
                         <div class="flex gap-1 items-center cursor-pointer">
                             <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
-                                 class="w-6 h-6 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
+                                 class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                             @if($task->users()->count() == 1)
                                 <span class="text-xs" style="color: gray; font-weight: 600">{{ $user->name }}</span>
                             @endif
