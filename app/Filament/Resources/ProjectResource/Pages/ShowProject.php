@@ -51,7 +51,7 @@ class ShowProject extends Page
         $this->statusFilters = collect();
         $this->priorityFilters = collect();
 
-        $this->loadGroups();
+        $this->toggleShowCompletedTasks();
     }
 
     public function loadGroups()

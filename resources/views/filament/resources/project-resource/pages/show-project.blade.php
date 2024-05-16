@@ -250,8 +250,8 @@
                     <div
                         wire:click="toggleShowCompletedTasks()"
                         style="{{ !$toggleCompletedTasks ? 'background-color: #2563eb; color: #fff' : '' }}"
-                        class="border border-gray-200 dark:border-white/10 text-center rounded-lg px-3 text-sm py-2 justify-center flex items-center gap-1 cursor-pointer">
-                        {{ !$toggleCompletedTasks ? "Afficher toutes les tâches" : "Masquer tâches terminées" }}
+                        class="border border-gray-200 dark:border-white/10 text-center rounded-lg px-2 text-sm py-2 justify-center flex items-center gap-1 cursor-pointer">
+                        {{ !$toggleCompletedTasks ? "Tâches terminées masquées" : "Masquer tâches terminées" }}
                     </div>
                 </div>
             </x-filament::section>
