@@ -65,6 +65,7 @@ trait InteractsWithTooltipActions
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
             ->modalHeading(fn(array $arguments) => 'Supprimer la tâche "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
+            ->modalDescription(fn(array $arguments) => Task::find($arguments['task_id'])->children()->count() ? 'Voulez-vous supprimer cette tâche et ' . Task::find($arguments['task_id'])->children()->count() . ' sous-tâches ?' : 'Êtes-vous sûr de vouloir supprimer cette tâche ?')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->action(function (array $arguments): void {
                 Task::find($arguments['task_id'])->delete();
