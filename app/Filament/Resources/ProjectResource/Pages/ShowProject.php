@@ -19,6 +19,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Str;
 
@@ -31,9 +32,12 @@ class ShowProject extends Page
 
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
 
-    protected ?string $maxContentWidth = '7xl';
-
     public $record;
+    public function getMaxContentWidth(): MaxWidth
+    {
+        return MaxWidth::ScreenTwoExtraLarge;
+    }
+
 
     public function mount($record)
     {
@@ -315,5 +319,11 @@ class ShowProject extends Page
         }
     }
 
-
+    public function assignUserToTask($userId, $taskId)
+    {
+        $task = Task::find($taskId);
+        if ($task) {
+            $task->users()->attach($userId);
+        }
+    }
 }

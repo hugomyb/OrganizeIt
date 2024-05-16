@@ -1,7 +1,13 @@
 <li data-id="{{ $task->id }}"
     class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
-    style="padding-left: 8px;">
-    <div class="flex space-x-6 py-3 content-item">
+    style="padding-left: 8px;"
+    x-data
+    x-on:drop.prevent="
+        const userId = event.dataTransfer.getData('user-id');
+        $wire.assignUserToTask(userId, '{{ $task->id }}')
+    "
+    x-on:dragover.prevent>
+    <div class="flex py-3 content-item items-center">
         <div class="flex">
             <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
 
@@ -53,7 +59,7 @@
             </x-filament::dropdown>
         </div>
 
-        <div class="flex space-x-2 flex-wrap">
+        <div class="flex gap-1 flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
@@ -81,6 +87,18 @@
                         @endforeach
                     </x-filament::dropdown.list>
                 </x-filament::dropdown>
+            @endif
+
+            @if($task->users()->exists())
+                <div class="flex gap-1 items-center">
+                    @foreach($task->users as $user)
+                        <div class="flex gap-1 items-center cursor-pointer">
+                            <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                 class="w-6 h-6 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
+                            <span class="text-xs" style="color: gray; font-weight: 600">{{ $user->name }}</span>
+                        </div>
+                    @endforeach
+                </div>
             @endif
         </div>
 
