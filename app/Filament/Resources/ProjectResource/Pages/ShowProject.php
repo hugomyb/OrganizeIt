@@ -33,17 +33,22 @@ class ShowProject extends Page
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
 
     public $record;
+    public $groups;
+
+    public $statusFilters = [];
+    public $priorityFilters = [];
+
     public function getMaxContentWidth(): MaxWidth
     {
         return MaxWidth::ScreenTwoExtraLarge;
     }
 
-
     public function mount($record)
     {
         $this->record = Project::find($record);
+        $this->groups = $this->record->groups()->with('tasks.children', 'tasks.parent')->get();
 
-        foreach ($this->record->groups as $group) {
+        foreach ($this->groups as $group) {
             $this->reorderTasksInGroup($group->id);
             foreach ($group->tasks as $task) {
                 $this->reorderSubTasks($task);
@@ -254,6 +259,12 @@ class ShowProject extends Page
         $task = Task::find($taskId);
 
         $task->update(['status_id' => $statusId]);
+
+        Notification::make()
+            ->success()
+            ->title('Statut modifiée')
+            ->body('Le statut de la tâche a été modifiée avec succès.')
+            ->send();
     }
 
     public function setTaskPriority($taskId, $priorityId)
@@ -261,6 +272,12 @@ class ShowProject extends Page
         $task = Task::find($taskId);
 
         $task->update(['priority_id' => $priorityId]);
+
+        Notification::make()
+            ->success()
+            ->title('Priorité modifiée')
+            ->body('La priorité de la tâche a été modifiée avec succès.')
+            ->send();
     }
 
     public function updateTaskOrder($groupId, $nestableJson)
@@ -327,6 +344,12 @@ class ShowProject extends Page
                 $task->users()->attach($userId);
             }
         }
+
+        Notification::make()
+            ->success()
+            ->title('Utilisateur assigné')
+            ->body('L\'utilisateur a été assigné à la tâche avec succès.')
+            ->send();
     }
 
     public function toggleUserToTask($userId, $taskId)
@@ -335,8 +358,20 @@ class ShowProject extends Page
         if ($task) {
             if ($task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->detach($userId);
+
+                Notification::make()
+                    ->success()
+                    ->title('Utilisateur retiré')
+                    ->body('L\'utilisateur a été retiré de la tâche avec succès.')
+                    ->send();
             } else {
                 $task->users()->attach($userId);
+
+                Notification::make()
+                    ->success()
+                    ->title('Utilisateur assigné')
+                    ->body('L\'utilisateur a été assigné à la tâche avec succès.')
+                    ->send();
             }
         }
     }

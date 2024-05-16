@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     <div class="flex justify-center items-start w-full gap-6">
         <div style="width: 78%" class="flex justify-center items-center flex-col">
-            @foreach($record->groups()->with('tasks.children', 'tasks.parent')->get() as $group)
+            @foreach($groups as $group)
                 <x-filament::section
                     collapsible
                     persist-collapsed
@@ -58,8 +58,9 @@
 
         </div>
 
-        <div style="width: 20%; top: 70px"
-             class="flex items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl"
+        <!-- Sidebar -->
+        <div style="width: 20%; top: 85px"
+             class="flex flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl"
              x-data>
             <x-filament::section
                 collapsible
@@ -68,25 +69,111 @@
                     Drag & Drop
                 </x-slot>
 
-                <div class="flex flex-col px-6 py-3">
-                    <div class="flex items-center gap-1">
-                        <x-filament::icon icon="heroicon-o-users" class="w-5 h-5" style="color: gray"/>
-                        <span style="font-weight: 500;">Assigner</span>
+                <div class="flex flex-col px-6 py-3 gap-3">
+                    <div style="margin-bottom: 10px">
+                        <div class="flex items-center gap-1" style="margin-bottom: 10px">
+                            <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
+                            <span style="font-weight: 500;">Assigner</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($record->users as $user)
+                                <div
+                                    style="font-weight: 500;"
+                                    class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
+                                    draggable="true"
+                                    x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
+                                    <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
+                                    <span class="dark:text-white text-gray-600">{{ $user->name }}</span>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($record->users as $user)
-                            <div
-                                style="font-weight: 500;"
-                                class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 my-2 rounded-lg flex items-center text-xs gap-1 cursor-move"
-                                draggable="true"
-                                x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
-                                <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
-                                <span style="color: gray;">{{ $user->name }}</span>
-                            </div>
-                        @endforeach
+
+                    <div style="margin-bottom: 10px">
+                        <div class="flex items-center gap-1" style="margin-bottom: 10px">
+                            <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: gray"/>
+                            <span style="font-weight: 500;">Priorité</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(\App\Models\Priority::all() as $priority)
+                                <div
+                                    style="font-weight: 500; background-color: {{ $priority->color }}; color: white;"
+                                    class="dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
+                                    draggable="true"
+                                    x-on:dragstart="event.dataTransfer.setData('priority-id', '{{ $priority->id }}')">
+                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: white"/>
+                                    <span class="text-white">{{ $priority->name }}</span>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
+            </x-filament::section>
+
+            <!-- filters -->
+            <x-filament::section
+                collapsible
+                style="width: 100%">
+                <x-slot name="heading">
+                    Filtres
+                </x-slot>
+
+                <div class="flex flex-col px-6 py-3 gap-3">
+                    <div style="margin-bottom: 10px">
+                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
+                            <span style="font-weight: 500;">Statut</span>
+
+                            <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            @forelse($statusFilters as $status)
+                                <div
+                                    style="font-weight: 500;"
+                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
+                                    @switch($status->name)
+                                        @case('À faire')
+                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            @break
+                                        @case('En cours')
+                                            <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                                  style="color: {{ $status->color }}"/>
+                                            @break
+                                        @case('Terminé')
+                                            <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                                   style="color: {{ $status->color }}"/>
+                                            @break
+                                        @default
+                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                    @endswitch
+                                    <span class="dark:text-white text-gray-600">{{ $status->name }}</span>
+                                </div>
+                            @empty
+                                <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 10px">
+                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
+                            <span style="font-weight: 500;">Priorité</span>
+
+                            <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            @forelse($priorityFilters as $priority)
+                                <div
+                                    style="font-weight: 500;"
+                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
+                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority->color }}"/>
+                                    <span class="dark:text-white text-gray-600">{{ $priority->name }}</span>
+                                </div>
+                            @empty
+                                <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
             </x-filament::section>
         </div>
     </div>

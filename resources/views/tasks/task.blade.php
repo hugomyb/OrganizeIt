@@ -5,8 +5,14 @@
          x-data="{ isOver: false }"
          x-on:drop.prevent="
             const userId = event.dataTransfer.getData('user-id');
-            $wire.assignUserToTask(userId, '{{ $task->id }}');
-            isOver = false; // Enlever le surlignage après le drop
+            if (userId) {
+                $wire.assignUserToTask(userId, '{{ $task->id }}');
+            }
+            const priorityId = event.dataTransfer.getData('priority-id');
+            if (priorityId) {
+                $wire.setTaskPriority('{{ $task->id }}', priorityId);
+            }
+            isOver = false;
         "
          x-on:dragover.prevent="isOver = true"
          x-on:dragleave="isOver = false"
