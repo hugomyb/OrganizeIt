@@ -4,7 +4,6 @@
             @foreach($groups as $group)
                 <x-filament::section
                     collapsible
-                    persist-collapsed
                     style="margin-bottom: 30px; width: 100%"
                     wire:key="group-{{ $group->id }}"
                     id="group-{{ $group->id }}">
@@ -31,15 +30,16 @@
 
                     <ul class="uk-nestable" data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
                         x-data="{
-                        initNestable() {
-                            const nestable = UIkit.nestable($el);
-                            nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
-                                const serialized = nestable.serialize().filter(item => item.id !== 'placeholder');
-                                $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
-                            });
-                        }
-                    }" x-init="initNestable()">
-                        @forelse($group->tasks()->whereNull('parent_id')->get()->sortBy('order') as $task)
+                            initNestable() {
+                                const nestable = UIkit.nestable($el);
+                                nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
+                                    const serialized = nestable.serialize().filter(item => item.id !== 'placeholder');
+                                    $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
+                                });
+                            }
+                        }"
+                        x-init="initNestable()">
+                        @forelse($group->tasks->whereNull('parent_id')->sortBy('order') as $task)
                             @include('tasks.task', ['task' => $task])
                         @empty
                             <li class="uk-nestable-item placeholder dark:hover:bg-white/5" data-id="placeholder">
@@ -55,10 +55,8 @@
             @endforeach
 
             {{ $this->createGroupAction }}
-
         </div>
 
-        <!-- Sidebar -->
         <div style="width: 20%; top: 85px"
              class="flex flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl"
              x-data>
@@ -66,7 +64,7 @@
                 collapsible
                 style="width: 100%">
                 <x-slot name="heading">
-                    Drag & Drop
+                    Filtrer par statut
                 </x-slot>
 
                 <div class="flex flex-col px-6 py-3 gap-3">
@@ -124,29 +122,71 @@
                         <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
                             <span style="font-weight: 500;">Statut</span>
 
-                            <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                            <x-filament::dropdown>
+                                <x-slot name="trigger">
+                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                                </x-slot>
+
+                                <x-filament::dropdown.list>
+                                    @foreach(\App\Models\Status::all() as $status)
+                                        <x-filament::dropdown.list.item
+                                            wire:click="updateStatusFilter({{$status->id}})"
+                                            class="text-xs font-bold">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    @switch($status->name)
+                                                        @case('À faire')
+                                                            <x-far-circle class="h-5 w-5 mx-1"
+                                                                          style="color: {{ $status->color }}"/>
+                                                            @break
+                                                        @case('En cours')
+                                                            <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                                                  style="color: {{ $status->color }}"/>
+                                                            @break
+                                                        @case('Terminé')
+                                                            <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                                                   style="color: {{ $status->color }}"/>
+                                                            @break
+                                                        @default
+                                                            <x-far-circle class="h-5 w-5 mx-1"
+                                                                          style="color: {{ $status->color }}"/>
+                                                            @break
+                                                    @endswitch
+                                                    <span class="mx-1">{{ $status->name }}</span>
+                                                </div>
+
+                                                @if(in_array($status->id, collect($statusFilters)->pluck('id')->toArray()))
+                                                    {{ svg('gmdi-check-box-r', attributes: ['style' => 'fill: #22c55e; width: 1.5rem; height: 1.5rem;']) }}
+                                                @else
+                                                    {{ svg('gmdi-check-box-outline-blank-o', 'h-6 w-6', ['style' => 'fill: gray']) }}
+                                                @endif
+                                            </div>
+                                        </x-filament::dropdown.list.item>
+                                    @endforeach
+                                </x-filament::dropdown.list>
+                            </x-filament::dropdown>
                         </div>
                         <div class="flex flex-col gap-2">
                             @forelse($statusFilters as $status)
                                 <div
                                     style="font-weight: 500;"
                                     class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
-                                    @switch($status->name)
+                                    @switch($status['name'])
                                         @case('À faire')
-                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status['color'] }}"/>
                                             @break
                                         @case('En cours')
                                             <x-carbon-in-progress class="h-5 w-5 mx-1"
-                                                                  style="color: {{ $status->color }}"/>
+                                                                  style="color: {{ $status['color'] }}"/>
                                             @break
                                         @case('Terminé')
                                             <x-grommet-status-good class="h-5 w-5 mx-1"
-                                                                   style="color: {{ $status->color }}"/>
+                                                                   style="color: {{ $status['color'] }}"/>
                                             @break
                                         @default
-                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status['color'] }}"/>
                                     @endswitch
-                                    <span class="dark:text-white text-gray-600">{{ $status->name }}</span>
+                                    <span class="dark:text-white text-gray-600">{{ $status['name'] }}</span>
                                 </div>
                             @empty
                                 <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
@@ -158,15 +198,41 @@
                         <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
                             <span style="font-weight: 500;">Priorité</span>
 
-                            <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                            <x-filament::dropdown>
+                                <x-slot name="trigger">
+                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                                </x-slot>
+
+                                <x-filament::dropdown.list>
+                                    @foreach(\App\Models\Priority::all() as $priority)
+                                        <x-filament::dropdown.list.item
+                                            wire:click="updatePriorityFilter({{$priority->id}})"
+                                            class="text-xs font-bold">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1"
+                                                                          style="color: {{ $priority->color }}"/>
+                                                    <span class="mx-1">{{ $priority->name }}</span>
+                                                </div>
+
+                                                @if(in_array($priority->id, collect($priorityFilters)->pluck('id')->toArray()))
+                                                    {{ svg('gmdi-check-box-r', attributes: ['style' => 'fill: #22c55e; width: 1.5rem; height: 1.5rem;']) }}
+                                                @else
+                                                    {{ svg('gmdi-check-box-outline-blank-o', 'h-6 w-6', ['style' => 'fill: gray']) }}
+                                                @endif
+                                            </div>
+                                        </x-filament::dropdown.list.item>
+                                    @endforeach
+                                </x-filament::dropdown.list>
+                            </x-filament::dropdown>
                         </div>
                         <div class="flex flex-col gap-2">
                             @forelse($priorityFilters as $priority)
                                 <div
                                     style="font-weight: 500;"
                                     class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
-                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority->color }}"/>
-                                    <span class="dark:text-white text-gray-600">{{ $priority->name }}</span>
+                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority['color'] }}"/>
+                                    <span class="dark:text-white text-gray-600">{{ $priority['name'] }}</span>
                                 </div>
                             @empty
                                 <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>

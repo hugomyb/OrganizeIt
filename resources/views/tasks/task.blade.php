@@ -22,10 +22,10 @@
 
             <!-- Status dropdown -->
             <x-filament::dropdown>
-                <x-slot name="trigger">
+                <x-slot name="trigger" style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
                     @switch($task->status->name)
                         @case('À faire')
-                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
+                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }};"/>
                             @break
                         @case('En cours')
                             <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
@@ -68,7 +68,7 @@
             </x-filament::dropdown>
         </div>
 
-        <div class="flex gap-1 items-center flex-wrap">
+        <div class="flex gap-1 items-center flex-wrap" style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
@@ -115,8 +115,7 @@
                     <x-filament::dropdown.list>
                         @foreach($task->project->users as $user)
                             <x-filament::dropdown.list.item
-                                wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})"
-                                x-on:click="toggle">
+                                wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
                                 <div class="text-xs font-bold flex justify-between items-center">
                                     <div class="flex items center gap-1 items-center">
                                         <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"

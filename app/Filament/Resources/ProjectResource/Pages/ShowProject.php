@@ -35,8 +35,8 @@ class ShowProject extends Page
     public $record;
     public $groups;
 
-    public $statusFilters = [];
-    public $priorityFilters = [];
+    public $statusFilters;
+    public $priorityFilters;
 
     public function getMaxContentWidth(): MaxWidth
     {
@@ -46,14 +46,25 @@ class ShowProject extends Page
     public function mount($record)
     {
         $this->record = Project::find($record);
-        $this->groups = $this->record->groups()->with('tasks.children', 'tasks.parent')->get();
+        $this->statusFilters = collect();
+        $this->priorityFilters = collect();
 
-        foreach ($this->groups as $group) {
-            $this->reorderTasksInGroup($group->id);
-            foreach ($group->tasks as $task) {
-                $this->reorderSubTasks($task);
+        $this->loadGroups();
+    }
+
+    public function loadGroups()
+    {
+        $this->groups = Group::with(['tasks' => function ($query) {
+            if ($this->statusFilters->isNotEmpty()) {
+                $statusIds = $this->statusFilters->pluck('id')->toArray();
+                $query->whereIn('status_id', $statusIds);
             }
-        }
+            if ($this->priorityFilters->isNotEmpty()) {
+                $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+                $query->whereIn('priority_id', $priorityIds);
+            }
+            $query->with('children', 'parent');
+        }])->where('project_id', $this->record->id)->get();
     }
 
     public function getTitle(): string|Htmlable
@@ -373,6 +384,32 @@ class ShowProject extends Page
                     ->body('L\'utilisateur a été assigné à la tâche avec succès.')
                     ->send();
             }
+        }
+    }
+
+    public function updateStatusFilter($statusId)
+    {
+        $status = Status::find($statusId);
+        if ($status) {
+            if ($this->statusFilters->contains('id', $statusId)) {
+                $this->statusFilters = $this->statusFilters->reject(fn($filter) => $filter['id'] === $statusId)->values();
+            } else {
+                $this->statusFilters->push($status);
+            }
+            $this->loadGroups();
+        }
+    }
+
+    public function updatePriorityFilter($priorityId)
+    {
+        $priority = Priority::find($priorityId);
+        if ($priority) {
+            if ($this->priorityFilters->contains('id', $priorityId)) {
+                $this->priorityFilters = $this->priorityFilters->reject(fn($filter) => $filter['id'] === $priorityId)->values();
+            } else {
+                $this->priorityFilters->push($priority);
+            }
+            $this->loadGroups();
         }
     }
 }
