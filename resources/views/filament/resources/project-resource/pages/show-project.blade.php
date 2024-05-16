@@ -77,7 +77,7 @@
                         @foreach($record->users as $user)
                             <div
                                 style="font-weight: 500;"
-                                class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1.5 my-2 rounded-lg flex items-center text-xs gap-1 cursor-move"
+                                class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 my-2 rounded-lg flex items-center text-xs gap-1 cursor-move"
                                 draggable="true"
                                 x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
                                 <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
