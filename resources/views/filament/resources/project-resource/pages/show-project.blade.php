@@ -64,7 +64,7 @@
                 collapsible
                 style="width: 100%">
                 <x-slot name="heading">
-                    Filtrer par statut
+                    Drag & Drop
                 </x-slot>
 
                 <div class="flex flex-col px-6 py-3 gap-3">
@@ -124,7 +124,7 @@
 
                             <x-filament::dropdown>
                                 <x-slot name="trigger">
-                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer filter-icon"/>
                                 </x-slot>
 
                                 <x-filament::dropdown.list>
@@ -170,23 +170,30 @@
                             @forelse($statusFilters as $status)
                                 <div
                                     style="font-weight: 500;"
-                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
-                                    @switch($status['name'])
-                                        @case('À faire')
-                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status['color'] }}"/>
-                                            @break
-                                        @case('En cours')
-                                            <x-carbon-in-progress class="h-5 w-5 mx-1"
-                                                                  style="color: {{ $status['color'] }}"/>
-                                            @break
-                                        @case('Terminé')
-                                            <x-grommet-status-good class="h-5 w-5 mx-1"
-                                                                   style="color: {{ $status['color'] }}"/>
-                                            @break
-                                        @default
-                                            <x-far-circle class="h-5 w-5 mx-1" style="color: {{ $status['color'] }}"/>
-                                    @endswitch
-                                    <span class="dark:text-white text-gray-600">{{ $status['name'] }}</span>
+                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs justify-between">
+                                    <div class="flex items-center gap-1">
+                                        @switch($status['name'])
+                                            @case('À faire')
+                                                <x-far-circle class="h-5 w-5 mx-1"
+                                                              style="color: {{ $status['color'] }}"/>
+                                                @break
+                                            @case('En cours')
+                                                <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                                      style="color: {{ $status['color'] }}"/>
+                                                @break
+                                            @case('Terminé')
+                                                <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                                       style="color: {{ $status['color'] }}"/>
+                                                @break
+                                            @default
+                                                <x-far-circle class="h-5 w-5 mx-1"
+                                                              style="color: {{ $status['color'] }}"/>
+                                        @endswitch
+                                        <span class="dark:text-white text-gray-600">{{ $status['name'] }}</span>
+                                    </div>
+
+                                    <x-heroicon-o-x-circle wire:click="updateStatusFilter({{$status['id']}})"
+                                                           class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
                                 <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
@@ -200,7 +207,7 @@
 
                             <x-filament::dropdown>
                                 <x-slot name="trigger">
-                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer"/>
+                                    <x-heroicon-s-funnel class="h-4 w-4 cursor-pointer filter-icon"/>
                                 </x-slot>
 
                                 <x-filament::dropdown.list>
@@ -238,6 +245,13 @@
                                 <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
                             @endforelse
                         </div>
+                    </div>
+
+                    <div
+                        wire:click="toggleShowCompletedTasks()"
+                        style="{{ !$toggleCompletedTasks ? 'background-color: #2563eb; color: #fff' : '' }}"
+                        class="border border-gray-200 dark:border-white/10 text-center rounded-lg px-3 text-sm py-2 justify-center flex items-center gap-1 cursor-pointer">
+                        {{ !$toggleCompletedTasks ? "Afficher toutes les tâches" : "Masquer tâches terminées" }}
                     </div>
                 </div>
             </x-filament::section>

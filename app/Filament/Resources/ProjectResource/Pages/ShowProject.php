@@ -38,6 +38,8 @@ class ShowProject extends Page
     public $statusFilters;
     public $priorityFilters;
 
+    public $toggleCompletedTasks = true;
+
     public function getMaxContentWidth(): MaxWidth
     {
         return MaxWidth::ScreenTwoExtraLarge;
@@ -54,41 +56,62 @@ class ShowProject extends Page
 
     public function loadGroups()
     {
-        $this->groups = Group::with(['tasks' => function ($query) {
-            if ($this->statusFilters->isNotEmpty() && $this->priorityFilters->isNotEmpty()) {
-                $statusIds = $this->statusFilters->pluck('id')->toArray();
-                $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+        $statusIds = $this->statusFilters->pluck('id')->toArray();
+        $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+
+        $this->groups = Group::where('project_id', $this->record->id)
+            ->with(['tasks' => function ($query) use ($statusIds, $priorityIds) {
                 $query->where(function ($query) use ($statusIds, $priorityIds) {
-                    $query->whereIn('status_id', $statusIds)
-                        ->whereIn('priority_id', $priorityIds);
-                })->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
-                    $query->whereIn('status_id', $statusIds)
-                        ->whereIn('priority_id', $priorityIds);
-                });
-            } elseif ($this->statusFilters->isNotEmpty()) {
-                $statusIds = $this->statusFilters->pluck('id')->toArray();
-                $query->whereIn('status_id', $statusIds)
-                    ->orWhereHas('children', function ($query) use ($statusIds) {
+                    if (!empty($statusIds)) {
                         $query->whereIn('status_id', $statusIds);
-                    });
-            } elseif ($this->priorityFilters->isNotEmpty()) {
-                $priorityIds = $this->priorityFilters->pluck('id')->toArray();
-                $query->whereIn('priority_id', $priorityIds)
-                    ->orWhereHas('children', function ($query) use ($priorityIds) {
+                    }
+                    if (!empty($priorityIds)) {
                         $query->whereIn('priority_id', $priorityIds);
+                    }
+                })
+                    ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
+                        $query->where(function ($query) use ($statusIds, $priorityIds) {
+                            if (!empty($statusIds)) {
+                                $query->whereIn('status_id', $statusIds);
+                            }
+                            if (!empty($priorityIds)) {
+                                $query->whereIn('priority_id', $priorityIds);
+                            }
+                        });
                     });
+
+                $query->with(['children' => function ($query) use ($statusIds, $priorityIds) {
+                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds);
+                }, 'parent']);
+            }])
+            ->get();
+    }
+
+    protected function applyRecursiveFilters($query, $statusIds, $priorityIds)
+    {
+        $query->where(function ($query) use ($statusIds, $priorityIds) {
+            if (!empty($statusIds)) {
+                $query->whereIn('status_id', $statusIds);
             }
-            $query->with(['children' => function ($query) {
-                if ($this->statusFilters->isNotEmpty()) {
-                    $statusIds = $this->statusFilters->pluck('id')->toArray();
-                    $query->whereIn('status_id', $statusIds);
-                }
-                if ($this->priorityFilters->isNotEmpty()) {
-                    $priorityIds = $this->priorityFilters->pluck('id')->toArray();
-                    $query->whereIn('priority_id', $priorityIds);
-                }
-            }, 'parent']);
-        }])->where('project_id', $this->record->id)->get();
+            if (!empty($priorityIds)) {
+                $query->whereIn('priority_id', $priorityIds);
+            }
+        })
+            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
+                $query->where(function ($query) use ($statusIds, $priorityIds) {
+                    if (!empty($statusIds)) {
+                        $query->whereIn('status_id', $statusIds);
+                    }
+                    if (!empty($priorityIds)) {
+                        $query->whereIn('priority_id', $priorityIds);
+                    }
+                });
+
+                // Appel récursif pour les enfants
+                $query->with(['children' => function ($query) use ($statusIds, $priorityIds) {
+                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds);
+                }]);
+            });
     }
 
     public function getTitle(): string|Htmlable
@@ -295,6 +318,8 @@ class ShowProject extends Page
 
         $task->update(['status_id' => $statusId]);
 
+        $this->loadGroups();
+
         Notification::make()
             ->success()
             ->title('Statut modifiée')
@@ -307,6 +332,8 @@ class ShowProject extends Page
         $task = Task::find($taskId);
 
         $task->update(['priority_id' => $priorityId]);
+
+        $this->loadGroups();
 
         Notification::make()
             ->success()
@@ -329,6 +356,8 @@ class ShowProject extends Page
         foreach ($tasks as $index => $task) {
             $this->updateTask($task, $groupId, null, $index);
         }
+
+        $this->loadGroups();
     }
 
     private function updateTask($task, $groupId, $parentId, $order)
@@ -380,6 +409,8 @@ class ShowProject extends Page
             }
         }
 
+        $this->loadGroups();
+
         Notification::make()
             ->success()
             ->title('Utilisateur assigné')
@@ -409,6 +440,8 @@ class ShowProject extends Page
                     ->send();
             }
         }
+
+        $this->loadGroups();
     }
 
     public function updateStatusFilter($statusId)
@@ -435,5 +468,20 @@ class ShowProject extends Page
             }
             $this->loadGroups();
         }
+    }
+
+    public function toggleShowCompletedTasks()
+    {
+        $this->toggleCompletedTasks = !$this->toggleCompletedTasks;
+
+        if ($this->toggleCompletedTasks) {
+            $statuses = collect();
+            $this->statusFilters = $statuses;
+        } else {
+            $statusesExceptCompleted = Status::where('name', '!=', 'Terminé')->get();
+            $this->statusFilters = $statusesExceptCompleted;
+        }
+
+        $this->loadGroups();
     }
 }
