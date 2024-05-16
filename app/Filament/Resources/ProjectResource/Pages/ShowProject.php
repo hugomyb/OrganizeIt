@@ -328,4 +328,16 @@ class ShowProject extends Page
             }
         }
     }
+
+    public function toggleUserToTask($userId, $taskId)
+    {
+        $task = Task::find($taskId);
+        if ($task) {
+            if ($task->users()->where('user_id', $userId)->exists()) {
+                $task->users()->detach($userId);
+            } else {
+                $task->users()->attach($userId);
+            }
+        }
+    }
 }
