@@ -55,15 +55,39 @@ class ShowProject extends Page
     public function loadGroups()
     {
         $this->groups = Group::with(['tasks' => function ($query) {
-            if ($this->statusFilters->isNotEmpty()) {
+            if ($this->statusFilters->isNotEmpty() && $this->priorityFilters->isNotEmpty()) {
                 $statusIds = $this->statusFilters->pluck('id')->toArray();
-                $query->whereIn('status_id', $statusIds);
-            }
-            if ($this->priorityFilters->isNotEmpty()) {
                 $priorityIds = $this->priorityFilters->pluck('id')->toArray();
-                $query->whereIn('priority_id', $priorityIds);
+                $query->where(function ($query) use ($statusIds, $priorityIds) {
+                    $query->whereIn('status_id', $statusIds)
+                        ->whereIn('priority_id', $priorityIds);
+                })->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
+                    $query->whereIn('status_id', $statusIds)
+                        ->whereIn('priority_id', $priorityIds);
+                });
+            } elseif ($this->statusFilters->isNotEmpty()) {
+                $statusIds = $this->statusFilters->pluck('id')->toArray();
+                $query->whereIn('status_id', $statusIds)
+                    ->orWhereHas('children', function ($query) use ($statusIds) {
+                        $query->whereIn('status_id', $statusIds);
+                    });
+            } elseif ($this->priorityFilters->isNotEmpty()) {
+                $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+                $query->whereIn('priority_id', $priorityIds)
+                    ->orWhereHas('children', function ($query) use ($priorityIds) {
+                        $query->whereIn('priority_id', $priorityIds);
+                    });
             }
-            $query->with('children', 'parent');
+            $query->with(['children' => function ($query) {
+                if ($this->statusFilters->isNotEmpty()) {
+                    $statusIds = $this->statusFilters->pluck('id')->toArray();
+                    $query->whereIn('status_id', $statusIds);
+                }
+                if ($this->priorityFilters->isNotEmpty()) {
+                    $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+                    $query->whereIn('priority_id', $priorityIds);
+                }
+            }, 'parent']);
         }])->where('project_id', $this->record->id)->get();
     }
 
