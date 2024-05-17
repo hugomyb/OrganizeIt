@@ -111,3 +111,11 @@ html.dark .task-buttons button:last-child:hover {
     color: #2563eb;
     transition: color 0.3s;
 }
+
+figure.attachment {
+    max-width: 450px;
+}
+
+figcaption.attachment__caption {
+    display: none;
+}

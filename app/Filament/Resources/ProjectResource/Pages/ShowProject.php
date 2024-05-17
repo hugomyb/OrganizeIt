@@ -7,6 +7,7 @@ use App\Filament\Resources\ProjectResource;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
+use App\Models\Role;
 use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Filament\Support\Enums\MaxWidth;
@@ -31,6 +33,7 @@ class ShowProject extends Page
 {
     use InteractsWithActions;
     use InteractsWithTooltipActions;
+    use CanAuthorizeResourceAccess;
 
     protected static string $resource = ProjectResource::class;
 
@@ -493,5 +496,21 @@ class ShowProject extends Page
             $statusesExceptCompleted = Status::where('name', '!=', 'Terminé')->get();
             $this->statusFilters = $statusesExceptCompleted;
         }
+    }
+
+    public function addUserToProject($userId)
+    {
+        $this->record->users()->attach($userId);
+
+        Notification::make()
+            ->success()
+            ->title('Utilisateur ajouté')
+            ->body('L\'utilisateur a été ajouté au projet avec succès.')
+            ->send();
+    }
+
+    public static function canAccess(array $parameters = []): bool
+    {
+        return auth()->user()->role->id == Role::whereName('Admin')->first()->id || Project::find($parameters['record'])->users->contains(auth()->user());
     }
 }

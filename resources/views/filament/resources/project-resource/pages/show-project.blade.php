@@ -69,9 +69,40 @@
 
                 <div class="flex flex-col px-6 py-3 gap-3">
                     <div style="margin-bottom: 10px">
-                        <div class="flex items-center gap-1" style="margin-bottom: 10px">
-                            <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
-                            <span style="font-weight: 500;">Assigner</span>
+                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
+                            <div class="flex items-center gap-1">
+                                <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
+                                <span style="font-weight: 500;">Assigner</span>
+                            </div>
+
+                            <x-filament::dropdown>
+                                <x-slot name="trigger">
+                                    <x-heroicon-s-user-plus class="h-4 w-4 cursor-pointer filter-icon"/>
+                                </x-slot>
+
+                                <x-filament::dropdown.list>
+                                    @forelse(\App\Models\User::whereNotIn('id', $record->users->pluck('id'))->get() as $user)
+                                        <x-filament::dropdown.list.item
+                                            wire:click="addUserToProject({{$user->id}})"
+                                            x-on:click="toggle">
+                                            <div class="text-xs font-bold flex justify-between items-center"
+                                                 title="Assigner au projet">
+                                                <div class="flex items center gap-1 items-center">
+                                                    <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                                         class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
+                                                    <span class="mx-1">{{ $user->name }}</span>
+                                                </div>
+
+                                                <x-heroicon-s-plus class="h-4 w-4 cursor-pointer filter-icon"/>
+                                            </div>
+                                        </x-filament::dropdown.list.item>
+                                    @empty
+                                        <div class="flex justify-center py-1">
+                                            <span class="dark:text-white text-xs text-center text-gray-600">Aucun utilisateur à ajouter</span>
+                                        </div>
+                                    @endforelse
+                                </x-filament::dropdown.list>
+                            </x-filament::dropdown>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             @foreach($record->users as $user)
