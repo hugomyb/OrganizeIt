@@ -41,11 +41,10 @@ class CreateUser extends CreateRecord
     {
         $user = parent::handleRecordCreation($data);
 
-        // Crée le token de réinitialisation de mot de passe
-        $token = Password::createToken($user);
+        $expiresAt = now()->addHours(12);
 
         // Envoie la notification de réinitialisation de mot de passe
-        $user->notify(new PasswordResetNotification($token));
+        $user->sendWelcomeNotification($expiresAt);
 
         return $user;
     }
