@@ -44,6 +44,12 @@ class ShowProject extends Page
 
     public $toggleCompletedTasks = true;
 
+    public function render(): \Illuminate\Contracts\View\View
+    {
+        $this->loadGroups();
+        return parent::render();
+    }
+
     public function getMaxContentWidth(): MaxWidth
     {
         return MaxWidth::ScreenTwoExtraLarge;
@@ -336,8 +342,6 @@ class ShowProject extends Page
 
         $task->update(['status_id' => $statusId]);
 
-        $this->loadGroups();
-
         Notification::make()
             ->success()
             ->title('Statut modifiée')
@@ -350,8 +354,6 @@ class ShowProject extends Page
         $task = Task::find($taskId);
 
         $task->update(['priority_id' => $priorityId]);
-
-        $this->loadGroups();
 
         Notification::make()
             ->success()
@@ -374,8 +376,6 @@ class ShowProject extends Page
         foreach ($tasks as $index => $task) {
             $this->updateTask($task, $groupId, null, $index);
         }
-
-        $this->loadGroups();
     }
 
     private function updateTask($task, $groupId, $parentId, $order)
@@ -427,8 +427,6 @@ class ShowProject extends Page
             }
         }
 
-        $this->loadGroups();
-
         Notification::make()
             ->success()
             ->title('Utilisateur assigné')
@@ -458,8 +456,6 @@ class ShowProject extends Page
                     ->send();
             }
         }
-
-        $this->loadGroups();
     }
 
     public function updateStatusFilter($statusId)
@@ -471,7 +467,6 @@ class ShowProject extends Page
             } else {
                 $this->statusFilters->push($status);
             }
-            $this->loadGroups();
         }
     }
 
@@ -484,7 +479,6 @@ class ShowProject extends Page
             } else {
                 $this->priorityFilters->push($priority);
             }
-            $this->loadGroups();
         }
     }
 
@@ -499,7 +493,5 @@ class ShowProject extends Page
             $statusesExceptCompleted = Status::where('name', '!=', 'Terminé')->get();
             $this->statusFilters = $statusesExceptCompleted;
         }
-
-        $this->loadGroups();
     }
 }
