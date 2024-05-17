@@ -140,12 +140,14 @@ class ShowProject extends Page
     {
         return [
             Action::make('headerCreateTask')
+                ->modalWidth('7xl')
                 ->model(Task::class)
                 ->label('Ajouter une tâche')
                 ->icon('heroicon-o-plus')
                 ->modalHeading('Ajouter une tâche')
                 ->form($this->getTaskForm())
                 ->modalSubmitActionLabel('Ajouter')
+                ->modalCancelAction(fn (StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
                     $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
@@ -279,6 +281,7 @@ class ShowProject extends Page
         return Action::make('createTask')
             ->icon('heroicon-o-plus')
             ->link()
+            ->modalWidth('7xl')
             ->label('Ajouter une tâche')
             ->form(function ($livewire, array $arguments) {
                 $group_id = $arguments['group_id'];
@@ -288,7 +291,7 @@ class ShowProject extends Page
             ->modalCancelAction(fn (StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                $task = $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
+                $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
 
                 Notification::make()
                     ->success()
@@ -310,7 +313,7 @@ class ShowProject extends Page
         return ViewAction::make('viewTask')
             ->modalHeading('')
             ->slideOver()
-            ->modalWidth('5xl')
+            ->modalWidth('6xl')
             ->extraModalFooterActions([
                 $this->editTaskAction()
             ])
@@ -321,7 +324,7 @@ class ShowProject extends Page
     public function editTaskAction(): Action
     {
         return EditAction::make('editTask')
-            ->modalWidth('5xl')
+            ->modalWidth('7xl')
             ->label('Éditer')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->form($this->getTaskForm());
