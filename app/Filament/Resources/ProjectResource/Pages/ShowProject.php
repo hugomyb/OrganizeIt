@@ -235,6 +235,16 @@ class ShowProject extends Page
 
     public function getTaskForm($groupId = null): array
     {
+        $statusOptions = Status::all()->mapWithKeys(function ($status) {
+            $iconHtml = view('components.status-icon', ['status' => $status])->render();
+            return [$status->id => $iconHtml];
+        })->toArray();
+
+        $priorityOptions = Priority::all()->mapWithKeys(function ($priority) {
+            $iconHtml = view('components.priority-icon', ['priority' => $priority])->render();
+            return [$priority->id => $iconHtml];
+        })->toArray();
+
         return [
             Select::make('group_id')
                 ->preload()
@@ -262,7 +272,8 @@ class ShowProject extends Page
                 ->default(Status::whereName('À faire')->first()->id)
                 ->preload()
                 ->searchable()
-                ->options(Status::pluck('name', 'id'))
+                ->options($statusOptions)
+                ->allowHtml()
                 ->createOptionForm([
                     TextInput::make('name')
                         ->label('Nom')
@@ -275,7 +286,8 @@ class ShowProject extends Page
                 ->preload()
                 ->searchable()
                 ->default(Priority::whereName('Aucune')->first()->id)
-                ->options(Priority::pluck('name', 'id'))
+                ->options($priorityOptions)
+                ->allowHtml()
                 ->required(),
 
             FileUpload::make('attachments')

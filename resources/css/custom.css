@@ -113,9 +113,13 @@ html.dark .task-buttons button:last-child:hover {
 }
 
 figure.attachment {
-    max-width: 450px;
+    max-width: 50%;
 }
 
 figcaption.attachment__caption {
     display: none;
+}
+
+.choices__inner {
+    display: flex !important;
 }
