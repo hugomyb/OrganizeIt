@@ -12,15 +12,19 @@ use App\Models\Task;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\EditAction;
+use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Concerns\EvaluatesClosures;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ShowProject extends Page
@@ -233,10 +237,13 @@ class ShowProject extends Page
                 ->autofocus()
                 ->label('Titre')
                 ->columnSpanFull()
+                ->live()
                 ->required(),
 
             RichEditor::make('description')
                 ->columnSpanFull()
+                ->fileAttachmentsDisk('public')
+                ->fileAttachmentsDirectory(fn ($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
                 ->label('Description'),
 
             Select::make('status_id')
@@ -273,14 +280,15 @@ class ShowProject extends Page
             ->icon('heroicon-o-plus')
             ->link()
             ->label('Ajouter une tâche')
-            ->form(function (array $arguments) {
+            ->form(function ($livewire, array $arguments) {
                 $group_id = $arguments['group_id'];
 
                 return $this->getTaskForm($group_id);
             })
+            ->modalCancelAction(fn (StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
+                $task = $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
 
                 Notification::make()
                     ->success()
@@ -288,6 +296,13 @@ class ShowProject extends Page
                     ->body('La tâche a été ajoutée avec succès.')
                     ->send();
             });
+    }
+
+    public function cancelCreateTask()
+    {
+        if (Storage::exists('tasks/' . Task::latest()->first()->id + 1)) {
+            Storage::deleteDirectory('tasks/' . Task::latest()->first()->id + 1);
+        }
     }
 
     public function viewTaskAction(): Action
