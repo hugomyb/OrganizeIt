@@ -237,9 +237,14 @@
                             @forelse($priorityFilters as $priority)
                                 <div
                                     style="font-weight: 500;"
-                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center text-xs gap-1 cursor-pointer">
-                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority['color'] }}"/>
-                                    <span class="dark:text-white text-gray-600">{{ $priority['name'] }}</span>
+                                    class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center justify-between text-xs gap-1 cursor-pointer">
+                                    <div class="flex items-center gap-1">
+                                        <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority['color'] }}"/>
+                                        <span class="dark:text-white text-gray-600">{{ $priority['name'] }}</span>
+                                    </div>
+
+                                    <x-heroicon-o-x-circle wire:click="updatePriorityFilter({{$priority['id']}})"
+                                                           class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
                                 <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
