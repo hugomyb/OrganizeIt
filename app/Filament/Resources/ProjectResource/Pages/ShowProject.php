@@ -15,6 +15,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -276,9 +277,13 @@ class ShowProject extends Page
                 ->allowHtml()
                 ->createOptionForm([
                     TextInput::make('name')
+                        ->unique('statuses', ignoreRecord: true)
                         ->label('Nom')
                         ->required(),
-                ])
+
+                    ColorPicker::make('color')
+                        ->label('Couleur')
+                ])->createOptionUsing(fn (array $data) => Status::create($data))
                 ->required(),
 
             Select::make('priority_id')
