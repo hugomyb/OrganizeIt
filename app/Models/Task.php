@@ -20,6 +20,7 @@ class Task extends Model
         'priority_id',
         'status_id',
         'order',
+        'created_by',
     ];
 
     protected $casts = [
@@ -85,5 +86,10 @@ class Task extends Model
     public function isFirstParent()
     {
         return $this->parent_id === null;
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

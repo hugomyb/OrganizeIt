@@ -103,7 +103,7 @@ class ProjectResource extends Resource
             'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
-            'show' => Pages\ShowProject::route('/{record}'),
+            'show' => Pages\ShowProject::route('/{record}/tasks'),
         ];
     }
 }

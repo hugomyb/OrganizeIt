@@ -1,3 +1,7 @@
+html {
+    scroll-behavior: smooth !important;
+}
+
 .fi-section-content {
     padding: 0 !important;
 }
@@ -123,3 +127,4 @@ figcaption.attachment__caption {
 .choices__inner {
     display: flex !important;
 }
+

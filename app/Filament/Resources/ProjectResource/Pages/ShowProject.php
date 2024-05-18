@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
+use App\Infolists\Components\BreadcrumbEntry;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
@@ -14,12 +15,15 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
@@ -158,7 +162,10 @@ class ShowProject extends Page
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                    $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
+                    $this->record->tasks()->create(array_merge($data, [
+                        'order' => $lastTask ? $lastTask->order + 1 : 0,
+                        'created_by' => auth()->id()
+                    ]));
 
                     Notification::make()
                         ->success()
@@ -323,7 +330,10 @@ class ShowProject extends Page
             ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
+                $this->record->tasks()->create(array_merge($data, [
+                    'order' => $lastTask ? $lastTask->order + 1 : 0,
+                    'created_by' => auth()->id()
+                ]));
 
                 Notification::make()
                     ->success()
@@ -345,12 +355,12 @@ class ShowProject extends Page
         return ViewAction::make('viewTask')
             ->modalHeading('')
             ->slideOver()
-            ->modalWidth('6xl')
+            ->modalWidth('5xl')
             ->extraModalFooterActions([
                 $this->editTaskAction()
             ])
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->form($this->getTaskForm());
+            ->modalContent(fn ($record) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
     }
 
     public function editTaskAction(): Action

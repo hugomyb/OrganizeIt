@@ -45,7 +45,10 @@ trait InteractsWithTooltipActions
                 $parentTask = Task::find($arguments['parent_id']);
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
 
-                $parentTask->children()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
+                $parentTask->children()->create(array_merge($data, [
+                    'order' => $lastTask ? $lastTask->order + 1 : 0,
+                    'created_by' => auth()->id()
+                ]));
 
                 Notification::make()
                     ->success()
