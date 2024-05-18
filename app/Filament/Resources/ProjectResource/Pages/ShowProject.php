@@ -14,6 +14,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -296,11 +297,13 @@ class ShowProject extends Page
             FileUpload::make('attachments')
                 ->columnSpanFull()
                 ->multiple()
-                ->disk('local')
                 ->previewable()
                 ->downloadable()
+                ->multiple()
+                ->appendFiles()
+                ->visibility('private')
                 ->openable()
-                ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
+                ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
                 ->label('Pièces jointes')
         ];
     }
