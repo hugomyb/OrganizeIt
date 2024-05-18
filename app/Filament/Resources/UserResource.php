@@ -56,7 +56,8 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Avatar')
-                    ->size(50),
+                    ->circular()
+                    ->size(30),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')

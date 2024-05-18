@@ -7,7 +7,6 @@ use App\Filament\Resources\ProjectResource;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
-use App\Models\Role;
 use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
@@ -20,11 +19,9 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
-use Filament\Support\Concerns\EvaluatesClosures;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Storage;
@@ -157,7 +154,7 @@ class ShowProject extends Page
                 ->modalHeading('Ajouter une tâche')
                 ->form($this->getTaskForm())
                 ->modalSubmitActionLabel('Ajouter')
-                ->modalCancelAction(fn (StaticAction $action, $data) => $action->action('cancelCreateTask'))
+                ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
                     $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));
@@ -265,7 +262,7 @@ class ShowProject extends Page
             RichEditor::make('description')
                 ->columnSpanFull()
                 ->fileAttachmentsDisk('public')
-                ->fileAttachmentsDirectory(fn ($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
+                ->fileAttachmentsDirectory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
                 ->label('Description'),
 
             Select::make('status_id')
@@ -284,7 +281,7 @@ class ShowProject extends Page
 
                     ColorPicker::make('color')
                         ->label('Couleur')
-                ])->createOptionUsing(fn (array $data) => Status::create($data)->getKey())
+                ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
                 ->required(),
 
             Select::make('priority_id')
@@ -299,6 +296,11 @@ class ShowProject extends Page
             FileUpload::make('attachments')
                 ->columnSpanFull()
                 ->multiple()
+                ->disk('local')
+                ->previewable()
+                ->downloadable()
+                ->openable()
+                ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
                 ->label('Pièces jointes')
         ];
     }
@@ -315,7 +317,7 @@ class ShowProject extends Page
 
                 return $this->getTaskForm($group_id);
             })
-            ->modalCancelAction(fn (StaticAction $action, $data) => $action->action('cancelCreateTask'))
+            ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
                 $this->record->tasks()->create(array_merge($data, ['order' => $lastTask ? $lastTask->order + 1 : 0]));

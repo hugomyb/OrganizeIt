@@ -16,7 +16,7 @@ class StatusResource extends Resource
 {
     protected static ?string $model = Status::class;
 
-    protected static ?string $navigationIcon = 'pepicon-hourglass-circle-filled';
+    protected static ?string $navigationIcon = 'pepicon-hourglass-circle';
 
     protected static ?string $navigationGroup = 'Administrateur';
 
