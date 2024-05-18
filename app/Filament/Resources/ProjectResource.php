@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource\Pages;
-use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -55,27 +54,39 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                if (!auth()->user()->hasRole('Admin')) {
+                    $query->whereHas('users', function ($query) {
+                        $query->where('user_id', auth()->id());
+                    });
+                }
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nom')
                     ->searchable()
+                    ->width('200px')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('users_count')
-                    ->counts('users')
+                Tables\Columns\ImageColumn::make('users.avatar')
                     ->label('Utilisateurs assignés')
+                    ->circular()
+                    ->tooltip(fn($record) => $record->users->map(fn($user) => $user->name)->join(', '))
+                    ->stacked()
+                    ->size(30),
             ])
             ->filters([
                 //
             ])
-            ->recordUrl(fn ($record) => ProjectResource::getUrl('show', ['record' => $record]))
+            ->recordUrl(fn($record) => ProjectResource::getUrl('show', ['record' => $record]))
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(auth()->user()->hasRole('Admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])->visible(auth()->user()->hasRole('Admin')),
             ]);
     }
 

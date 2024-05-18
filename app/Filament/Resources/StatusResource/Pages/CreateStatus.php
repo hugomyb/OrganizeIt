@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ProjectResource\Pages;
+namespace App\Filament\Resources\StatusResource\Pages;
 
-use App\Filament\Resources\ProjectResource;
+use App\Filament\Resources\StatusResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateProject extends CreateRecord
+class CreateStatus extends CreateRecord
 {
-    protected static string $resource = ProjectResource::class;
+    protected static string $resource = StatusResource::class;
 
     public static function canAccess(array $parameters = []): bool
     {

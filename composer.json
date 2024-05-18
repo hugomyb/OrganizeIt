@@ -11,6 +11,7 @@
         "codeat3/blade-google-material-design-icons": "^1.19",
         "codeat3/blade-grommet-icons": "^1.9",
         "codeat3/blade-iconpark": "^1.6",
+        "codeat3/blade-pepicons": "^1.5",
         "codeat3/blade-phosphor-icons": "^2.2",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.0",

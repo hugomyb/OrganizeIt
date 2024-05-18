@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role->name === $role;
+    }
 }

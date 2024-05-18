@@ -167,7 +167,7 @@
                                                 <div class="flex items-center">
                                                     @switch($status->name)
                                                         @case('À faire')
-                                                            <x-far-circle class="h-5 w-5 mx-1"
+                                                            <x-pepicon-hourglass-circle-filled class="h-5 w-5 mx-1"
                                                                           style="color: {{ $status->color }}"/>
                                                             @break
                                                         @case('En cours')
@@ -179,7 +179,7 @@
                                                                                    style="color: {{ $status->color }}"/>
                                                             @break
                                                         @default
-                                                            <x-far-circle class="h-5 w-5 mx-1"
+                                                            <x-pepicon-hourglass-circle-filled class="h-5 w-5 mx-1"
                                                                           style="color: {{ $status->color }}"/>
                                                             @break
                                                     @endswitch
@@ -205,7 +205,7 @@
                                     <div class="flex items-center gap-1">
                                         @switch($status['name'])
                                             @case('À faire')
-                                                <x-far-circle class="h-5 w-5 mx-1"
+                                                <x-pepicon-hourglass-circle-filled class="h-5 w-5 mx-1"
                                                               style="color: {{ $status['color'] }}"/>
                                                 @break
                                             @case('En cours')
@@ -217,7 +217,7 @@
                                                                        style="color: {{ $status['color'] }}"/>
                                                 @break
                                             @default
-                                                <x-far-circle class="h-5 w-5 mx-1"
+                                                <x-pepicon-hourglass-circle-filled class="h-5 w-5 mx-1"
                                                               style="color: {{ $status['color'] }}"/>
                                         @endswitch
                                         <span class="dark:text-white text-gray-600">{{ $status['name'] }}</span>

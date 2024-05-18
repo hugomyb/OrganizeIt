@@ -11,12 +11,15 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    protected static ?string $navigationGroup = 'Administrateur';
 
     protected static ?string $modelLabel = 'Utilisateur';
 
@@ -98,5 +101,60 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return auth()->user()->hasRole('Admin');
+    }
+
+    public static function canRestoreAny(): bool
+    {
+        return auth()->user()->hasRole('Admin');
     }
 }

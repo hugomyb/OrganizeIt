@@ -13,7 +13,7 @@ class StatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['name' => 'À faire', 'color' => '#808080'],
+            ['name' => 'À faire', 'color' => '#aebacc'],
             ['name' => 'En cours', 'color' => '#FFA500'],
             ['name' => 'Terminé', 'color' => '#008000']
         ];

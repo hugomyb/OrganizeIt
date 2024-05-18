@@ -273,6 +273,7 @@ class ShowProject extends Page
                 ->default(Status::whereName('À faire')->first()->id)
                 ->preload()
                 ->searchable()
+                ->relationship('status', 'name')
                 ->options($statusOptions)
                 ->allowHtml()
                 ->createOptionForm([
@@ -283,7 +284,7 @@ class ShowProject extends Page
 
                     ColorPicker::make('color')
                         ->label('Couleur')
-                ])->createOptionUsing(fn (array $data) => Status::create($data))
+                ])->createOptionUsing(fn (array $data) => Status::create($data)->getKey())
                 ->required(),
 
             Select::make('priority_id')
@@ -528,6 +529,12 @@ class ShowProject extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        return auth()->user()->role->id == Role::whereName('Admin')->first()->id || Project::find($parameters['record'])->users->contains(auth()->user());
+        $record = request()->route()->parameter('record');
+
+        if (auth()->user()->hasRole('Admin')) {
+            return true;
+        }
+
+        return Project::find($record)->first()->users->contains(auth()->user());
     }
 }
