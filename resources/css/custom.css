@@ -128,3 +128,10 @@ figcaption.attachment__caption {
     display: flex !important;
 }
 
+.task-title:focus {
+    outline: none;
+}
+
+.task-title:focus .edit-title {
+    display: none;
+}
