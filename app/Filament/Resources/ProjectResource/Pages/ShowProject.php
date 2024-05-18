@@ -278,7 +278,6 @@ class ShowProject extends Page
                 ->default(Status::whereName('À faire')->first()->id)
                 ->preload()
                 ->searchable()
-                ->relationship('status', 'name')
                 ->options($statusOptions)
                 ->allowHtml()
                 ->createOptionForm([
