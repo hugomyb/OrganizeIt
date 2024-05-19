@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         FilamentAsset::register([
             Js::make('uikit-js', Vite::asset('resources/js/uikit.js')),
             Js::make('nestable-js', Vite::asset('resources/js/components/nestable.js')),
+            Css::make('app-css', Vite::asset('resources/css/app.css')),
             Css::make('custom-css', Vite::asset('resources/css/custom.css')),
             Css::make('nestable-css', Vite::asset('resources/css/components/nestable.css')),
         ]);

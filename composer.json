@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.2",
         "andreiio/blade-remix-icon": "^3.2",
+        "brunocfalcao/blade-feather-icons": "^4.0",
         "codeat3/blade-carbon-icons": "^2.23",
         "codeat3/blade-google-material-design-icons": "^1.19",
         "codeat3/blade-grommet-icons": "^1.9",
