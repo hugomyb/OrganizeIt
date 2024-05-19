@@ -128,10 +128,22 @@ figcaption.attachment__caption {
     display: flex !important;
 }
 
-.task-title:focus {
+#titleEditable:focus {
     outline: none;
 }
 
-.task-title:focus .edit-title {
+#titleEditable:focus .edit-title {
+    display: none !important;
+}
+
+#titleEditable:focus .copy-title {
+    display: none !important;
+}
+
+.task-title #titleEditable svg {
     display: none;
+}
+
+.task-title:hover #titleEditable svg {
+    display: inline;
 }

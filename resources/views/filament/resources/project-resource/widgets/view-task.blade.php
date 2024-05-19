@@ -14,7 +14,7 @@
                 sel.addRange(range);
             }
         }"
-        class="flex items-center gap-3 mt-6 border-b border-gray-100 dark:border-gray-700 pb-6">
+        class="flex items-center gap-3 mt-6 border-b border-gray-100 dark:border-gray-700 pb-6 task-title">
         @if($task->creator)
             <img src="{{ asset($task->creator->avatar) }}" alt="{{ $task->creator->name }}"
                  title="{{ $task->creator->name }}"
@@ -23,7 +23,7 @@
             <img class="rounded-full" src="{{ asset('img/avatar.png') }}" alt="avatar" style="height: 60px">
         @endif
 
-        <span class="text-xl font-semibold relative inline-block task-title"
+        <span class="text-xl font-semibold relative inline-block"
               id="titleEditable"
               x-init="initContentEditable"
               x-data="{
@@ -41,9 +41,13 @@
               @keyup.enter.prevent="$wire.saveTaskTitle({{ $task->id }}, $event.target.innerText)">
             {{ $task->title }}
 
-            <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer"
+            <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="Éditer"
                                @click="$refs.taskTitle.attributes.contenteditable.value = 'true'; $refs.taskTitle.focus(); setCaretAtStartEnd();"
                                style="margin-left: 10px; margin-top: 5px; color: #8a8a8a"/>
+
+            <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer" title="Copier"
+                                  @click="navigator.clipboard.writeText($refs.taskTitle.innerText); $wire.showNotification('Copié dans le presse-papier');"
+                                  style="margin-left: 35px; color: #8a8a8a"/>
         </span>
     </div>
 </div>

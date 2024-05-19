@@ -562,4 +562,13 @@ class ShowProject extends Page
                 ->send();
         }
     }
+
+    public function showNotification($title)
+    {
+        Notification::make()
+            ->success()
+            ->title($title)
+            ->duration(2000)
+            ->send();
+    }
 }
