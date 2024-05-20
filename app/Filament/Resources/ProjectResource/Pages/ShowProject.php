@@ -620,16 +620,6 @@ class ShowProject extends Page implements HasForms
         ];
     }
 
-    public function openImageAction(): Action
-    {
-        return Action::make('openImage')
-            ->icon('heroicon-o-eye')
-            ->label('Voir')
-            ->modal()
-            ->modalWidth('5xl')
-            ->modalContent(fn($arguments) => view('filament.resources.project-resource.widgets.view-image', ['image' => $arguments['image']]));
-    }
-
     public function deleteAttachment($taskId, $attachment)
     {
         $task = Task::find($taskId);
