@@ -310,6 +310,7 @@ class ShowProject extends Page implements HasForms
                 ->downloadable()
                 ->multiple()
                 ->appendFiles()
+                ->preserveFilenames()
                 ->visibility('private')
                 ->openable()
                 ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
@@ -358,9 +359,6 @@ class ShowProject extends Page implements HasForms
             ->modalHeading('')
             ->slideOver()
             ->modalWidth('6xl')
-            ->extraModalFooterActions([
-                $this->editTaskAction()
-            ])
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->modalContent(fn($record) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
     }

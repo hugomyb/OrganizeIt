@@ -14,9 +14,11 @@
         "codeat3/blade-iconpark": "^1.6",
         "codeat3/blade-pepicons": "^1.5",
         "codeat3/blade-phosphor-icons": "^2.2",
+        "codeat3/blade-teeny-icons": "^1.10",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
+        "mallardduck/blade-boxicons": "^2.4",
         "owenvoke/blade-fontawesome": "^2.6",
         "saade/blade-iconsax": "^1.2",
         "spatie/laravel-welcome-notification": "^2.4"

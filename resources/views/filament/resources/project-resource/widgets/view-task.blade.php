@@ -193,6 +193,7 @@
         }">
         <x-filament::section
             collapsible
+            icon="heroicon-o-document-text"
             style="width: 100%">
             <x-slot name="heading">
                 <span style="height: 32px">Description</span>
@@ -235,6 +236,80 @@
                     <p class="text-gray-500">Aucune description</p>
                 @endif
             </div>
+        </x-filament::section>
+    </div>
+
+    <div class="mt-6">
+        <x-filament::section
+            icon="heroicon-o-folder"
+            badge="{{ count($task->attachments) }}"
+            collapsible
+            style="width: 100%">
+            <x-slot name="heading">
+                <span style="height: 32px">Pièces jointes </span>
+            </x-slot>
+
+            <x-slot name="headerEnd">
+                <x-filament::icon-button
+                    icon="gmdi-file-upload-r"
+                    class="h-5 w-5"
+                    label="Upload file"
+                    x-on:click="isCollapsed = ! isCollapsed; richIsVisible = true;"
+                    tooltip="Uploader un fichier"
+                />
+            </x-slot>
+
+            <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description">
+                @if(count($task->attachments) > 0)
+                    <div class="flex flex-wrap gap-x-2 gap-y-2">
+                        @foreach($task->attachments as $attachment)
+                            @switch(preg_split('/\./', $attachment)[1])
+                                @case('pdf')
+                                    <div class="flex items-center gap-1 my-2 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer" style="height: 40px">
+                                        <x-tni-pdf class="h-5 w-5" style="color: #e11d21"/>
+                                        <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
+                                    </div>
+                                    @break
+                                @case('doc')
+                                @case('docx')
+                                    <div class="flex items-center gap-1 my-2 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer" style="height: 40px">
+                                        <x-bxs-file-txt class="h-5 w-5" style="color: #2b579a"/>
+                                        <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
+                                    </div>
+                                    @break
+                                @case('xls')
+                                @case('xlsx')
+                                    <div class="flex items-center gap-1 my-2 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer" style="height: 40px">
+                                        <x-fas-file-excel class="h-5 w-5" style="color: #1d9e1f"/>
+                                        <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
+                                    </div>
+                                    @break
+                                @case('zip')
+                                @case('rar')
+                                    <div class="flex items-center gap-1 my-2 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer" style="height: 40px">
+                                        <x-gmdi-folder-zip-r class="h-5 w-5" style="color: #f0ad4e"/>
+                                        <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
+                                    </div>
+                                    @break
+                                @case('jpg')
+                                @case('jpeg')
+                                @case('png')
+                                @case('gif')
+                                    <img src="/storage/{{ $attachment }}" alt="image" style="height: 150px"/>
+                                    @break
+                                @default
+                                    <div class="flex items-center gap-1 my-2 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer" style="height: 40px">
+                                        <x-heroicon-s-document class="h-5 w-5" style="color: #8a8a8a"/>
+                                        <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
+                                    </div>
+                            @endswitch
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-500">Aucune pièce jointe</p>
+                @endif
+            </div>
+
         </x-filament::section>
     </div>
 </div>
