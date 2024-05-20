@@ -15,14 +15,14 @@
                     <x-slot name="headerEnd">
                         <x-filament::icon-button
                             icon="heroicon-o-pencil"
-                            wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' })"
+                            wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
                             label="Edit label group"
                             tooltip="Éditer groupe"
                         />
                         <x-filament::icon-button
                             color="danger"
                             icon="heroicon-o-trash"
-                            wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' })"
+                            wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
                             label="Delete group"
                             tooltip="Supprimer"
                         />

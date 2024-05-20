@@ -147,3 +147,7 @@ figcaption.attachment__caption {
 .task-title:hover #titleEditable svg {
     display: inline;
 }
+
+.section-description > ul {
+    list-style: inside !important;
+}

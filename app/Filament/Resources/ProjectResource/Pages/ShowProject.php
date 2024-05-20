@@ -16,9 +16,13 @@ use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
@@ -27,8 +31,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class ShowProject extends Page
+class ShowProject extends Page implements HasForms
 {
+    use InteractsWithForms;
     use InteractsWithActions;
     use InteractsWithTooltipActions;
     use CanAuthorizeResourceAccess;
@@ -44,6 +49,9 @@ class ShowProject extends Page
     public $priorityFilters;
 
     public $toggleCompletedTasks = true;
+
+    public $richEditorData = [];
+    public $description;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -349,7 +357,7 @@ class ShowProject extends Page
         return ViewAction::make('viewTask')
             ->modalHeading('')
             ->slideOver()
-            ->modalWidth('5xl')
+            ->modalWidth('6xl')
             ->extraModalFooterActions([
                 $this->editTaskAction()
             ])
@@ -570,5 +578,49 @@ class ShowProject extends Page
             ->title($title)
             ->duration(2000)
             ->send();
+    }
+
+    public function fillRichEditorField($task)
+    {
+        $this->richEditorFieldForm->fill([
+            'description' => $task['description']
+        ]);
+    }
+
+    public function richEditorFieldForm(Form $form): Form
+    {
+        return $form
+            ->live()
+            ->extraAttributes([
+                'class' => 'w-full'
+            ])
+            ->schema([
+                RichEditor::make('description')
+                    ->hiddenLabel()
+                    ->columnSpanFull()
+                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDirectory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
+                    ->label('Description'),
+            ]);
+    }
+
+    public function saveRichEditorDescription($task)
+    {
+        $richData = $this->richEditorFieldForm->getState();
+
+        $task = Task::find($task['id']);
+
+        $task->update([
+            'description' => $richData['description']
+        ]);
+
+        $this->showNotification('Description modifiée');
+    }
+
+    protected function getForms(): array
+    {
+        return [
+            'richEditorFieldForm'
+        ];
     }
 }
