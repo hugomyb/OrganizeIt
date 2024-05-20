@@ -16,7 +16,6 @@ use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -50,7 +49,6 @@ class ShowProject extends Page implements HasForms
 
     public $toggleCompletedTasks = true;
 
-    public $richEditorData = [];
     public $description;
 
     public function render(): \Illuminate\Contracts\View\View
@@ -620,5 +618,31 @@ class ShowProject extends Page implements HasForms
         return [
             'richEditorFieldForm'
         ];
+    }
+
+    public function openImageAction(): Action
+    {
+        return Action::make('openImage')
+            ->icon('heroicon-o-eye')
+            ->label('Voir')
+            ->modal()
+            ->modalWidth('5xl')
+            ->modalContent(fn($arguments) => view('filament.resources.project-resource.widgets.view-image', ['image' => $arguments['image']]));
+    }
+
+    public function deleteAttachment($taskId, $attachment)
+    {
+        $task = Task::find($taskId);
+        $previousAttachments = $task->attachments;
+
+        $attachments = collect($previousAttachments)->filter(function ($previousAttachments) use ($attachment) {
+            return $previousAttachments !== $attachment;
+        })->values();
+
+        $task->update([
+            'attachments' => $attachments
+        ]);
+
+        $this->showNotification('Pièce jointe supprimée');
     }
 }
