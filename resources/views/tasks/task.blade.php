@@ -23,10 +23,12 @@
 
             <!-- Status dropdown -->
             <x-filament::dropdown>
-                <x-slot name="trigger" style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
+                <x-slot name="trigger"
+                        style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
                     @switch($task->status->name)
                         @case('À faire')
-                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }};"/>
+                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                        style="color: {{ $task->status->color }};"/>
                             @break
                         @case('En cours')
                             <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
@@ -48,7 +50,8 @@
                             <div class="flex items-center">
                                 @switch($status->name)
                                     @case('À faire')
-                                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                    style="color: {{ $status->color }}"/>
                                         @break
                                     @case('En cours')
                                         <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
@@ -58,7 +61,8 @@
                                                                style="color: {{ $status->color }}"/>
                                         @break
                                     @default
-                                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                    style="color: {{ $status->color }}"/>
                                         @break
                                 @endswitch
                                 <span class="mx-1">{{ $status->name }}</span>
@@ -69,7 +73,8 @@
             </x-filament::dropdown>
         </div>
 
-        <div class="flex gap-1 items-center flex-wrap" style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
+        <div class="flex gap-2 items-center flex-wrap"
+             style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
@@ -135,8 +140,20 @@
                 </x-filament::dropdown>
             @endif
 
-            @if($task->description != null)
+            @if($task->description)
+                <x-gmdi-description-o
+                    wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })"
+                    icon="gmdi-description-o"
+                    class="h-5 w-5 cursor-pointer tooltip-link relative text-gray-400 hover:text-gray-700/75"/>
+            @endif
 
+            @if(count($task->attachments) > 0)
+                <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
+                    <x-heroicon-o-folder
+                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })"
+                        class="h-5 w-5 cursor-pointer tooltip-link relative"/>
+                    <span class="text-xs">{{ count($task->attachments) }}</span>
+                </div>
             @endif
         </div>
 

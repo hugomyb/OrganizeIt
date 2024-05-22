@@ -291,7 +291,7 @@
                 {{ $this->fileUploadFieldForm }}
             </div>
 
-            <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description">
+            <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description" id="taskAttachments">
                 @if(count($task->attachments) > 0)
                     <div style="column-count: 4; column-gap: 10px;">
                         @foreach($task->attachments as $attachment)

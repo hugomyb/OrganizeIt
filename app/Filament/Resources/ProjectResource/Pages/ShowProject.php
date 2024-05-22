@@ -28,6 +28,7 @@ use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class ShowProject extends Page implements HasForms
@@ -590,7 +591,6 @@ class ShowProject extends Page implements HasForms
     public function richEditorFieldForm(Form $form): Form
     {
         return $form
-            ->live()
             ->extraAttributes([
                 'class' => 'w-full'
             ])
