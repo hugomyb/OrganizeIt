@@ -1,4 +1,15 @@
-<x-filament-panels::page>
+<x-filament-panels::page
+    x-init="init"
+    x-data="{
+        taskId: '{{ request()->has('task') ? request()->get('task') : null }}',
+
+        init() {
+            if(this.taskId) {
+                $wire.openTaskById(this.taskId);
+            }
+        }
+    }"
+>
     <div class="flex justify-center items-start w-full gap-6">
         <div style="width: 78%" class="flex justify-center items-center flex-col">
             @foreach($groups as $group)
@@ -168,7 +179,7 @@
                                                     @switch($status->name)
                                                         @case('À faire')
                                                             <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                                          style="color: {{ $status->color }}"/>
+                                                                                        style="color: {{ $status->color }}"/>
                                                             @break
                                                         @case('En cours')
                                                             <x-carbon-in-progress class="h-5 w-5 mx-1"
@@ -180,7 +191,7 @@
                                                             @break
                                                         @default
                                                             <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                                          style="color: {{ $status->color }}"/>
+                                                                                        style="color: {{ $status->color }}"/>
                                                             @break
                                                     @endswitch
                                                     <span class="mx-1">{{ $status->name }}</span>
@@ -206,7 +217,7 @@
                                         @switch($status['name'])
                                             @case('À faire')
                                                 <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                              style="color: {{ $status['color'] }}"/>
+                                                                            style="color: {{ $status['color'] }}"/>
                                                 @break
                                             @case('En cours')
                                                 <x-carbon-in-progress class="h-5 w-5 mx-1"
@@ -218,7 +229,7 @@
                                                 @break
                                             @default
                                                 <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                              style="color: {{ $status['color'] }}"/>
+                                                                            style="color: {{ $status['color'] }}"/>
                                         @endswitch
                                         <span class="dark:text-white text-gray-600">{{ $status['name'] }}</span>
                                     </div>

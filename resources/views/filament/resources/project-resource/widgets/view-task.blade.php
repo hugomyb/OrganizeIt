@@ -1,4 +1,12 @@
-<div class="flex flex-col">
+<div class="flex flex-col"
+    x-init="init"
+    x-data="{
+        init() {
+            const url = new URL(window.location);
+            url.searchParams.set('task', {{ $task->id }});
+            window.history.pushState({}, '', url);
+        }
+    }">
     @include('infolists.components.breadcrumb-entry', ['record' => $task])
 
     <div

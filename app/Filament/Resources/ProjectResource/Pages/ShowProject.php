@@ -11,6 +11,7 @@ use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
@@ -31,7 +32,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
-class ShowProject extends Page implements HasForms
+class ShowProject extends Page implements HasForms, HasActions
 {
     use InteractsWithForms;
     use InteractsWithActions;
@@ -67,11 +68,20 @@ class ShowProject extends Page implements HasForms
 
     public function mount($record)
     {
+
         $this->record = Project::find($record);
         $this->statusFilters = collect();
         $this->priorityFilters = collect();
 
         $this->toggleShowCompletedTasks();
+
+    }
+
+    public function openTaskById($taskId)
+    {
+        if (Task::where('id', $taskId)->exists() && Task::where('id', $taskId)->where('project_id', $this->record->id)->exists()) {
+            $this->mountAction('viewTask', ['task_id' => $taskId]);
+        }
     }
 
     public function loadGroups()
