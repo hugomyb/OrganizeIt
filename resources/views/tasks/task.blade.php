@@ -134,6 +134,10 @@
                     </x-filament::dropdown.list>
                 </x-filament::dropdown>
             @endif
+
+            @if($task->description != null)
+
+            @endif
         </div>
 
         <!-- actions task -->

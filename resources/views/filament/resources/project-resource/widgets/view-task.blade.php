@@ -293,16 +293,16 @@
 
             <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description">
                 @if(count($task->attachments) > 0)
-                    <div class="flex flex-wrap gap-1">
+                    <div style="column-count: 4; column-gap: 10px;">
                         @foreach($task->attachments as $attachment)
                             <x-filament::dropdown>
-                                <x-slot name="trigger" class="flex items-center gap-1">
+                                <x-slot name="trigger" style="margin: 0; display: grid; grid-template-rows: 1fr auto; margin-bottom: 10px">
                                     @switch(preg_split('/\./', $attachment)[count(preg_split('/\./', $attachment)) - 1])
                                         @case('pdf')
                                             <div
                                                 class="flex items-center gap-1 my-1 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer"
-                                                style="height: 40px">
-                                                <x-tni-pdf class="h-6 w-6" style="color: #e11d21"/>
+                                                style="height: 45px; word-break: break-all;">
+                                                <x-tni-pdf class="h-8 w-8" style="color: #e11d21"/>
                                                 <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
                                             </div>
                                             @break
@@ -310,8 +310,8 @@
                                         @case('docx')
                                             <div
                                                 class="flex items-center gap-1 my-1 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer"
-                                                style="height: 40px">
-                                                <x-bxs-file-txt class="h-6 w-6" style="color: #2b579a"/>
+                                                style="height: 45px; word-break: break-all;">
+                                                <x-bxs-file-txt class="h-8 w-8" style="color: #2b579a"/>
                                                 <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
                                             </div>
                                             @break
@@ -319,8 +319,8 @@
                                         @case('xlsx')
                                             <div
                                                 class="flex items-center gap-1 my-1 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer"
-                                                style="height: 40px">
-                                                <x-fas-file-excel class="h-6 w-6" style="color: #1d9e1f"/>
+                                                style="height: 45px; word-break: break-all;">
+                                                <x-fas-file-excel class="h-8 w-8" style="color: #1d9e1f"/>
                                                 <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
                                             </div>
                                             @break
@@ -328,8 +328,8 @@
                                         @case('rar')
                                             <div
                                                 class="flex items-center gap-1 my-1 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer"
-                                                style="height: 40px">
-                                                <x-gmdi-folder-zip-r class="h-6 w-6" style="color: #f0ad4e"/>
+                                                style="height: 45px; word-break: break-all;">
+                                                <x-gmdi-folder-zip-r class="h-8 w-8" style="color: #f0ad4e"/>
                                                 <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
                                             </div>
                                             @break
@@ -344,8 +344,8 @@
                                         @default
                                             <div
                                                 class="flex items-center gap-1 my-1 hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-lg cursor-pointer"
-                                                style="height: 40px">
-                                                <x-heroicon-s-document class="h-6 w-6" style="color: #8a8a8a"/>
+                                                style="height: 45px; word-break: break-all;">
+                                                <x-heroicon-s-document class="h-8 w-8" style="color: #8a8a8a"/>
                                                 <span>{{ preg_split('/\//', $attachment)[count(preg_split('/\//', $attachment)) - 1] }}</span>
                                             </div>
                                     @endswitch
