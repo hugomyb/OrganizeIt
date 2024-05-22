@@ -650,6 +650,8 @@ class ShowProject extends Page implements HasForms
             return $previousAttachments !== $attachment;
         })->values();
 
+        Storage::disk('public')->delete($attachment);
+
         $task->update([
             'attachments' => $attachments
         ]);
