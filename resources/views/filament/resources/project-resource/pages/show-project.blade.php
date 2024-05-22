@@ -7,6 +7,12 @@
             if(this.taskId) {
                 $wire.openTaskById(this.taskId);
             }
+
+            Livewire.on('close-modal', () => {
+                this.taskId = null;
+
+                window.history.pushState({}, document.title, window.location.pathname);
+            });
         }
     }"
 >

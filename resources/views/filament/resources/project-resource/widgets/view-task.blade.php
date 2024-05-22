@@ -1,13 +1,24 @@
 <div class="flex flex-col"
-    x-init="init"
-    x-data="{
+     x-init="init"
+     x-data="{
         init() {
             const url = new URL(window.location);
             url.searchParams.set('task', {{ $task->id }});
             window.history.pushState({}, '', url);
         }
     }">
-    @include('infolists.components.breadcrumb-entry', ['record' => $task])
+    <div class="flex items-center justify-between">
+        @include('infolists.components.breadcrumb-entry', ['record' => $task])
+        <x-filament::button
+            outlined
+            icon="phosphor-share"
+            color="primary"
+            class="ml-auto"
+            size="sm"
+            x-on:click="navigator.clipboard.writeText(window.location.href); $wire.showNotification('Lien copié dans le presse-papier'); ">
+            Partager
+        </x-filament::button>
+    </div>
 
     <div
         class="flex items-center gap-3 mt-6 border-b border-gray-100 dark:border-gray-700 pb-6 task-title">
@@ -304,7 +315,8 @@
                     <div style="column-count: 4; column-gap: 10px;">
                         @foreach($task->attachments as $attachment)
                             <x-filament::dropdown>
-                                <x-slot name="trigger" style="margin: 0; display: grid; grid-template-rows: 1fr auto; margin-bottom: 10px">
+                                <x-slot name="trigger"
+                                        style="margin: 0; display: grid; grid-template-rows: 1fr auto; margin-bottom: 10px">
                                     @switch(preg_split('/\./', $attachment)[count(preg_split('/\./', $attachment)) - 1])
                                         @case('pdf')
                                             <div
