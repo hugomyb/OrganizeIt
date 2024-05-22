@@ -42,6 +42,7 @@ class ShowProject extends Page implements HasForms
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
 
     public $record;
+    public $currentTask;
     public $groups;
 
     public $statusFilters;
@@ -50,6 +51,7 @@ class ShowProject extends Page implements HasForms
     public $toggleCompletedTasks = true;
 
     public $description;
+    public $attachments;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -578,6 +580,7 @@ class ShowProject extends Page implements HasForms
 
     public function fillRichEditorField($task)
     {
+        $this->currentTask = Task::find($task['id']);
         $this->richEditorFieldForm->fill([
             'description' => $task['description']
         ]);
@@ -590,12 +593,13 @@ class ShowProject extends Page implements HasForms
             ->extraAttributes([
                 'class' => 'w-full'
             ])
+            ->model($this->currentTask)
             ->schema([
                 RichEditor::make('description')
                     ->hiddenLabel()
                     ->columnSpanFull()
                     ->fileAttachmentsDisk('public')
-                    ->fileAttachmentsDirectory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
+                    ->fileAttachmentsDirectory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
                     ->label('Description'),
             ]);
     }
@@ -610,13 +614,29 @@ class ShowProject extends Page implements HasForms
             'description' => $richData['description']
         ]);
 
+        $this->richEditorFieldForm->fill([
+            'description' => ''
+        ]);
+
+        $this->currentTask = null;
+
         $this->showNotification('Description modifiée');
+    }
+
+    public function cancelRichEditorDescription()
+    {
+        $this->richEditorFieldForm->fill([
+            'description' => ''
+        ]);
+
+        $this->currentTask = null;
     }
 
     protected function getForms(): array
     {
         return [
-            'richEditorFieldForm'
+            'richEditorFieldForm',
+            'fileUploadFieldForm'
         ];
     }
 
@@ -634,5 +654,72 @@ class ShowProject extends Page implements HasForms
         ]);
 
         $this->showNotification('Pièce jointe supprimée');
+    }
+
+    public function fillFileUploadField($taskId)
+    {
+        $this->currentTask = Task::find($taskId);
+        $this->fileUploadFieldForm->fill([
+            'attachments' => []
+        ]);
+    }
+
+    public function fileUploadFieldForm(Form $form): Form
+    {
+        return $form
+            ->live()
+            ->extraAttributes([
+                'class' => 'w-full'
+            ])
+            ->model($this->currentTask)
+            ->schema([
+                FileUpload::make('attachments')
+                    ->columnSpanFull()
+                    ->multiple()
+                    ->hiddenLabel()
+                    ->previewable()
+                    ->downloadable()
+                    ->multiple()
+                    ->appendFiles()
+                    ->preserveFilenames()
+                    ->visibility('private')
+                    ->openable()
+                    ->directory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
+                    ->label('Pièces jointes')
+            ]);
+    }
+
+    public function saveFileUploadAttachments($taskId)
+    {
+        $fileData = $this->fileUploadFieldForm->getState();
+
+        $task = Task::find($taskId);
+
+        $attachments = $task->attachments;
+
+        foreach ($fileData['attachments'] as $attachment) {
+            $attachments[] = $attachment;
+        }
+
+        $task->update([
+            'attachments' => $attachments
+        ]);
+
+        $this->fileUploadFieldForm->fill([
+            'attachments' => []
+        ]);
+
+        $this->currentTask = null;
+
+        $this->showNotification('Pièces jointes ajoutées');
+    }
+
+    public function cancelFileUploadAttachments()
+    {
+        $this->fileUploadFieldForm->fill([
+            'attachments' => []
+        ]);
+
+        $this->currentTask = null;
     }
 }

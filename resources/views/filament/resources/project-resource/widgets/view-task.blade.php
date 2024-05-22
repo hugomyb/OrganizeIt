@@ -220,7 +220,7 @@
                     outlined
                     class="text-xs"
                     x-show="richIsVisible"
-                    x-on:click="richIsVisible = false; isCollapsed = ! isCollapsed;">
+                    x-on:click="$wire.cancelRichEditorDescription; richIsVisible = false; isCollapsed = ! isCollapsed;">
                     Annuler
                 </x-filament::button>
             </x-slot>
@@ -241,6 +241,7 @@
 
     <div class="mt-6"
          x-data="{
+            fileUploadIsVisible: false,
             downloadFile(filename) {
                 const link = document.createElement('a');
                 link.href = '/storage/' + filename;
@@ -264,10 +265,31 @@
                     icon="gmdi-file-upload-r"
                     class="h-5 w-5"
                     label="Upload file"
-                    x-on:click="isCollapsed = ! isCollapsed; richIsVisible = true;"
+                    x-show="!fileUploadIsVisible"
+                    x-on:click="$wire.fillFileUploadField({{ $task->id }}); isCollapsed = ! isCollapsed; fileUploadIsVisible = !fileUploadIsVisible;"
                     tooltip="Uploader un fichier"
                 />
+
+                <x-filament::button
+                    class="text-xs"
+                    x-show="fileUploadIsVisible"
+                    x-on:click="$wire.saveFileUploadAttachments({{$task->id}}); isCollapsed = ! isCollapsed; fileUploadIsVisible = false;">
+                    Sauvegarder
+                </x-filament::button>
+
+                <x-filament::button
+                    color="danger"
+                    outlined
+                    class="text-xs"
+                    x-show="fileUploadIsVisible"
+                    x-on:click="$wire.cancelFileUploadAttachments; fileUploadIsVisible = false; isCollapsed = ! isCollapsed;">
+                    Annuler
+                </x-filament::button>
             </x-slot>
+
+            <div class="flex flex-col justify-center items-end" x-show="fileUploadIsVisible">
+                {{ $this->fileUploadFieldForm }}
+            </div>
 
             <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description">
                 @if(count($task->attachments) > 0)
