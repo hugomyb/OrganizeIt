@@ -155,6 +155,15 @@
                     <span class="text-xs">{{ count($task->attachments) }}</span>
                 </div>
             @endif
+
+            @if($task->comments->count() > 0)
+                <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
+                    <x-forkawesome-comments-o
+                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })"
+                        class="h-5 w-5 cursor-pointer tooltip-link relative"/>
+                    <span class="text-xs">{{ $task->comments->count() }}</span>
+                </div>
+            @endif
         </div>
 
         <!-- actions task -->

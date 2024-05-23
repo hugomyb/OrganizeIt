@@ -450,7 +450,7 @@
                                     <span
                                         class="text-sm font-semibold">{{ $comment->user->name }}</span>
                                     <span
-                                        class="text-sm font-normal">{{ $comment->updated_at->translatedFormat('d/m/Y H:i') }}</span>
+                                        class="text-xs font-normal">{{ $comment->created_at->diffForHumans() }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <div
