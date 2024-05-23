@@ -448,14 +448,14 @@
                             <div class="flex flex-col gap-1 w-auto">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span
-                                        class="text-sm font-semibold text-gray-900 dark:text-white">{{ $comment->user->name }}</span>
+                                        class="text-sm font-semibold">{{ $comment->user->name }}</span>
                                     <span
-                                        class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $comment->updated_at->translatedFormat('d/m/Y H:i') }}</span>
+                                        class="text-sm font-normal">{{ $comment->updated_at->translatedFormat('d/m/Y H:i') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <div
                                         class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
-                                        <p class="text-sm font-normal text-gray-900 dark:text-white">{{ $comment->content }}</p>
+                                        <p class="text-sm font-normal">{{ $comment->content }}</p>
                                     </div>
 
                                     <x-filament::dropdown placement="right">
