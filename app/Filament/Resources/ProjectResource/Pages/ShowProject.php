@@ -169,6 +169,7 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         return [
             Action::make('headerCreateTask')
+                ->visible(auth()->user()->hasPermission('manage_tasks'))
                 ->modalWidth('7xl')
                 ->model(Task::class)
                 ->label('Ajouter une tâche')

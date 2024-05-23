@@ -48,9 +48,11 @@
               @keyup.enter.prevent="$event.target.blur()">
             {{ $task->title }}
 
-            <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="Éditer"
-                               @click="$refs.taskTitle.attributes.contenteditable.value = 'true'; $refs.taskTitle.focus();"
-                               style="margin-left: 10px; margin-top: 5px; color: #8a8a8a"/>
+            @can('manageTasks', \App\Models\User::class)
+                <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="Éditer"
+                                   @click="$refs.taskTitle.attributes.contenteditable.value = 'true'; $refs.taskTitle.focus();"
+                                   style="margin-left: 10px; margin-top: 5px; color: #8a8a8a"/>
+            @endcan
 
             <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer" title="Copier"
                                              @click="navigator.clipboard.writeText($refs.taskTitle.innerText); $wire.showNotification('Copié dans le presse-papier');"
@@ -78,130 +80,174 @@
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
             <span class="text-gray-500 text-xs">Assigné à</span>
             <div class="flex items-center gap-1">
-                <x-filament::dropdown>
-                    <x-slot name="trigger" class="flex items-center gap-1">
-                        @forelse($task->users as $user)
-                            <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"
-                                 title="{{ $user->name }}"
-                                 class="rounded-full" style="height: 20px">
-                            @if($task->users()->count() < 2)
-                                <span>{{ $user->name }}</span>
-                            @endif
-                        @empty
-                            <img src="{{ asset('img/avatar.png') }}" alt=""
-                                 class="rounded-full" style="height: 20px">
-                            <span>Non assigné</span>
-                        @endforelse
-                    </x-slot>
 
-                    <x-filament::dropdown.list>
-                        @foreach($task->project->users as $user)
-                            <x-filament::dropdown.list.item
-                                wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
-                                <div class="text-xs font-bold flex justify-between items-center">
-                                    <div class="flex items center gap-1 items-center">
-                                        <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
-                                             class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
-                                        <span class="mx-1">{{ $user->name }}</span>
+                @can('assignUser', \App\Models\User::class)
+                    <x-filament::dropdown>
+                        <x-slot name="trigger" class="flex items-center gap-1">
+                            @forelse($task->users as $user)
+                                <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"
+                                     title="{{ $user->name }}"
+                                     class="rounded-full" style="height: 20px">
+                                @if($task->users()->count() < 2)
+                                    <span>{{ $user->name }}</span>
+                                @endif
+                            @empty
+                                <img src="{{ asset('img/avatar.png') }}" alt=""
+                                     class="rounded-full" style="height: 20px">
+                                <span>Non assigné</span>
+                            @endforelse
+                        </x-slot>
+
+                        <x-filament::dropdown.list>
+                            @foreach($task->project->users as $user)
+                                <x-filament::dropdown.list.item
+                                    wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
+                                    <div class="text-xs font-bold flex justify-between items-center">
+                                        <div class="flex items center gap-1 items-center">
+                                            <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                                 class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
+                                            <span class="mx-1">{{ $user->name }}</span>
+                                        </div>
+                                        @if($task->users->contains($user))
+                                            {{ svg('gmdi-check-box-r', attributes: ['style' => 'fill: #22c55e; width: 1.5rem; height: 1.5rem;']) }}
+                                        @else
+                                            {{ svg('gmdi-check-box-outline-blank-o', 'h-6 w-6', ['style' => 'fill: gray']) }}
+                                        @endif
                                     </div>
-                                    @if($task->users->contains($user))
-                                        {{ svg('gmdi-check-box-r', attributes: ['style' => 'fill: #22c55e; width: 1.5rem; height: 1.5rem;']) }}
-                                    @else
-                                        {{ svg('gmdi-check-box-outline-blank-o', 'h-6 w-6', ['style' => 'fill: gray']) }}
-                                    @endif
-                                </div>
-                            </x-filament::dropdown.list.item>
-                        @endforeach
-                    </x-filament::dropdown.list>
-                </x-filament::dropdown>
+                                </x-filament::dropdown.list.item>
+                            @endforeach
+                        </x-filament::dropdown.list>
+                    </x-filament::dropdown>
+                @else
+                    @forelse($task->users as $user)
+                        <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"
+                             title="{{ $user->name }}"
+                             class="rounded-full" style="height: 20px">
+                        @if($task->users()->count() < 2)
+                            <span>{{ $user->name }}</span>
+                        @endif
+                    @empty
+                        <img src="{{ asset('img/avatar.png') }}" alt=""
+                             class="rounded-full" style="height: 20px">
+                        <span>Non assigné</span>
+                    @endforelse
+                @endcan
             </div>
         </div>
 
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
             <span class="text-gray-500 text-xs">Statut</span>
             <div class="flex items-center gap-1">
-                <x-filament::dropdown>
-                    <x-slot name="trigger" class="flex items-center"
-                            style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
-                        @switch($task->status->name)
-                            @case('À faire')
-                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                            style="color: {{ $task->status->color }};"/>
-                                @break
-                            @case('En cours')
-                                <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
-                                @break
-                            @case('Terminé')
-                                <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
-                                @break
-                            @default
-                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                            style="color: {{ $task->status->color }}"/>
-                        @endswitch
-                        <span class="text-xs font-bold task-title"
-                              style="color: {{ $task->status->color }}">{{ $task->status->name }}</span>
-                    </x-slot>
+                @can('changeStatus', \App\Models\User::class)
+                    <x-filament::dropdown>
+                        <x-slot name="trigger" class="flex items-center"
+                                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
+                            @switch($task->status->name)
+                                @case('À faire')
+                                    <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                style="color: {{ $task->status->color }};"/>
+                                    @break
+                                @case('En cours')
+                                    <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                          style="color: {{ $task->status->color }}"/>
+                                    @break
+                                @case('Terminé')
+                                    <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                           style="color: {{ $task->status->color }}"/>
+                                    @break
+                                @default
+                                    <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                style="color: {{ $task->status->color }}"/>
+                            @endswitch
+                            <span class="text-xs font-bold task-title"
+                                  style="color: {{ $task->status->color }}">{{ $task->status->name }}</span>
+                        </x-slot>
 
-                    <x-filament::dropdown.list>
-                        @foreach(\App\Models\Status::all() as $status)
-                            <x-filament::dropdown.list.item
-                                wire:click="setTaskStatus({{$task->id}}, {{$status->id}})"
-                                x-on:click="toggle"
-                                class="text-xs font-bold">
-                                <div class="flex items-center">
-                                    @switch($status->name)
-                                        @case('À faire')
-                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                                        style="color: {{ $status->color }}"/>
-                                            @break
-                                        @case('En cours')
-                                            <x-carbon-in-progress class="h-5 w-5 mx-1"
-                                                                  style="color: {{ $status->color }}"/>
-                                            @break
-                                        @case('Terminé')
-                                            <x-grommet-status-good class="h-5 w-5 mx-1"
-                                                                   style="color: {{ $status->color }}"/>
-                                            @break
-                                        @default
-                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
-                                                                        style="color: {{ $status->color }}"/>
-                                            @break
-                                    @endswitch
-                                    <span class="mx-1">{{ $status->name }}</span>
-                                </div>
-                            </x-filament::dropdown.list.item>
-                        @endforeach
-                    </x-filament::dropdown.list>
+                        <x-filament::dropdown.list>
+                            @foreach(\App\Models\Status::all() as $status)
+                                <x-filament::dropdown.list.item
+                                    wire:click="setTaskStatus({{$task->id}}, {{$status->id}})"
+                                    x-on:click="toggle"
+                                    class="text-xs font-bold">
+                                    <div class="flex items-center">
+                                        @switch($status->name)
+                                            @case('À faire')
+                                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                            style="color: {{ $status->color }}"/>
+                                                @break
+                                            @case('En cours')
+                                                <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                                      style="color: {{ $status->color }}"/>
+                                                @break
+                                            @case('Terminé')
+                                                <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                                       style="color: {{ $status->color }}"/>
+                                                @break
+                                            @default
+                                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                            style="color: {{ $status->color }}"/>
+                                                @break
+                                        @endswitch
+                                        <span class="mx-1">{{ $status->name }}</span>
+                                    </div>
+                                </x-filament::dropdown.list.item>
+                            @endforeach
+                        </x-filament::dropdown.list>
 
-                </x-filament::dropdown>
+                    </x-filament::dropdown>
+                @else
+                    @switch($task->status->name)
+                        @case('À faire')
+                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                        style="color: {{ $task->status->color }};"/>
+                            @break
+                        @case('En cours')
+                            <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
+                            @break
+                        @case('Terminé')
+                            <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
+                            @break
+                        @default
+                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                        style="color: {{ $task->status->color }}"/>
+                    @endswitch
+                    <span class="text-xs font-bold task-title"
+                          style="color: {{ $task->status->color }}">{{ $task->status->name }}</span>
+                @endcan
             </div>
         </div>
 
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
             <span class="text-gray-500 text-xs">Priorité</span>
             <div class="flex items-center gap-1">
-                <x-filament::dropdown>
-                    <x-slot name="trigger" class="flex items-center">
-                        <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
-                        <span class="text-xs font-bold task-title"
-                              style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
-                    </x-slot>
+                @can('changePriority', \App\Models\User::class)
+                    <x-filament::dropdown>
+                        <x-slot name="trigger" class="flex items-center">
+                            <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
+                            <span class="text-xs font-bold task-title"
+                                  style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
+                        </x-slot>
 
-                    <x-filament::dropdown.list>
-                        @foreach(\App\Models\Priority::all() as $priority)
-                            <x-filament::dropdown.list.item
-                                wire:click="setTaskPriority({{$task->id}}, {{$priority->id}})"
-                                x-on:click="toggle"
-                                class="text-xs font-bold">
-                                <div class="flex items-center">
-                                    <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1"
-                                                          style="color: {{ $priority->color }}"/>
-                                    <span class="mx-1">{{ $priority->name }}</span>
-                                </div>
-                            </x-filament::dropdown.list.item>
-                        @endforeach
-                    </x-filament::dropdown.list>
-                </x-filament::dropdown>
+                        <x-filament::dropdown.list>
+                            @foreach(\App\Models\Priority::all() as $priority)
+                                <x-filament::dropdown.list.item
+                                    wire:click="setTaskPriority({{$task->id}}, {{$priority->id}})"
+                                    x-on:click="toggle"
+                                    class="text-xs font-bold">
+                                    <div class="flex items-center">
+                                        <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1"
+                                                              style="color: {{ $priority->color }}"/>
+                                        <span class="mx-1">{{ $priority->name }}</span>
+                                    </div>
+                                </x-filament::dropdown.list.item>
+                            @endforeach
+                        </x-filament::dropdown.list>
+                    </x-filament::dropdown>
+                @else
+                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
+                    <span class="text-xs font-bold task-title"
+                          style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
+                @endcan
             </div>
         </div>
     </div>
@@ -218,35 +264,37 @@
                 <span style="height: 32px">Description</span>
             </x-slot>
 
-            <x-slot name="headerEnd">
-                <x-filament::icon-button
-                    icon="phosphor-pencil"
-                    label="Edit description"
-                    x-on:click="$wire.fillRichEditorField({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = true;"
-                    tooltip="Éditer la description"
-                    x-show="!richIsVisible"
-                />
+            @can('editDescription', \App\Models\User::class)
+                <x-slot name="headerEnd">
+                    <x-filament::icon-button
+                        icon="phosphor-pencil"
+                        label="Edit description"
+                        x-on:click="$wire.fillRichEditorField({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = true;"
+                        tooltip="Éditer la description"
+                        x-show="!richIsVisible"
+                    />
 
-                <x-filament::button
-                    class="text-xs"
-                    x-show="richIsVisible"
-                    x-on:click="$wire.saveRichEditorDescription({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = false;">
-                    Sauvegarder
-                </x-filament::button>
+                    <x-filament::button
+                        class="text-xs"
+                        x-show="richIsVisible"
+                        x-on:click="$wire.saveRichEditorDescription({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = false;">
+                        Sauvegarder
+                    </x-filament::button>
 
-                <x-filament::button
-                    color="danger"
-                    outlined
-                    class="text-xs"
-                    x-show="richIsVisible"
-                    x-on:click="$wire.cancelRichEditorDescription; richIsVisible = false; isCollapsed = ! isCollapsed;">
-                    Annuler
-                </x-filament::button>
-            </x-slot>
+                    <x-filament::button
+                        color="danger"
+                        outlined
+                        class="text-xs"
+                        x-show="richIsVisible"
+                        x-on:click="$wire.cancelRichEditorDescription; richIsVisible = false; isCollapsed = ! isCollapsed;">
+                        Annuler
+                    </x-filament::button>
+                </x-slot>
 
-            <div class="flex flex-col justify-center items-end" x-show="richIsVisible">
-                {{ $this->richEditorFieldForm }}
-            </div>
+                <div class="flex flex-col justify-center items-end" x-show="richIsVisible">
+                    {{ $this->richEditorFieldForm }}
+                </div>
+            @endcan
 
             <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description" x-show="!richIsVisible">
                 @if($task->description)
@@ -279,36 +327,38 @@
                 <span style="height: 32px">Pièces jointes </span>
             </x-slot>
 
-            <x-slot name="headerEnd">
-                <x-filament::icon-button
-                    icon="gmdi-file-upload-r"
-                    class="h-5 w-5"
-                    label="Upload file"
-                    x-show="!fileUploadIsVisible"
-                    x-on:click="$wire.fillFileUploadField({{ $task->id }}); isCollapsed = ! isCollapsed; fileUploadIsVisible = !fileUploadIsVisible;"
-                    tooltip="Uploader un fichier"
-                />
+            @can('manageAttachments', \App\Models\User::class)
+                <x-slot name="headerEnd">
+                    <x-filament::icon-button
+                        icon="gmdi-file-upload-r"
+                        class="h-5 w-5"
+                        label="Upload file"
+                        x-show="!fileUploadIsVisible"
+                        x-on:click="$wire.fillFileUploadField({{ $task->id }}); isCollapsed = ! isCollapsed; fileUploadIsVisible = !fileUploadIsVisible;"
+                        tooltip="Uploader un fichier"
+                    />
 
-                <x-filament::button
-                    class="text-xs"
-                    x-show="fileUploadIsVisible"
-                    x-on:click="$wire.saveFileUploadAttachments({{$task->id}}); isCollapsed = ! isCollapsed; fileUploadIsVisible = false;">
-                    Sauvegarder
-                </x-filament::button>
+                    <x-filament::button
+                        class="text-xs"
+                        x-show="fileUploadIsVisible"
+                        x-on:click="$wire.saveFileUploadAttachments({{$task->id}}); isCollapsed = ! isCollapsed; fileUploadIsVisible = false;">
+                        Sauvegarder
+                    </x-filament::button>
 
-                <x-filament::button
-                    color="danger"
-                    outlined
-                    class="text-xs"
-                    x-show="fileUploadIsVisible"
-                    x-on:click="$wire.cancelFileUploadAttachments; fileUploadIsVisible = false; isCollapsed = ! isCollapsed;">
-                    Annuler
-                </x-filament::button>
-            </x-slot>
+                    <x-filament::button
+                        color="danger"
+                        outlined
+                        class="text-xs"
+                        x-show="fileUploadIsVisible"
+                        x-on:click="$wire.cancelFileUploadAttachments; fileUploadIsVisible = false; isCollapsed = ! isCollapsed;">
+                        Annuler
+                    </x-filament::button>
+                </x-slot>
 
-            <div class="flex flex-col justify-center items-end" x-show="fileUploadIsVisible">
-                {{ $this->fileUploadFieldForm }}
-            </div>
+                <div class="flex flex-col justify-center items-end" x-show="fileUploadIsVisible">
+                    {{ $this->fileUploadFieldForm }}
+                </div>
+            @endcan
 
             <div class="flex flex-col px-6 py-3 gap-3 text-sm section-description" id="taskAttachments">
                 @if(count($task->attachments) > 0)
@@ -392,16 +442,18 @@
                                         </div>
                                     </x-filament::dropdown.list.item>
 
-                                    <x-filament::dropdown.list.item
-                                        x-on:click="toggle; $wire.deleteAttachment({{ $task->id}}, '{{$attachment}}')"
-                                        class="text-xs font-bold">
-                                        <div class="flex items-center">
-                                            <div class="flex items-center" style="color: red">
-                                                <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                                <span class="mx-1">Supprimer</span>
+                                    @can('manageAttachments', \App\Models\User::class)
+                                        <x-filament::dropdown.list.item
+                                            x-on:click="toggle; $wire.deleteAttachment({{ $task->id}}, '{{$attachment}}')"
+                                            class="text-xs font-bold">
+                                            <div class="flex items-center">
+                                                <div class="flex items-center" style="color: red">
+                                                    <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
+                                                    <span class="mx-1">Supprimer</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </x-filament::dropdown.list.item>
+                                        </x-filament::dropdown.list.item>
+                                    @endcan
                                 </x-filament::dropdown.list>
                             </x-filament::dropdown>
                         @endforeach
@@ -458,30 +510,34 @@
                                         <p class="text-sm font-normal">{{ $comment->content }}</p>
                                     </div>
 
-                                    <x-filament::dropdown placement="right">
-                                        <x-slot name="trigger">
-                                            <div class="px-2">
-                                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                                     xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
-                                                    <path
-                                                        d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                                                </svg>
-                                            </div>
-                                        </x-slot>
-
-                                        <x-filament::dropdown.list>
-                                            <x-filament::dropdown.list.item
-                                                x-on:click="toggle; $wire.deleteComment({{ $comment->id }})"
-                                                class="text-xs font-bold">
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center" style="color: red">
-                                                        <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                                        <span class="mx-1">Supprimer</span>
-                                                    </div>
+                                    @if(($comment->user->id == auth()->user()->id) || (auth()->user()->hasPermission('delete_any_comment')))
+                                        <x-filament::dropdown placement="right">
+                                            <x-slot name="trigger">
+                                                <div class="px-2">
+                                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                                         viewBox="0 0 4 15">
+                                                        <path
+                                                            d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                                                    </svg>
                                                 </div>
-                                            </x-filament::dropdown.list.item>
-                                        </x-filament::dropdown.list>
-                                    </x-filament::dropdown>
+                                            </x-slot>
+
+                                            <x-filament::dropdown.list>
+                                                <x-filament::dropdown.list.item
+                                                    x-on:click="toggle; $wire.deleteComment({{ $comment->id }})"
+                                                    class="text-xs font-bold">
+                                                    <div class="flex items-center">
+                                                        <div class="flex items-center" style="color: red">
+                                                            <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
+                                                            <span class="mx-1">Supprimer</span>
+                                                        </div>
+                                                    </div>
+                                                </x-filament::dropdown.list.item>
+                                            </x-filament::dropdown.list>
+                                        </x-filament::dropdown>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -491,28 +547,30 @@
                 @endif
             </div>
 
-            <div id="input-comment">
-                <div class="flex items-center px-3 py-2 rounded-lg bg-transparent gap-2">
-                    <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar }}"
-                         alt="{{ auth()->user()->name }}">
-                    <textarea id="comment" rows="1"
-                              wire:model="comment"
-                              @keyup.shift.enter="$wire.sendComment({{ $task->id }})"
-                              class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                              placeholder="Votre commentaire..."></textarea>
-                    <a
-                        title="Envoyer (Shift+Enter)"
-                        wire:click="sendComment({{ $task->id }})"
-                        class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
-                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
-                             xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
-                            <path
-                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z"/>
-                        </svg>
-                        <span class="sr-only">Envoyer</span>
-                    </a>
+            @can('addComment', \App\Models\User::class)
+                <div id="input-comment">
+                    <div class="flex items-center px-3 py-2 rounded-lg bg-transparent gap-2">
+                        <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar }}"
+                             alt="{{ auth()->user()->name }}">
+                        <textarea id="comment" rows="1"
+                                  wire:model="comment"
+                                  @keyup.shift.enter="$wire.sendComment({{ $task->id }})"
+                                  class="block mx-4 p-2.5 w-full text-sm bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                  placeholder="Votre commentaire..."></textarea>
+                        <a
+                            title="Envoyer (Shift+Enter)"
+                            wire:click="sendComment({{ $task->id }})"
+                            class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
+                            <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                                <path
+                                    d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z"/>
+                            </svg>
+                            <span class="sr-only">Envoyer</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            @endcan
 
         </x-filament::section>
     </div>

@@ -29,21 +29,23 @@
                         {{ $group->name }}
                     </x-slot>
 
-                    <x-slot name="headerEnd">
-                        <x-filament::icon-button
-                            icon="heroicon-o-pencil"
-                            wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
-                            label="Edit label group"
-                            tooltip="Éditer groupe"
-                        />
-                        <x-filament::icon-button
-                            color="danger"
-                            icon="heroicon-o-trash"
-                            wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
-                            label="Delete group"
-                            tooltip="Supprimer"
-                        />
-                    </x-slot>
+                    @can('manageGroups', \App\Models\User::class)
+                        <x-slot name="headerEnd">
+                            <x-filament::icon-button
+                                icon="heroicon-o-pencil"
+                                wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
+                                label="Edit label group"
+                                tooltip="Éditer groupe"
+                            />
+                            <x-filament::icon-button
+                                color="danger"
+                                icon="heroicon-o-trash"
+                                wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
+                                label="Delete group"
+                                tooltip="Supprimer"
+                            />
+                        </x-slot>
+                    @endcan
 
                     <ul class="uk-nestable" data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
                         x-data="{
@@ -65,97 +67,111 @@
                         @endforelse
                     </ul>
 
-                    <div class="mx-3 mt-3 mb-2 text-xs">
-                        {{ ($this->createTaskAction)(['group_id' => $group->id]) }}
-                    </div>
+                    @can('manageTasks', \App\Models\User::class)
+                        <div class="mx-3 mt-3 mb-2 text-xs">
+                            {{ ($this->createTaskAction)(['group_id' => $group->id]) }}
+                        </div>
+                    @endcan
                 </x-filament::section>
             @endforeach
 
-            {{ $this->createGroupAction }}
+            @can('manageGroups', \App\Models\User::class)
+                {{ $this->createGroupAction }}
+            @endcan
         </div>
 
         <div style="width: 20%; top: 85px"
              class="flex flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl"
              x-data>
-            <x-filament::section
-                collapsible
-                style="width: 100%">
-                <x-slot name="heading">
-                    Drag & Drop
-                </x-slot>
+            @canany(['changePriority', 'assignUser'], \App\Models\User::class)
+                <x-filament::section
+                    collapsible
+                    style="width: 100%">
+                    <x-slot name="heading">
+                        Drag & Drop
+                    </x-slot>
 
-                <div class="flex flex-col px-6 py-3 gap-3">
-                    <div style="margin-bottom: 10px">
-                        <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
-                            <div class="flex items-center gap-1">
-                                <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
-                                <span style="font-weight: 500;">Assigner</span>
-                            </div>
+                    <div class="flex flex-col px-6 py-3 gap-3">
+                        @can('assignUser', \App\Models\User::class)
+                            <div style="margin-bottom: 10px">
+                                <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
+                                    <div class="flex items-center gap-1">
+                                        <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
+                                        <span style="font-weight: 500;">Assigner</span>
+                                    </div>
 
-                            <x-filament::dropdown>
-                                <x-slot name="trigger">
-                                    <x-heroicon-s-user-plus class="h-4 w-4 cursor-pointer filter-icon"/>
-                                </x-slot>
+                                    @can('addUserToProject', \App\Models\User::class)
+                                        <x-filament::dropdown>
+                                            <x-slot name="trigger">
+                                                <x-heroicon-s-user-plus class="h-4 w-4 cursor-pointer filter-icon"/>
+                                            </x-slot>
 
-                                <x-filament::dropdown.list>
-                                    @forelse(\App\Models\User::whereNotIn('id', $record->users->pluck('id'))->get() as $user)
-                                        <x-filament::dropdown.list.item
-                                            wire:click="addUserToProject({{$user->id}})"
-                                            x-on:click="toggle">
-                                            <div class="text-xs font-bold flex justify-between items-center"
-                                                 title="Assigner au projet">
-                                                <div class="flex items center gap-1 items-center">
-                                                    <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
-                                                         class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
-                                                    <span class="mx-1">{{ $user->name }}</span>
-                                                </div>
+                                            <x-filament::dropdown.list>
+                                                @forelse(\App\Models\User::whereNotIn('id', $record->users->pluck('id'))->get() as $user)
+                                                    <x-filament::dropdown.list.item
+                                                        wire:click="addUserToProject({{$user->id}})"
+                                                        x-on:click="toggle">
+                                                        <div class="text-xs font-bold flex justify-between items-center"
+                                                             title="Assigner au projet">
+                                                            <div class="flex items center gap-1 items-center">
+                                                                <img src="/storage/{{ $user->avatar }}"
+                                                                     alt="{{ $user->name }}"
+                                                                     class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
+                                                                <span class="mx-1">{{ $user->name }}</span>
+                                                            </div>
 
-                                                <x-heroicon-s-plus class="h-4 w-4 cursor-pointer filter-icon"/>
-                                            </div>
-                                        </x-filament::dropdown.list.item>
-                                    @empty
-                                        <div class="flex justify-center py-1">
-                                            <span class="dark:text-white text-xs text-center text-gray-600">Aucun utilisateur à ajouter</span>
+                                                            <x-heroicon-s-plus
+                                                                class="h-4 w-4 cursor-pointer filter-icon"/>
+                                                        </div>
+                                                    </x-filament::dropdown.list.item>
+                                                @empty
+                                                    <div class="flex justify-center py-1">
+                                                        <span class="dark:text-white text-xs text-center text-gray-600">Aucun utilisateur à ajouter</span>
+                                                    </div>
+                                                @endforelse
+                                            </x-filament::dropdown.list>
+                                        </x-filament::dropdown>
+                                    @endcan
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($record->users as $user)
+                                        <div
+                                            style="font-weight: 500;"
+                                            class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
+                                            draggable="true"
+                                            x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
+                                            <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
+                                            <span class="dark:text-white text-gray-600">{{ $user->name }}</span>
                                         </div>
-                                    @endforelse
-                                </x-filament::dropdown.list>
-                            </x-filament::dropdown>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($record->users as $user)
-                                <div
-                                    style="font-weight: 500;"
-                                    class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
-                                    draggable="true"
-                                    x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
-                                    <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
-                                    <span class="dark:text-white text-gray-600">{{ $user->name }}</span>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        </div>
+                            </div>
+                        @endcan
+
+                        @can('changePriority', \App\Models\User::class)
+                            <div style="margin-bottom: 10px">
+                                <div class="flex items-center gap-1" style="margin-bottom: 10px">
+                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: gray"/>
+                                    <span style="font-weight: 500;">Priorité</span>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach(\App\Models\Priority::all() as $priority)
+                                        <div
+                                            style="font-weight: 500; background-color: {{ $priority->color }}; color: white;"
+                                            class="dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
+                                            draggable="true"
+                                            x-on:dragstart="event.dataTransfer.setData('priority-id', '{{ $priority->id }}')">
+                                            <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: white"/>
+                                            <span class="text-white">{{ $priority->name }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endcan
                     </div>
 
-                    <div style="margin-bottom: 10px">
-                        <div class="flex items-center gap-1" style="margin-bottom: 10px">
-                            <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: gray"/>
-                            <span style="font-weight: 500;">Priorité</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach(\App\Models\Priority::all() as $priority)
-                                <div
-                                    style="font-weight: 500; background-color: {{ $priority->color }}; color: white;"
-                                    class="dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
-                                    draggable="true"
-                                    x-on:dragstart="event.dataTransfer.setData('priority-id', '{{ $priority->id }}')">
-                                    <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: white"/>
-                                    <span class="text-white">{{ $priority->name }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
-            </x-filament::section>
+                </x-filament::section>
+            @endcanany
 
             <!-- filters -->
             <x-filament::section
