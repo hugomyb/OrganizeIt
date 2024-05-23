@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
+use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
@@ -54,6 +55,8 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public $description;
     public $attachments;
+
+    public $comment;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -735,5 +738,29 @@ class ShowProject extends Page implements HasForms, HasActions
         ]);
 
         $this->currentTask = null;
+    }
+
+    public function sendComment($taskId)
+    {
+        $task = Task::find($taskId);
+
+        $task->comments()->create([
+            'user_id' => auth()->id(),
+            'content' => $this->comment
+        ]);
+
+        $this->comment = '';
+
+        $this->showNotification('Commentaire ajouté');
+        $this->dispatch('commentSent');
+    }
+
+    public function deleteComment($commentId)
+    {
+        $comment = Comment::find($commentId);
+
+        $comment->delete();
+
+        $this->showNotification('Commentaire supprimé');
     }
 }

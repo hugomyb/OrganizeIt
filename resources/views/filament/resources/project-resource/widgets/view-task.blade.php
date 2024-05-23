@@ -413,4 +413,107 @@
 
         </x-filament::section>
     </div>
+
+    <div class="mt-6"
+         x-init="init"
+         x-data="{
+            init() {
+                document.getElementById('comment').addEventListener('keypress', (evt) => {
+                    if (evt.which === 13 && evt.shiftKey) {
+                        evt.preventDefault();
+                    }
+                });
+
+                Livewire.on('commentSent', () => {
+                    $nextTick(() => {
+                        document.getElementById('comment').scrollIntoView({behavior: 'smooth'});
+                    });
+                });
+            }
+        }">
+        <x-filament::section
+            collapsible
+            icon="uni-comment-alt-lines-o"
+            style="width: 100%">
+            <x-slot name="heading">
+                <span style="height: 32px">Commentaires</span>
+            </x-slot>
+
+            <div id="comments" class="comments flex flex-col px-6 py-3 gap-3 text-sm section-description">
+                @if(count($task->comments) > 0)
+                    @foreach($task->comments as $comment)
+                        <div class="flex items-start gap-2.5">
+                            <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar }}"
+                                 alt="{{ $comment->user->name }}">
+                            <div class="flex flex-col gap-1 w-auto">
+                                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                                    <span
+                                        class="text-sm font-semibold text-gray-900 dark:text-white">{{ $comment->user->name }}</span>
+                                    <span
+                                        class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $comment->updated_at->translatedFormat('d/m/Y H:i') }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div
+                                        class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+                                        <p class="text-sm font-normal text-gray-900 dark:text-white">{{ $comment->content }}</p>
+                                    </div>
+
+                                    <x-filament::dropdown placement="right">
+                                        <x-slot name="trigger">
+                                            <div class="px-2">
+                                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
+                                                    <path
+                                                        d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                                                </svg>
+                                            </div>
+                                        </x-slot>
+
+                                        <x-filament::dropdown.list>
+                                            <x-filament::dropdown.list.item
+                                                x-on:click="toggle; $wire.deleteComment({{ $comment->id }})"
+                                                class="text-xs font-bold">
+                                                <div class="flex items-center">
+                                                    <div class="flex items-center" style="color: red">
+                                                        <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
+                                                        <span class="mx-1">Supprimer</span>
+                                                    </div>
+                                                </div>
+                                            </x-filament::dropdown.list.item>
+                                        </x-filament::dropdown.list>
+                                    </x-filament::dropdown>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-gray-500 mt-3">Aucun commentaire</p>
+                @endif
+            </div>
+
+            <div id="input-comment">
+                <div class="flex items-center px-3 py-2 rounded-lg bg-transparent gap-2">
+                    <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar }}"
+                         alt="{{ auth()->user()->name }}">
+                    <textarea id="comment" rows="1"
+                              wire:model="comment"
+                              @keyup.shift.enter="$wire.sendComment({{ $task->id }})"
+                              class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                              placeholder="Votre commentaire..."></textarea>
+                    <a
+                        title="Envoyer (Shift+Enter)"
+                        wire:click="sendComment({{ $task->id }})"
+                        class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
+                        <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
+                             xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                            <path
+                                d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z"/>
+                        </svg>
+                        <span class="sr-only">Envoyer</span>
+                    </a>
+                </div>
+            </div>
+
+        </x-filament::section>
+    </div>
 </div>
