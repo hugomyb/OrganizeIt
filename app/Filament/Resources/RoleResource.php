@@ -27,6 +27,7 @@ class RoleResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Nom')
@@ -34,6 +35,8 @@ class RoleResource extends Resource
 
                 Forms\Components\Select::make('permissions')
                     ->multiple()
+                    ->preload()
+                    ->searchable()
                     ->relationship('permissions', 'name')
                     ->label('Permissions'),
             ]);
@@ -47,7 +50,10 @@ class RoleResource extends Resource
                     ->label('Nom'),
 
                 Tables\Columns\TextColumn::make('permissions')
-                    ->counts('permissions')
+                    ->html()
+                    ->formatStateUsing(function ($state) {
+                        return '<span title="' . $state->description .'">' . $state->name . '</span>';
+                    })
                     ->badge()
             ])
             ->filters([

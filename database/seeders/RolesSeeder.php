@@ -23,18 +23,21 @@ class RolesSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Utilisateur',
                 'permissions' => [
-                    Permission::where('key', 'manage_tasks')->first()->id,
+                    Permission::where('key', 'add_comment')->first()->id,
+                ]
+            ],
+            [
+                'id' => 3,
+                'name' => 'Prestataire',
+                'permissions' => [
+                    Permission::where('key', 'add_comment')->first()->id,
                     Permission::where('key', 'change_status')->first()->id,
                     Permission::where('key', 'change_priority')->first()->id,
                     Permission::where('key', 'assign_user')->first()->id,
-                    Permission::where('key', 'edit_description')->first()->id,
-                    Permission::where('key', 'manage_attachments')->first()->id,
                     Permission::where('key', 'add_comment')->first()->id,
-                    Permission::where('key', 'delete_any_comment')->first()->id,
                     Permission::where('key', 'reorder_tasks')->first()->id,
-                    Permission::where('key', 'add_user_to_project')->first()->id,
                 ]
-            ],
+            ]
         ];
 
         foreach ($roles as $role) {
