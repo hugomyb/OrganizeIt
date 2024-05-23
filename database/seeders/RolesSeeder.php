@@ -28,7 +28,7 @@ class RolesSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'name' => 'Prestataire',
+                'name' => 'Freelance',
                 'permissions' => [
                     Permission::where('key', 'add_comment')->first()->id,
                     Permission::where('key', 'change_status')->first()->id,
