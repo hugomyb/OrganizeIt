@@ -5,7 +5,7 @@
             {{ $this->form }}
 
             <x-filament::button type="submit">
-                Enregistrer
+                {{ __('general.save') }}
             </x-filament::button>
         </x-filament-panels::form>
 

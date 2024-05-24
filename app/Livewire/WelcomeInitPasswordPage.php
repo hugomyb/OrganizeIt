@@ -39,7 +39,7 @@ class WelcomeInitPasswordPage extends SimplePage implements HasForms
      */
     public function getHeading(): string|Htmlable
     {
-        return "Initialiser votre mot de passe";
+        return __('general.init_mdp');
     }
 
     public function form(Form $form): Form
@@ -52,7 +52,7 @@ class WelcomeInitPasswordPage extends SimplePage implements HasForms
 
                 TextInput::make('password')
                     ->statePath('data.password')
-                    ->label("Mot de passe")
+                    ->label(__('general.mdp'))
                     ->required()
                     ->revealable()
                     ->password(),
@@ -60,7 +60,7 @@ class WelcomeInitPasswordPage extends SimplePage implements HasForms
                 TextInput::make('password_confirmation')
                     ->statePath('data.password_confirmation')
                     ->required()
-                    ->label("Confirmer le mot de passe")
+                    ->label(__('general.mdp_confirmation'))
                     ->revealable()
                     ->password(),
             ]);
@@ -71,9 +71,9 @@ class WelcomeInitPasswordPage extends SimplePage implements HasForms
         $this->validate([
             'data.password' => 'required|confirmed|min:8',
         ], [
-            'data.password.required' => "Le mot de passe est requis",
-            'data.password.confirmed' => "Les mots de passe ne correspondent pas",
-            'data.password.min' => "Le mot de passe doit contenir au moins 8 caractères",
+            'data.password.required' => __('general.mdp_validation.required'),
+            'data.password.confirmed' => __('general.mdp_validation.confirmed'),
+            'data.password.min' => __('general.mdp_validation.min'),
         ]);
 
         $this->user->forceFill([

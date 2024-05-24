@@ -15,10 +15,10 @@ trait InteractsWithTooltipActions
     public function editTaskTooltipAction(): Action
     {
         return EditAction::make('editTaskTooltip')
-            ->tooltip('Éditer')
+            ->tooltip(__('task.edit'))
             ->modalWidth('5xl')
             ->modal()
-            ->modalHeading('Éditer la tâche')
+            ->modalHeading(__('task.edit_task'))
             ->iconButton()
             ->iconSize(IconSize::Small)
             ->icon('heroicon-o-pencil')
@@ -29,13 +29,13 @@ trait InteractsWithTooltipActions
     public function addSubtaskTooltipAction(): Action
     {
         return Action::make('addSubtaskTooltip')
-            ->tooltip('Ajouter sous-tâche')
+            ->tooltip(__('task.add_subtask'))
             ->modalWidth('5xl')
             ->modal()
             ->iconButton()
             ->iconSize(IconSize::Small)
             ->icon('heroicon-o-plus')
-            ->modalHeading('Ajouter une sous-tâche')
+            ->modalHeading(__('task.add_subtask'))
             ->form(function (array $arguments) {
                 return array_merge($this->getTaskForm($arguments['group_id']), [
                     Hidden::make('project_id')->default($this->record->id),
@@ -52,8 +52,8 @@ trait InteractsWithTooltipActions
 
                 Notification::make()
                     ->success()
-                    ->title('Tâche ajoutée')
-                    ->body('La tâche a été ajoutée avec succès.')
+                    ->duration(2000)
+                    ->title(__('task.subtask_added'))
                     ->send();
             });
     }
@@ -61,24 +61,24 @@ trait InteractsWithTooltipActions
     public function deleteTaskTooltipAction(): Action
     {
         return Action::make('deleteTaskTooltip')
-            ->tooltip('Supprimer')
+            ->tooltip(__('task.delete'))
             ->iconButton()
             ->iconSize(IconSize::Small)
             ->color('danger')
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
-            ->modalHeading(fn(array $arguments) => 'Supprimer la tâche "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
+            ->modalHeading(fn(array $arguments) => __('task.delete_task') . ' "' . Str::limit(Task::find($arguments['task_id'])->title, 20) . '" ?')
             ->modalDescription(fn(array $arguments) => Task::find($arguments['task_id'])->children()->count()
-                ? 'Voulez-vous supprimer cette tâche et ' . Task::find($arguments['task_id'])->children()->count() . ' sous-tâches ?'
-                : 'Êtes-vous sûr de vouloir supprimer cette tâche ?')
+                ? __('task.delete_description') . Task::find($arguments['task_id'])->children()->count() . __('task.delete_description_subtasks')
+                : __('task.confirm_delete'))
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->action(function (array $arguments): void {
                 Task::find($arguments['task_id'])->delete();
 
                 Notification::make()
                     ->success()
-                    ->title('Tâche supprimée')
-                    ->body('La tâche a été supprimée avec succès.')
+                    ->duration(2000)
+                    ->title(__('task.task_deleted'))
                     ->send();
             });
     }

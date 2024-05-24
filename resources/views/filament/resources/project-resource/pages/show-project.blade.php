@@ -35,14 +35,14 @@
                                 icon="heroicon-o-pencil"
                                 wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
                                 label="Edit label group"
-                                tooltip="Éditer groupe"
+                                tooltip="{{ __('group.edit_group') }}"
                             />
                             <x-filament::icon-button
                                 color="danger"
                                 icon="heroicon-o-trash"
                                 wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
                                 label="Delete group"
-                                tooltip="Supprimer"
+                                tooltip="{{ __('group.delete') }}"
                             />
                         </x-slot>
                     @endcan
@@ -88,7 +88,7 @@
                     collapsible
                     style="width: 100%">
                     <x-slot name="heading">
-                        Drag & Drop
+                        {{ __('general.drag_drop') }}
                     </x-slot>
 
                     <div class="flex flex-col px-6 py-3 gap-3">
@@ -97,7 +97,7 @@
                                 <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
                                     <div class="flex items-center gap-1">
                                         <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
-                                        <span style="font-weight: 500;">Assigner</span>
+                                        <span style="font-weight: 500;">{{ __('general.assign') }}</span>
                                     </div>
 
                                     @can('addUserToProject', \App\Models\User::class)
@@ -126,7 +126,7 @@
                                                     </x-filament::dropdown.list.item>
                                                 @empty
                                                     <div class="flex justify-center py-1">
-                                                        <span class="dark:text-white text-xs text-center text-gray-600">Aucun utilisateur à ajouter</span>
+                                                        <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_user_to_add') }}</span>
                                                     </div>
                                                 @endforelse
                                             </x-filament::dropdown.list>
@@ -152,7 +152,7 @@
                             <div style="margin-bottom: 10px">
                                 <div class="flex items-center gap-1" style="margin-bottom: 10px">
                                     <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: gray"/>
-                                    <span style="font-weight: 500;">Priorité</span>
+                                    <span style="font-weight: 500;">{{ __('priority.priority') }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(\App\Models\Priority::all() as $priority)
@@ -178,13 +178,13 @@
                 collapsible
                 style="width: 100%">
                 <x-slot name="heading">
-                    Filtres
+                    {{ __('general.filters') }}
                 </x-slot>
 
                 <div class="flex flex-col px-6 py-3 gap-3">
                     <div style="margin-bottom: 10px">
                         <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
-                            <span style="font-weight: 500;">Statut</span>
+                            <span style="font-weight: 500;">{{ __('status.status') }}</span>
 
                             <x-filament::dropdown>
                                 <x-slot name="trigger">
@@ -260,14 +260,14 @@
                                                            class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
-                                <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
+                                <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
                             @endforelse
                         </div>
                     </div>
 
                     <div style="margin-bottom: 10px">
                         <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
-                            <span style="font-weight: 500;">Priorité</span>
+                            <span style="font-weight: 500;">{{ __('priority.priority') }}</span>
 
                             <x-filament::dropdown>
                                 <x-slot name="trigger">
@@ -311,7 +311,7 @@
                                                            class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
-                                <span class="dark:text-white text-xs text-center text-gray-600">Aucun filtre</span>
+                                <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
                             @endforelse
                         </div>
                     </div>
@@ -320,7 +320,7 @@
                         wire:click="toggleShowCompletedTasks()"
                         style="{{ !$toggleCompletedTasks ? 'background-color: #2563eb; color: #fff' : '' }}"
                         class="border border-gray-200 dark:border-white/10 text-center rounded-lg px-2 text-sm py-2 justify-center flex items-center gap-1 cursor-pointer">
-                        {{ !$toggleCompletedTasks ? "Tâches terminées masquées" : "Masquer tâches terminées" }}
+                        {{ !$toggleCompletedTasks ? __('general.completed_task_hidden') : __('general.hide_completed_task') }}
                     </div>
                 </div>
             </x-filament::section>

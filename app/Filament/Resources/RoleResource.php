@@ -20,9 +20,12 @@ class RoleResource extends Resource
 
     protected static ?string $modelLabel = 'Role';
 
-    protected static ?string $navigationGroup = 'Administrateur';
-
     protected static ?int $navigationSort = 3;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('general.admin');
+    }
 
     public static function form(Form $form): Form
     {
@@ -30,7 +33,7 @@ class RoleResource extends Resource
             ->columns(1)
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Nom')
+                    ->label(__('role.table.name'))
                     ->unique(ignoreRecord: true),
 
                 Forms\Components\Select::make('permissions')
@@ -47,7 +50,7 @@ class RoleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nom'),
+                    ->label(__('role.table.name')),
 
                 Tables\Columns\TextColumn::make('permissions')
                     ->html()

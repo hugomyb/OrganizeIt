@@ -16,30 +16,33 @@ class ProjectResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $modelLabel = 'Projet';
+    public static function getModelLabel(): string
+    {
+        return __('project.project');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Fieldset::make('Projet')
+                Forms\Components\Fieldset::make(__('project.project'))
                     ->columns(1)
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Nom du projet')
+                            ->label(__('project.form.name'))
                             ->required(),
 
                         Forms\Components\ColorPicker::make('color')
-                            ->label('Couleur')
+                            ->label(__('project.form.color'))
                             ->unique(ignoreRecord: true)
                             ->default('#000000'),
                     ]),
 
-                Forms\Components\Fieldset::make('Utilisateurs')
+                Forms\Components\Fieldset::make(__('project.form.users.users'))
                     ->columns(1)
                     ->schema([
                         Forms\Components\Select::make('users')
-                            ->label('Utilisateurs assignés')
+                            ->label(__('project.form.users.assigns'))
                             ->preload()
                             ->searchable()
                             ->default([
@@ -62,14 +65,18 @@ class ProjectResource extends Resource
                 }
             })
             ->columns([
+                Tables\Columns\ColorColumn::make('color')
+                    ->label(__('project.table.color'))
+                    ->width('50px'),
+
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nom')
+                    ->label(__('project.table.name'))
                     ->searchable()
                     ->width('200px')
                     ->sortable(),
 
                 Tables\Columns\ImageColumn::make('users.avatar')
-                    ->label('Utilisateurs assignés')
+                    ->label(__('project.table.users.assigns'))
                     ->circular()
                     ->tooltip(fn($record) => $record->users->map(fn($user) => $user->name)->join(', '))
                     ->stacked()

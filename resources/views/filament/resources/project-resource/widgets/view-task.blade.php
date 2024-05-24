@@ -15,8 +15,8 @@
             color="primary"
             class="ml-auto"
             size="sm"
-            x-on:click="navigator.clipboard.writeText(window.location.href); $wire.showNotification('Lien copié dans le presse-papier'); ">
-            Partager
+            x-on:click="navigator.clipboard.writeText(window.location.href); $wire.showNotification('{{__('general.link_copied')}}'); ">
+            {{ __('general.share') }}
         </x-filament::button>
     </div>
 
@@ -49,20 +49,20 @@
             {{ $task->title }}
 
             @can('manageTasks', \App\Models\User::class)
-                <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="Éditer"
+                <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="{{ __('task.edit') }}"
                                    @click="$refs.taskTitle.attributes.contenteditable.value = 'true'; $refs.taskTitle.focus();"
                                    style="margin-left: 10px; margin-top: 5px; color: #8a8a8a"/>
             @endcan
 
-            <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer" title="Copier"
-                                             @click="navigator.clipboard.writeText($refs.taskTitle.innerText); $wire.showNotification('Copié dans le presse-papier');"
+            <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer" title="{{ __('general.copy') }}"
+                                             @click="navigator.clipboard.writeText($refs.taskTitle.innerText); $wire.showNotification('{{ __('general.copied') }}');"
                                              style="margin-left: 35px; color: #8a8a8a"/>
         </span>
     </div>
 
     <div class="grid grid-cols-2 gap-y-8" style="margin: 35px 30px 35px 55px">
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
-            <span class="text-gray-500 text-xs">Créé par</span>
+            <span class="text-gray-500 text-xs">{{ __('task.created_by') }}</span>
             <div class="flex items-center gap-1">
                 @if($task->creator)
                     <img src="{{ asset($task->creator->avatar) }}" alt="{{ $task->creator->name }}"
@@ -72,13 +72,13 @@
                 @else
                     <img src="{{ asset('img/avatar.png') }}" alt=""
                          class="rounded-full" style="height: 20px">
-                    <span>Inconnu</span>
+                    <span>{{ __('general.unknown') }}</span>
                 @endif
             </div>
         </div>
 
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
-            <span class="text-gray-500 text-xs">Assigné à</span>
+            <span class="text-gray-500 text-xs">{{ __('task.assign_to') }}</span>
             <div class="flex items-center gap-1">
 
                 @can('assignUser', \App\Models\User::class)
@@ -94,7 +94,7 @@
                             @empty
                                 <img src="{{ asset('img/avatar.png') }}" alt=""
                                      class="rounded-full" style="height: 20px">
-                                <span>Non assigné</span>
+                                <span>{{ __('task.unassigned') }}</span>
                             @endforelse
                         </x-slot>
 
@@ -129,14 +129,14 @@
                     @empty
                         <img src="{{ asset('img/avatar.png') }}" alt=""
                              class="rounded-full" style="height: 20px">
-                        <span>Non assigné</span>
+                        <span>{{ __('task.unassigned') }}</span>
                     @endforelse
                 @endcan
             </div>
         </div>
 
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
-            <span class="text-gray-500 text-xs">Statut</span>
+            <span class="text-gray-500 text-xs">{{ __('status.status') }}</span>
             <div class="flex items-center gap-1">
                 @can('changeStatus', \App\Models\User::class)
                     <x-filament::dropdown>
@@ -218,7 +218,7 @@
         </div>
 
         <div class="flex items-center justify-center gap-2 text-sm font-semibold">
-            <span class="text-gray-500 text-xs">Priorité</span>
+            <span class="text-gray-500 text-xs">{{ __('priority.priority') }}</span>
             <div class="flex items-center gap-1">
                 @can('changePriority', \App\Models\User::class)
                     <x-filament::dropdown>
@@ -261,7 +261,7 @@
             icon="heroicon-o-document-text"
             style="width: 100%">
             <x-slot name="heading">
-                <span style="height: 32px">Description</span>
+                <span style="height: 32px">{{ __('task.form.description') }}</span>
             </x-slot>
 
             @can('editDescription', \App\Models\User::class)
@@ -270,7 +270,7 @@
                         icon="phosphor-pencil"
                         label="Edit description"
                         x-on:click="$wire.fillRichEditorField({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = true;"
-                        tooltip="Éditer la description"
+                        tooltip="{{ __('task.edit_description') }}"
                         x-show="!richIsVisible"
                     />
 
@@ -278,7 +278,7 @@
                         class="text-xs"
                         x-show="richIsVisible"
                         x-on:click="$wire.saveRichEditorDescription({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = false;">
-                        Sauvegarder
+                        {{ __('general.save') }}
                     </x-filament::button>
 
                     <x-filament::button
@@ -287,7 +287,7 @@
                         class="text-xs"
                         x-show="richIsVisible"
                         x-on:click="$wire.cancelRichEditorDescription; richIsVisible = false; isCollapsed = ! isCollapsed;">
-                        Annuler
+                        {{ __('general.cancel') }}
                     </x-filament::button>
                 </x-slot>
 
@@ -300,7 +300,7 @@
                 @if($task->description)
                     {!! $task->description !!}
                 @else
-                    <p class="text-gray-500">Aucune description</p>
+                    <p class="text-gray-500">{{ __('task.no_description') }}</p>
                 @endif
             </div>
         </x-filament::section>
@@ -324,7 +324,7 @@
             collapsible
             style="width: 100%">
             <x-slot name="heading">
-                <span style="height: 32px">Pièces jointes </span>
+                <span style="height: 32px">{{ __('task.form.attachments') }}</span>
             </x-slot>
 
             @can('manageAttachments', \App\Models\User::class)
@@ -335,14 +335,14 @@
                         label="Upload file"
                         x-show="!fileUploadIsVisible"
                         x-on:click="$wire.fillFileUploadField({{ $task->id }}); isCollapsed = ! isCollapsed; fileUploadIsVisible = !fileUploadIsVisible;"
-                        tooltip="Uploader un fichier"
+                        tooltip="{{ __('general.upload_file') }}"
                     />
 
                     <x-filament::button
                         class="text-xs"
                         x-show="fileUploadIsVisible"
                         x-on:click="$wire.saveFileUploadAttachments({{$task->id}}); isCollapsed = ! isCollapsed; fileUploadIsVisible = false;">
-                        Sauvegarder
+                        {{ __('general.save') }}
                     </x-filament::button>
 
                     <x-filament::button
@@ -351,7 +351,7 @@
                         class="text-xs"
                         x-show="fileUploadIsVisible"
                         x-on:click="$wire.cancelFileUploadAttachments; fileUploadIsVisible = false; isCollapsed = ! isCollapsed;">
-                        Annuler
+                        {{ __('general.cancel') }}
                     </x-filament::button>
                 </x-slot>
 
@@ -427,7 +427,7 @@
                                         class="text-xs font-bold">
                                         <div class="flex items-center">
                                             <x-heroicon-o-eye class="h-5 w-5 mx-1"/>
-                                            <span class="mx-1">Voir</span>
+                                            <span class="mx-1">{{ __('general.view') }}</span>
                                         </div>
                                     </x-filament::dropdown.list.item>
 
@@ -437,7 +437,7 @@
                                         <div class="flex items-center">
                                             <div class="flex items-center">
                                                 <x-heroicon-o-arrow-down-tray class="h-5 w-5 mx-1"/>
-                                                <span class="mx-1">Télécharger</span>
+                                                <span class="mx-1">{{ __('general.download') }}</span>
                                             </div>
                                         </div>
                                     </x-filament::dropdown.list.item>
@@ -449,7 +449,7 @@
                                             <div class="flex items-center">
                                                 <div class="flex items-center" style="color: red">
                                                     <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                                    <span class="mx-1">Supprimer</span>
+                                                    <span class="mx-1">{{ __('general.delete') }}</span>
                                                 </div>
                                             </div>
                                         </x-filament::dropdown.list.item>
@@ -459,7 +459,7 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-gray-500">Aucune pièce jointe</p>
+                    <p class="text-gray-500">{{ __('task.no_attachment') }}</p>
                 @endif
             </div>
 
@@ -488,7 +488,7 @@
             icon="uni-comment-alt-lines-o"
             style="width: 100%">
             <x-slot name="heading">
-                <span style="height: 32px">Commentaires</span>
+                <span style="height: 32px">{{ __('task.comments') }}</span>
             </x-slot>
 
             <div id="comments" class="comments flex flex-col px-6 py-3 gap-3 text-sm section-description">
@@ -531,7 +531,7 @@
                                                     <div class="flex items-center">
                                                         <div class="flex items-center" style="color: red">
                                                             <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                                            <span class="mx-1">Supprimer</span>
+                                                            <span class="mx-1">{{ __('general.delete') }}</span>
                                                         </div>
                                                     </div>
                                                 </x-filament::dropdown.list.item>
@@ -543,7 +543,7 @@
                         </div>
                     @endforeach
                 @else
-                    <p class="text-gray-500 mt-3">Aucun commentaire</p>
+                    <p class="text-gray-500 mt-3">{{ __('task.no_comment') }}</p>
                 @endif
             </div>
 
@@ -556,9 +556,9 @@
                                   wire:model="comment"
                                   @keyup.shift.enter="$wire.sendComment({{ $task->id }})"
                                   class="block mx-4 p-2.5 w-full text-sm bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                  placeholder="Votre commentaire..."></textarea>
+                                  placeholder="{{ __('task.your_comment') }}"></textarea>
                         <a
-                            title="Envoyer (Shift+Enter)"
+                            title="{{ __('general.send') }} (Shift+Enter)"
                             wire:click="sendComment({{ $task->id }})"
                             class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
@@ -566,7 +566,7 @@
                                 <path
                                     d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z"/>
                             </svg>
-                            <span class="sr-only">Envoyer</span>
+                            <span class="sr-only">{{ __('general.send') }}</span>
                         </a>
                     </div>
                 </div>

@@ -19,9 +19,19 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Administrateur';
 
-    protected static ?string $modelLabel = 'Utilisateur';
+    /**
+     * @return string
+     */
+    public static function getModelLabel(): string
+    {
+        return __('user.user');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('general.admin');
+    }
 
     public static function canAccess(): bool
     {
@@ -33,7 +43,7 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Nom')
+                    ->label(__('user.form.name'))
                     ->required()
                     ->maxLength(255),
 
@@ -43,7 +53,7 @@ class UserResource extends Resource
                     ->maxLength(255),
 
                 Forms\Components\Select::make('role_id')
-                    ->label('Rôle')
+                    ->label(__('user.form.role'))
                     ->default(Role::whereName('Utilisateur')->first()->id)
                     ->options(fn() => \App\Models\Role::pluck('name', 'id')->toArray())
                     ->required(),
@@ -60,7 +70,7 @@ class UserResource extends Resource
                     ->size(30),
 
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('user.table.name'))
                     ->searchable()
                     ->sortable(),
 
@@ -70,7 +80,7 @@ class UserResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('role.name')
-                    ->label('Role')
+                    ->label(__('user.form.role'))
                     ->searchable()
                     ->badge()
                     ->sortable(),

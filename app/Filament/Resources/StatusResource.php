@@ -18,9 +18,15 @@ class StatusResource extends Resource
 
     protected static ?string $navigationIcon = 'pepicon-hourglass-circle';
 
-    protected static ?string $navigationGroup = 'Administrateur';
+    public static function getModelLabel(): string
+    {
+        return __('status.status');
+    }
 
-    protected static ?string $modelLabel = 'Statut';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('general.admin');
+    }
 
     public static function form(Form $form): Form
     {
@@ -28,11 +34,11 @@ class StatusResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->unique('statuses', ignoreRecord: true)
-                    ->label('Nom')
+                    ->label(__('status.table.name'))
                     ->required(),
 
                 ColorPicker::make('color')
-                    ->label('Couleur')
+                    ->label(__('status.table.color'))
             ]);
     }
 
@@ -41,10 +47,10 @@ class StatusResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nom'),
+                    ->label(__('status.table.name')),
 
                 Tables\Columns\ColorColumn::make('color')
-                    ->label('Couleur'),
+                    ->label(__('status.table.color')),
             ])
             ->filters([
                 //

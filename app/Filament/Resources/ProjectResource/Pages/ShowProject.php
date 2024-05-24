@@ -172,11 +172,11 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->visible(auth()->user()->hasPermission('manage_tasks'))
                 ->modalWidth('7xl')
                 ->model(Task::class)
-                ->label('Ajouter une tâche')
+                ->label(__('task.add_task'))
                 ->icon('heroicon-o-plus')
-                ->modalHeading('Ajouter une tâche')
+                ->modalHeading(__('task.add_task'))
                 ->form($this->getTaskForm())
-                ->modalSubmitActionLabel('Ajouter')
+                ->modalSubmitActionLabel(__('task.add'))
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
@@ -185,11 +185,7 @@ class ShowProject extends Page implements HasForms, HasActions
                         'created_by' => auth()->id()
                     ]));
 
-                    Notification::make()
-                        ->success()
-                        ->title('Tâche ajoutée')
-                        ->body('La tâche a été ajoutée avec succès.')
-                        ->send();
+                    $this->showNotification(__('task.task_added'));
                 }),
         ];
     }
@@ -198,21 +194,17 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         return Action::make('createGroup')
             ->outlined()
-            ->label('Créer un groupe')
+            ->label(__('group.create_group'))
             ->form([
                 TextInput::make('name')
                     ->autofocus()
-                    ->label('Nom')
+                    ->label(__('group.name'))
                     ->required(),
             ])
             ->action(function (array $data): void {
                 $this->record->groups()->create($data);
 
-                Notification::make()
-                    ->success()
-                    ->title('Groupe créé')
-                    ->body('Le groupe a été créé avec succès.')
-                    ->send();
+                $this->showNotification(__('group.group_created'));
             });
     }
 
@@ -220,21 +212,17 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         return EditAction::make('editGroup')
             ->record(fn(array $arguments) => Group::find($arguments['group_id']))
-            ->modalHeading('Éditer le groupe')
+            ->modalHeading(__('group.edit_group'))
             ->form([
                 TextInput::make('name')
                     ->autofocus()
-                    ->label('Nom')
+                    ->label(__('group.name'))
                     ->required(),
             ])
             ->action(function (array $data, array $arguments): void {
                 Group::find($arguments['group_id'])->update($data);
 
-                Notification::make()
-                    ->success()
-                    ->title('Groupe modifié')
-                    ->body('Le groupe a été modifié avec succès.')
-                    ->send();
+                $this->showNotification(__('group.group_updated'));
             });
     }
 
@@ -244,16 +232,12 @@ class ShowProject extends Page implements HasForms, HasActions
             ->color('danger')
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
-            ->modalHeading(fn(array $arguments) => 'Supprimer le groupe "' . Str::limit(Group::find($arguments['group_id'])->name, 20) . '" ?')
+            ->modalHeading(fn(array $arguments) => __('group.delete_group') . ' "' . Str::limit(Group::find($arguments['group_id'])->name, 20) . '" ?')
             ->record(fn(array $arguments) => Group::find($arguments['group_id']))
             ->action(function (array $arguments): void {
                 Group::find($arguments['group_id'])->delete();
 
-                Notification::make()
-                    ->success()
-                    ->title('Groupe supprimé')
-                    ->body('Le groupe a été supprimé avec succès.')
-                    ->send();
+                $this->showNotification(__('group.group_deleted'));
             });
     }
 
@@ -273,14 +257,14 @@ class ShowProject extends Page implements HasForms, HasActions
             Select::make('group_id')
                 ->preload()
                 ->searchable()
-                ->label('Groupe')
+                ->label(__('group.group'))
                 ->default($groupId ?? $this->record->groups->first()->id)
                 ->required()
                 ->options($this->record->groups->pluck('name', 'id')),
 
             TextInput::make('title')
                 ->autofocus()
-                ->label('Titre')
+                ->label(__('task.form.title'))
                 ->columnSpanFull()
                 ->live()
                 ->required(),
@@ -292,7 +276,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->label('Description'),
 
             Select::make('status_id')
-                ->label('Statut')
+                ->label(__('task.form.status'))
                 ->default(Status::whereName('À faire')->first()->id)
                 ->preload()
                 ->searchable()
@@ -301,16 +285,16 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->createOptionForm([
                     TextInput::make('name')
                         ->unique('statuses', ignoreRecord: true)
-                        ->label('Nom')
+                        ->label(__('status.table.name'))
                         ->required(),
 
                     ColorPicker::make('color')
-                        ->label('Couleur')
+                        ->label(__('status.table.color'))
                 ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
                 ->required(),
 
             Select::make('priority_id')
-                ->label('Priorité')
+                ->label(__('task.form.priority'))
                 ->preload()
                 ->searchable()
                 ->default(Priority::whereName('Aucune')->first()->id)
@@ -330,7 +314,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->visibility('private')
                 ->openable()
                 ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
-                ->label('Pièces jointes')
+                ->label(__('task.form.attachments'))
         ];
     }
 
@@ -340,7 +324,7 @@ class ShowProject extends Page implements HasForms, HasActions
             ->icon('heroicon-o-plus')
             ->link()
             ->modalWidth('7xl')
-            ->label('Ajouter une tâche')
+            ->label(__('task.add_task'))
             ->form(function ($livewire, array $arguments) {
                 $group_id = $arguments['group_id'];
 
@@ -354,11 +338,7 @@ class ShowProject extends Page implements HasForms, HasActions
                     'created_by' => auth()->id()
                 ]));
 
-                Notification::make()
-                    ->success()
-                    ->title('Tâche ajoutée')
-                    ->body('La tâche a été ajoutée avec succès.')
-                    ->send();
+                $this->showNotification(__('task.task_added'));
             });
     }
 
@@ -394,11 +374,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $task->update(['status_id' => $statusId]);
 
-        Notification::make()
-            ->success()
-            ->title('Statut modifiée')
-            ->body('Le statut de la tâche a été modifiée avec succès.')
-            ->send();
+        $this->showNotification(__('status.status_updated'));
     }
 
     public function setTaskPriority($taskId, $priorityId)
@@ -407,11 +383,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $task->update(['priority_id' => $priorityId]);
 
-        Notification::make()
-            ->success()
-            ->title('Priorité modifiée')
-            ->body('La priorité de la tâche a été modifiée avec succès.')
-            ->send();
+        $this->showNotification(__('priority.priority_updated'));
     }
 
     public function updateTaskOrder($groupId, $nestableJson)
@@ -479,11 +451,7 @@ class ShowProject extends Page implements HasForms, HasActions
             }
         }
 
-        Notification::make()
-            ->success()
-            ->title('Utilisateur assigné')
-            ->body('L\'utilisateur a été assigné à la tâche avec succès.')
-            ->send();
+        $this->showNotification(__('user.assigned'));
     }
 
     public function toggleUserToTask($userId, $taskId)
@@ -493,19 +461,11 @@ class ShowProject extends Page implements HasForms, HasActions
             if ($task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->detach($userId);
 
-                Notification::make()
-                    ->success()
-                    ->title('Utilisateur retiré')
-                    ->body('L\'utilisateur a été retiré de la tâche avec succès.')
-                    ->send();
+                $this->showNotification(__('user.unassigned'));
             } else {
                 $task->users()->attach($userId);
 
-                Notification::make()
-                    ->success()
-                    ->title('Utilisateur assigné')
-                    ->body('L\'utilisateur a été assigné à la tâche avec succès.')
-                    ->send();
+                $this->showNotification(__('user.assigned'));
             }
         }
     }
@@ -551,11 +511,7 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $this->record->users()->attach($userId);
 
-        Notification::make()
-            ->success()
-            ->title('Utilisateur ajouté')
-            ->body('L\'utilisateur a été ajouté au projet avec succès.')
-            ->send();
+        $this->showNotification(__('user.added'));
     }
 
     public static function canAccess(array $parameters = []): bool
@@ -577,11 +533,7 @@ class ShowProject extends Page implements HasForms, HasActions
             $task->title = $title;
             $task->save();
 
-            Notification::make()
-                ->success()
-                ->title('Titre modifié')
-                ->duration(1500)
-                ->send();
+            $this->showNotification(__('task.title_updated'));
         }
     }
 
@@ -615,7 +567,7 @@ class ShowProject extends Page implements HasForms, HasActions
                     ->columnSpanFull()
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
-                    ->label('Description'),
+                    ->label(__('task.form.description')),
             ]);
     }
 
@@ -635,7 +587,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $this->currentTask = null;
 
-        $this->showNotification('Description modifiée');
+        $this->showNotification(__('task.description_updated'));
     }
 
     public function cancelRichEditorDescription()
@@ -670,7 +622,7 @@ class ShowProject extends Page implements HasForms, HasActions
             'attachments' => $attachments
         ]);
 
-        $this->showNotification('Pièce jointe supprimée');
+        $this->showNotification(__('task.attachment_removed'));
     }
 
     public function fillFileUploadField($taskId)
@@ -703,7 +655,7 @@ class ShowProject extends Page implements HasForms, HasActions
                     ->visibility('private')
                     ->openable()
                     ->directory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
-                    ->label('Pièces jointes')
+                    ->label(__('task.form.attachments')),
             ]);
     }
 
@@ -729,7 +681,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $this->currentTask = null;
 
-        $this->showNotification('Pièces jointes ajoutées');
+        $this->showNotification(__('task.attachment_added'));
     }
 
     public function cancelFileUploadAttachments()
@@ -752,7 +704,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $this->comment = '';
 
-        $this->showNotification('Commentaire ajouté');
+        $this->showNotification(__('task.comment_added'));
         $this->dispatch('commentSent');
     }
 
@@ -762,6 +714,6 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $comment->delete();
 
-        $this->showNotification('Commentaire supprimé');
+        $this->showNotification(__('task.comment_removed'));
     }
 }

@@ -1,7 +1,7 @@
 <x-filament-widgets::widget>
     <x-filament::section style="padding: 0 !important">
         <x-slot name="heading">
-            <h2 class="text-lg font-semibold">Projets récents</h2>
+            <h2 class="text-lg font-semibold">{{ __('project.recents') }}</h2>
         </x-slot>
 
         @foreach(\App\Models\Project::take(10)->orderBy('created_at')->get() as $project)
