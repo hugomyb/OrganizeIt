@@ -13,10 +13,25 @@ class PrioritySeeder extends Seeder
     public function run(): void
     {
         $priorities = [
-            ['name' => 'Aucune', 'color' => '#aebacc'],
-            ['name' => 'Basse', 'color' => '#008000'],
-            ['name' => 'Moyenne', 'color' => '#FFA500'],
-            ['name' => 'Haute', 'color' => '#FF0000'],
+            [
+                'name' => 'Aucune',
+                'en_name' => 'None',
+                'color' => '#aebacc'],
+            [
+                'name' => 'Basse',
+                'en_name' => 'Low',
+                'color' => '#008000'
+            ],
+            [
+                'name' => 'Moyenne',
+                'en_name' => 'Medium',
+                'color' => '#FFA500'
+            ],
+            [
+                'name' => 'Haute',
+                'en_name' => 'High',
+                'color' => '#FF0000'
+            ],
         ];
 
         foreach ($priorities as $priority) {

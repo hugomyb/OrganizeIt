@@ -9,10 +9,15 @@ class Priority extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'color'];
+    protected $fillable = ['name', 'en_name', 'color'];
 
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function getNameAttribute($value)
+    {
+        return app()->getLocale() === 'en' ? $this->en_name : $value;
     }
 }

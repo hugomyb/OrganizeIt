@@ -95,16 +95,17 @@
             @endcan
         </div>
 
-        <div class="flex gap-2 items-center flex-wrap"
-             style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
+        <div class="flex gap-2 items-center flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
+                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
             @can('changePriority', \App\Models\User::class)
                 <!-- Priority dropdown -->
-                @if($task->priority->name != 'Aucune')
+                @if($task->priority->name != \App\Models\Priority::where('name', 'Aucune')->first()->name)
                     <x-filament::dropdown>
-                        <x-slot name="trigger" class="flex items-center mx-1">
+                        <x-slot name="trigger" class="flex items-center mx-1"
+                                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                             <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
                             <span class="text-xs font-bold task-title"
                                   style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
@@ -135,7 +136,8 @@
             @if($task->users()->exists())
                 @can('assignUser', \App\Models\User::class)
                     <x-filament::dropdown>
-                        <x-slot name="trigger" class="flex gap-1 items-center">
+                        <x-slot name="trigger" class="flex gap-1 items-center"
+                                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                             @foreach($task->users as $user)
                                 <div class="flex gap-1 items-center cursor-pointer">
                                     <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"

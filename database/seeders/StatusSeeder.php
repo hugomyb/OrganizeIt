@@ -13,9 +13,21 @@ class StatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['name' => 'À faire', 'color' => '#aebacc'],
-            ['name' => 'En cours', 'color' => '#FFA500'],
-            ['name' => 'Terminé', 'color' => '#008000']
+            [
+                'name' => 'À faire',
+                'en_name' => 'To do',
+                'color' => '#aebacc'
+            ],
+            [
+                'name' => 'En cours',
+                'en_name' => 'In progress',
+                'color' => '#FFA500'
+            ],
+            [
+                'name' => 'Terminé',
+                'en_name' => 'Done',
+                'color' => '#008000'
+            ]
         ];
 
         foreach ($statuses as $status) {
