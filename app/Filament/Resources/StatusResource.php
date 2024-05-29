@@ -38,7 +38,8 @@ class StatusResource extends Resource
                     ->live(onBlur: true)
                     ->unique('statuses', ignoreRecord: true)
                     ->label(__('status.table.name'))
-                    ->afterStateUpdated(function (GoogleTranslate $translate, Set $set, $state) {
+                    ->afterStateUpdated(function (Set $set, $state) {
+                        $translate = app()->make(GoogleTranslate::class);
                         $translate->setSource('fr');
                         $translate->setTarget('en');
                         $result = $translate->translate($state ?? "");

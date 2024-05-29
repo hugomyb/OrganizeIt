@@ -7,6 +7,7 @@ return [
     'add_task' => 'Add Task',
     'add' => 'Add',
     'task_added' => 'Task Added',
+    'task_deleted' => 'Task Deleted',
 
     'add_subtask' => 'Add Subtask',
     'subtask_added' => 'Subtask Added',

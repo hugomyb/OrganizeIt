@@ -7,6 +7,7 @@ return [
     'add_task' => 'Ajouter une tâche',
     'add' => 'Ajouter',
     'task_added' => 'Tâche ajoutée',
+    'task_deleted' => 'Tâche supprimée',
 
     'add_subtask' => 'Ajouter une sous-tâche',
     'subtask_added' => 'Sous-tâche ajoutée',
