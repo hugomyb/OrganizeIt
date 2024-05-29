@@ -8,9 +8,11 @@ use App\Models\Status;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class StatusResource extends Resource
 {
@@ -33,8 +35,22 @@ class StatusResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
+                    ->live(onBlur: true)
                     ->unique('statuses', ignoreRecord: true)
                     ->label(__('status.table.name'))
+                    ->afterStateUpdated(function (GoogleTranslate $translate, Set $set, $state) {
+                        $translate->setSource('fr');
+                        $translate->setTarget('en');
+                        $result = $translate->translate($state ?? "");
+
+                        $set('en_name', $result);
+                    })
+                    ->required(),
+
+                TextInput::make('en_name')
+                    ->live(onBlur: true)
+                    ->unique('statuses', ignoreRecord: true)
+                    ->label(__('status.table.en_name'))
                     ->required(),
 
                 ColorPicker::make('color')

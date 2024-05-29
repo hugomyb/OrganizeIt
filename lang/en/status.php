@@ -5,6 +5,7 @@ return [
 
     'table' => [
         'name' => 'Name',
+        'en_name' => 'English Name',
         'color' => 'Color',
     ],
 

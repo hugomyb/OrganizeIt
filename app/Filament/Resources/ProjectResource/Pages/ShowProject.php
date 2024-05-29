@@ -24,6 +24,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
@@ -32,6 +33,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ShowProject extends Page implements HasForms, HasActions
 {
@@ -284,8 +286,22 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->allowHtml()
                 ->createOptionForm([
                     TextInput::make('name')
+                        ->live(onBlur: true)
                         ->unique('statuses', ignoreRecord: true)
                         ->label(__('status.table.name'))
+                        ->afterStateUpdated(function (GoogleTranslate $translate, Set $set, $state) {
+                            $translate->setSource('fr');
+                            $translate->setTarget('en');
+                            $result = $translate->translate($state ?? "");
+
+                            $set('en_name', $result);
+                        })
+                        ->required(),
+
+                    TextInput::make('en_name')
+                        ->live(onBlur: true)
+                        ->unique('statuses', ignoreRecord: true)
+                        ->label(__('status.table.en_name'))
                         ->required(),
 
                     ColorPicker::make('color')

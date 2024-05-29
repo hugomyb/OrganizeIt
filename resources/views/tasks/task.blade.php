@@ -128,9 +128,13 @@
                     </x-filament::dropdown>
                 @endif
             @else
-                <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
-                <span class="text-xs font-bold task-title"
-                      style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
+                @if($task->priority->name != \App\Models\Priority::where('name', 'Aucune')->first()->name)
+                    <div class="flex items-center mx-1">
+                        <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
+                        <span class="text-xs font-bold task-title"
+                              style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
+                    </div>
+                @endif
             @endcan
 
             @if($task->users()->exists())
