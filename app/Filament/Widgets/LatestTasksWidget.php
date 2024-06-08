@@ -14,6 +14,6 @@ class LatestTasksWidget extends Widget
     {
         $authUser = auth()->user();
 
-        $this->tasks = $authUser->tasks()->latest()->limit(10)->get();
+        $this->tasks = $authUser->projects()->with('tasks')->get()->pluck('tasks')->flatten()->sortByDesc('created_at')->take(10);
     }
 }
