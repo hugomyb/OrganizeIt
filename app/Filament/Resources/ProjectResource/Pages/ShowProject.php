@@ -31,8 +31,8 @@ use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ShowProject extends Page implements HasForms, HasActions
@@ -566,9 +566,14 @@ class ShowProject extends Page implements HasForms, HasActions
     public function fillRichEditorField($task)
     {
         $this->currentTask = Task::find($task['id']);
-        $this->richEditorFieldForm->fill([
-            'description' => $task['description']
-        ]);
+        if ($this->currentTask)
+            $this->richEditorFieldForm->fill([
+                'description' => $task['description'] ?? ''
+            ]);
+        else
+            $this->richEditorFieldForm->fill([
+                'description' => ''
+            ]);
     }
 
     public function richEditorFieldForm(Form $form): Form
@@ -645,6 +650,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public function fillFileUploadField($taskId)
     {
         $this->currentTask = Task::find($taskId);
+
         $this->fileUploadFieldForm->fill([
             'attachments' => []
         ]);
@@ -732,5 +738,19 @@ class ShowProject extends Page implements HasForms, HasActions
         $comment->delete();
 
         $this->showNotification(__('task.comment_removed'));
+    }
+
+    #[On('modal-closed')]
+    public function modalClosed()
+    {
+        $this->richEditorFieldForm->fill([
+            'description' => ''
+        ]);
+
+        $this->fileUploadFieldForm->fill([
+            'attachments' => []
+        ]);
+
+        $this->currentTask = null;
     }
 }

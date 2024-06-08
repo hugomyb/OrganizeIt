@@ -12,6 +12,7 @@
                 this.taskId = null;
 
                 window.history.pushState({}, document.title, window.location.pathname);
+                $wire.dispatch('modal-closed');
             });
         }
     }"
