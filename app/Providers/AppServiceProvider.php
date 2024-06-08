@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use Filament\Support\Assets\AssetManager;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -37,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         FilamentAsset::register([
+            Js::make('jquery-js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
             Js::make('uikit-js', Vite::asset('resources/js/uikit.js')),
             Js::make('nestable-js', Vite::asset('resources/js/components/nestable.js')),
             Css::make('app-css', Vite::asset('resources/css/app.css')),

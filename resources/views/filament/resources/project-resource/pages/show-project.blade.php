@@ -48,7 +48,8 @@
                         </x-slot>
                     @endcan
 
-                    <ul class="uk-nestable" data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
+                    <ul class="uk-nestable"
+                        data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
                         x-data="{
                             initNestable() {
                                 const nestable = UIkit.nestable($el);
@@ -97,7 +98,8 @@
                             <div style="margin-bottom: 10px">
                                 <div class="flex items-center justify-between gap-1" style="margin-bottom: 10px">
                                     <div class="flex items-center gap-1">
-                                        <x-filament::icon icon="heroicon-s-users" class="w-5 h-5" style="color: gray"/>
+                                        <x-filament::icon icon="heroicon-s-users" class="w-5 h-5"
+                                                          style="color: gray"/>
                                         <span style="font-weight: 500;">{{ __('general.assign') }}</span>
                                     </div>
 
@@ -112,8 +114,9 @@
                                                     <x-filament::dropdown.list.item
                                                         wire:click="addUserToProject({{$user->id}})"
                                                         x-on:click="toggle">
-                                                        <div class="text-xs font-bold flex justify-between items-center"
-                                                             title="Assigner au projet">
+                                                        <div
+                                                            class="text-xs font-bold flex justify-between items-center"
+                                                            title="Assigner au projet">
                                                             <div class="flex items center gap-1 items-center">
                                                                 <img src="/storage/{{ $user->avatar }}"
                                                                      alt="{{ $user->name }}"
@@ -127,7 +130,8 @@
                                                     </x-filament::dropdown.list.item>
                                                 @empty
                                                     <div class="flex justify-center py-1">
-                                                        <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_user_to_add') }}</span>
+                                                            <span
+                                                                class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_user_to_add') }}</span>
                                                     </div>
                                                 @endforelse
                                             </x-filament::dropdown.list>
@@ -261,7 +265,8 @@
                                                            class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
-                                <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
+                                <span
+                                    class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
                             @endforelse
                         </div>
                     </div>
@@ -304,7 +309,8 @@
                                     style="font-weight: 500;"
                                     class="w-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-3 py-2 rounded-lg flex items-center justify-between text-xs gap-1 cursor-pointer">
                                     <div class="flex items-center gap-1">
-                                        <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $priority['color'] }}"/>
+                                        <x-iconsax-bol-flag-2 class="h-5 w-5"
+                                                              style="color: {{ $priority['color'] }}"/>
                                         <span class="dark:text-white text-gray-600">{{ $priority['name'] }}</span>
                                     </div>
 
@@ -312,7 +318,8 @@
                                                            class="h-5 w-5 cursor-pointer" style="color: gray"/>
                                 </div>
                             @empty
-                                <span class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
+                                <span
+                                    class="dark:text-white text-xs text-center text-gray-600">{{ __('general.no_filter') }}</span>
                             @endforelse
                         </div>
                     </div>
@@ -328,8 +335,4 @@
         </div>
     </div>
     <x-filament-actions::modals/>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </x-filament-panels::page>
