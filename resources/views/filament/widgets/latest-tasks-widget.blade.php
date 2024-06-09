@@ -4,11 +4,18 @@
             <h2 class="text-lg font-semibold">{{ __('widgets.latest_tasks_widget') }}</h2>
         </x-slot>
 
+        <x-slot name="headerEnd">
+            <x-filament::icon-button
+                color="gray"
+                icon="heroicon-o-information-circle"
+                tooltip="{{ __('widgets.info') }}"/>
+        </x-slot>
+
         @foreach($tasks as $task)
             <a href="{{ \App\Filament\Resources\ProjectResource::getUrl('show', ['record' => $task->project, 'task' => $task->id]) }}"
                class="block">
                 <div
-                        class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl">
+                    class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl">
                     <!-- left side -->
                     <div class="flex flex-col items-start gap-2">
                         <!-- left top -->
