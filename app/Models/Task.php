@@ -21,6 +21,7 @@ class Task extends Model
         'status_id',
         'order',
         'created_by',
+        'completed_at',
     ];
 
     protected $casts = [

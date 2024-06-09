@@ -389,7 +389,10 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $task = Task::find($taskId);
 
-        $task->update(['status_id' => $statusId]);
+        if ($statusId === Status::whereName('Terminé')->first()->id)
+            $task->update(['status_id' => $statusId, 'completed_at' => now()]);
+        else
+            $task->update(['status_id' => $statusId, 'completed_at' => null]);
 
         $this->showNotification(__('status.status_updated'));
     }

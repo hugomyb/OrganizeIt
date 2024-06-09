@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "andreiio/blade-iconoir": "^4.3",
         "andreiio/blade-remix-icon": "^3.2",
         "bezhansalleh/filament-language-switch": "^3.1",
         "brunocfalcao/blade-feather-icons": "^4.0",
