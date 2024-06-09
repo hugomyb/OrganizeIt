@@ -11,7 +11,7 @@
                 tooltip="{{ __('widgets.info') }}"/>
         </x-slot>
 
-        @foreach($tasks as $task)
+        @forelse($tasks as $task)
             <a href="{{ \App\Filament\Resources\ProjectResource::getUrl('show', ['record' => $task->project, 'task' => $task->id]) }}"
                class="block">
                 <div
@@ -54,7 +54,7 @@
                             <div class="flex-shrink-0 w-3.5 h-3.5 rounded-full"
                                  style="background-color: {{ $task->project->color }}; margin-right: 10px"></div>
                             <div>
-                                <p class="text-xs font-medium text-gray-900">{{ $task->project->name }}</p>
+                                <p class="text-xs font-medium">{{ $task->project->name }}</p>
                             </div>
                         </div>
                     </div>
@@ -74,7 +74,11 @@
                     </div>
                 </div>
             </a>
-        @endforeach
+        @empty
+            <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('widgets.no_recent_tasks') }}
+            </div>
+        @endforelse
 
     </x-filament::section>
 </x-filament-widgets::widget>

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Project;
 use App\Models\Status;
 use Filament\Widgets\Widget;
 
@@ -15,14 +16,25 @@ class LatestTasksWidget extends Widget
     {
         $authUser = auth()->user();
 
-        $this->tasks = $authUser->projects()
-            ->with(['tasks' => function($query) {
+        if ($authUser->hasRole('Admin')) {
+            $this->tasks = Project::with(['tasks' => function ($query) {
                 $query->where('status_id', '!=', Status::whereName('Terminé')->first()->id);
             }])
-            ->get()
-            ->pluck('tasks')
-            ->flatten()
-            ->sortByDesc('created_at')
-            ->take(10);
+                ->get()
+                ->pluck('tasks')
+                ->flatten()
+                ->sortByDesc('created_at')
+                ->take(10);
+        } else {
+            $this->tasks = $authUser->projects()
+                ->with(['tasks' => function ($query) {
+                    $query->where('status_id', '!=', Status::whereName('Terminé')->first()->id);
+                }])
+                ->get()
+                ->pluck('tasks')
+                ->flatten()
+                ->sortByDesc('created_at')
+                ->take(10);
+        }
     }
 }
