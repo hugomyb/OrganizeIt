@@ -35,6 +35,7 @@ class StatusSeeder extends Seeder
                 'name' => $status['name']
             ], [
                 'name' => $status['name'],
+                'en_name' => $status['en_name'],
                 'color' => $status['color']
             ]);
         }
