@@ -15,8 +15,7 @@ Route::group(['middleware' => ['web', WelcomesNewUsers::class,]], function () {
 Route::get('/mailable', function () {
 
     $task = App\Models\Task::find(8);
-    $author = \auth()->user();
-    $oldStatus = \App\Models\Priority::first();
+    $comment = App\Models\Comment::first();
 
-    return new \App\Mail\ChangeTaskPriorityMail($task, $author, $oldStatus);
+    return new \App\Mail\NewCommentMail($task, $comment);
 });

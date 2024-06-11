@@ -9,6 +9,7 @@ use App\Mail\AssignToProjectMail;
 use App\Mail\AssignToTaskMail;
 use App\Mail\ChangeTaskPriorityMail;
 use App\Mail\ChangeTaskStatusMail;
+use App\Mail\NewCommentMail;
 use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
@@ -763,12 +764,17 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $task = Task::find($taskId);
 
-        $task->comments()->create([
+        $comment = $task->comments()->create([
             'user_id' => auth()->id(),
             'content' => $this->comment
         ]);
 
         $this->comment = '';
+
+        $users = $task->users;
+        foreach ($users as $user) {
+            SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
+        }
 
         $this->showNotification(__('task.comment_added'));
         $this->dispatch('commentSent');

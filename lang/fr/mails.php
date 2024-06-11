@@ -20,4 +20,10 @@ return [
     'priority_changed_to' => 'a changé de priorité pour',
     'by' => 'par',
     'to' => 'à',
+
+    'new_comment' => 'Nouveau commentaire de :author sur la tâche :task',
+    'has_added_comment' => ':author a ajouté un commentaire à la tâche',
+    'comment' => 'Commentaire',
+    'you_can_view_comment' => 'Vous pouvez accéder au commentaire en cliquant sur le bouton ci-dessous',
+    'view_comment' => 'Voir le commentaire',
 ];

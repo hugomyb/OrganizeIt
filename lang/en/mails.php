@@ -20,4 +20,10 @@ return [
     'priority_changed_to' => 'changed priority to',
     'by' => 'by',
     'to' => 'to',
+
+    'new_comment' => 'New comment from :author on task :task',
+    'has_added_comment' => ':author has added a comment to the task',
+    'comment' => 'Comment',
+    'you_can_view_comment' => 'You can access the comment by clicking the button below',
+    'view_comment' => 'View comment',
 ];
