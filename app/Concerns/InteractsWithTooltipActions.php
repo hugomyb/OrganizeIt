@@ -2,6 +2,8 @@
 
 namespace App\Concerns;
 
+use App\Jobs\SendEmailJob;
+use App\Mail\NewTaskMail;
 use App\Models\Task;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -45,10 +47,17 @@ trait InteractsWithTooltipActions
                 $parentTask = Task::find($arguments['parent_id']);
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
 
-                $parentTask->children()->create(array_merge($data, [
+                $task = $parentTask->children()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
                 ]));
+
+                $users = $task->project->users;
+                $author = auth()->user();
+
+                foreach ($users as $user) {
+                    SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                }
 
                 Notification::make()
                     ->success()

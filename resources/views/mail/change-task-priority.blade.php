@@ -2,6 +2,7 @@
 @lang('mails.task') @lang('mails.priority_changed_to') <span style="color: {{ $task->priority->color }}; font-weight: bold">{{ $task->priority->name }}</span>, @lang('mails.by') {{ $author->name }} :
 
 <x-mail::panel>
+<span style="font-weight: bold">{{ $task->group->name }}</span>
 # <span style="font-weight: bold">{{ $task->title }}</span>
 
 ## @lang('mails.priority')

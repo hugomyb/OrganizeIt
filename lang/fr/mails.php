@@ -26,4 +26,7 @@ return [
     'comment' => 'Commentaire',
     'you_can_view_comment' => 'Vous pouvez accéder au commentaire en cliquant sur le bouton ci-dessous',
     'view_comment' => 'Voir le commentaire',
+
+    'new_task' => 'Nouvelle tâche : :task, par :author',
+    'new_task_added' => 'Une nouvelle tâche a été ajoutée par :author'
 ];

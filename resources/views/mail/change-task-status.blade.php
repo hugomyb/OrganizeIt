@@ -2,6 +2,7 @@
 {{ __('mails.task') . ' ' . __('mails.status_changed_to') . ' ' }} <span style="color: {{ $task->status->color }}; font-weight: bold">{{ $task->status->name }}</span>{{ ', ' . __('mails.by') . ' ' . $author->name }} :
 
 <x-mail::panel>
+<span style="font-weight: bold">{{ $task->group->name }}</span>
 # <span style="font-weight: bold">{{ $task->title }}</span>
 
 ## {{ __('mails.status') }}

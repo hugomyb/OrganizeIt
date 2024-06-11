@@ -1,9 +1,10 @@
 <x-mail::message>
-{{ $author->name . ' ' . __('mails.added_you_to_task')}} :
+{{ __('mails.new_task_added', ['author' => $author->name]) }}:
 
 <x-mail::panel>
 <span style="font-weight: bold">{{ $task->group->name }}</span>
 # <span style="font-weight: bold">{{ $task->title }}</span>
+
 <x-mail::table>
 | {{ __('mails.priority') }}  | {{ __('mails.status') }}   |
 | :-------------------------: |:--------------------------:|
@@ -13,7 +14,9 @@
 
 {{ __('mails.you_can_view_task') }}.
 
-<x-mail::button :url="\App\Filament\Resources\ProjectResource::getUrl('show', ['record' => $task->project, 'task' => $task->id])" color="primary">
+<x-mail::button
+:url="\App\Filament\Resources\ProjectResource::getUrl('show', ['record' => $task->project, 'task' => $task->id])"
+color="primary">
 {{ __('mails.view_task') }}
 </x-mail::button>
 

@@ -10,6 +10,7 @@ use App\Mail\AssignToTaskMail;
 use App\Mail\ChangeTaskPriorityMail;
 use App\Mail\ChangeTaskStatusMail;
 use App\Mail\NewCommentMail;
+use App\Mail\NewTaskMail;
 use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
@@ -37,7 +38,6 @@ use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -190,10 +190,17 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                    $this->record->tasks()->create(array_merge($data, [
+                    $task = $this->record->tasks()->create(array_merge($data, [
                         'order' => $lastTask ? $lastTask->order + 1 : 0,
                         'created_by' => auth()->id()
                     ]));
+
+                    $users = $this->record->users;
+                    $author = auth()->user();
+
+                    foreach ($users as $user) {
+                        SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                    }
 
                     $this->showNotification(__('task.task_added'));
                 }),
@@ -358,10 +365,17 @@ class ShowProject extends Page implements HasForms, HasActions
             ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                $this->record->tasks()->create(array_merge($data, [
+                $task = $this->record->tasks()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
                 ]));
+
+                $users = $this->record->users;
+                $author = auth()->user();
+
+                foreach ($users as $user) {
+                    SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                }
 
                 $this->showNotification(__('task.task_added'));
             });
@@ -802,38 +816,4 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $this->currentTask = null;
     }
-
-
-    // ======== MAILS ========
-//    #[On('assignUserToTaskMail')]
-//    public function sendAssignUserToTaskMail($taskId, $userId)
-//    {
-//        $task = Task::find($taskId);
-//        $user = User::find($userId);
-//        $author = auth()->user();
-//
-//        Mail::to($user)->send(new AssignToTaskMail($task, $author));
-//    }
-//
-//    #[On('assignUserToProjectMail')]
-//    public function sendAssignUserToProjectMail($userId)
-//    {
-//        $user = User::find($userId);
-//        $author = auth()->user();
-//
-//        Mail::to($user)->send(new AssignToProjectMail($this->record, $author));
-//    }
-//
-//    #[On('changeTaskStatusMail')]
-//    public function sendChangeTaskStatusMail($taskId, $oldStatusId)
-//    {
-//        $task = Task::find($taskId);
-//        $author = auth()->user();
-//        $users = $task->project->users;
-//        $oldStatus = Status::find($oldStatusId);
-//
-//        foreach ($users as $user) {
-//            Mail::to($user)->send(new ChangeTaskStatusMail($task, $author, $oldStatus));
-//        }
-//    }
 }
