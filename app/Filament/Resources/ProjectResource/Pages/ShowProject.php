@@ -4,7 +4,11 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
+use App\Jobs\SendEmailJob;
 use App\Mail\AssignToProjectMail;
+use App\Mail\AssignToTaskMail;
+use App\Mail\ChangeTaskPriorityMail;
+use App\Mail\ChangeTaskStatusMail;
 use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
@@ -392,21 +396,44 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $task = Task::find($taskId);
 
-        if ($statusId === Status::whereName('Terminé')->first()->id)
-            $task->update(['status_id' => $statusId, 'completed_at' => now()]);
-        else
-            $task->update(['status_id' => $statusId, 'completed_at' => null]);
+        $oldStatusId = $task->status_id;
+        $oldStatus = Status::find($oldStatusId);
 
-        $this->showNotification(__('status.status_updated'));
+        if ($statusId != $task->status_id) {
+            if ($statusId === Status::whereName('Terminé')->first()->id) {
+                $task->update(['status_id' => $statusId, 'completed_at' => now()]);
+            } else {
+                $task->update(['status_id' => $statusId, 'completed_at' => null]);
+            }
+
+            $users = $task->project->users;
+
+            foreach ($users as $user) {
+                SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus);
+            }
+
+            $this->showNotification(__('status.status_updated'));
+        }
     }
 
     public function setTaskPriority($taskId, $priorityId)
     {
         $task = Task::find($taskId);
 
-        $task->update(['priority_id' => $priorityId]);
+        $oldPriorityId = $task->priority_id;
+        $oldPriority = Priority::find($oldPriorityId);
 
-        $this->showNotification(__('priority.priority_updated'));
+        if ($priorityId != $task->priority_id) {
+            $task->update(['priority_id' => $priorityId]);
+
+            $users = $task->project->users;
+
+            foreach ($users as $user) {
+                SendEmailJob::dispatch(ChangeTaskPriorityMail::class, $user, $task, auth()->user(), $oldPriority);
+            }
+
+            $this->showNotification(__('priority.priority_updated'));
+        }
     }
 
     public function updateTaskOrder($groupId, $nestableJson)
@@ -468,11 +495,14 @@ class ShowProject extends Page implements HasForms, HasActions
     public function assignUserToTask($userId, $taskId)
     {
         $task = Task::find($taskId);
+        $user = User::find($userId);
         if ($task) {
             if (!$task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->attach($userId);
             }
         }
+
+        SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
 
         $this->showNotification(__('user.assigned'));
     }
@@ -480,6 +510,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public function toggleUserToTask($userId, $taskId)
     {
         $task = Task::find($taskId);
+        $user = User::find($userId);
         if ($task) {
             if ($task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->detach($userId);
@@ -487,6 +518,8 @@ class ShowProject extends Page implements HasForms, HasActions
                 $this->showNotification(__('user.unassigned'));
             } else {
                 $task->users()->attach($userId);
+
+                SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
 
                 $this->showNotification(__('user.assigned'));
             }
@@ -534,10 +567,9 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $this->record->users()->attach($userId);
 
-        // send mail
         $user = User::find($userId);
-        $author = auth()->user();
-        Mail::to($user)->send(new AssignToProjectMail($this->record, $author));
+
+        SendEmailJob::dispatch(AssignToProjectMail::class, $user, $this->record, auth()->user());
 
         $this->showNotification(__('user.added'));
     }
@@ -764,4 +796,38 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $this->currentTask = null;
     }
+
+
+    // ======== MAILS ========
+//    #[On('assignUserToTaskMail')]
+//    public function sendAssignUserToTaskMail($taskId, $userId)
+//    {
+//        $task = Task::find($taskId);
+//        $user = User::find($userId);
+//        $author = auth()->user();
+//
+//        Mail::to($user)->send(new AssignToTaskMail($task, $author));
+//    }
+//
+//    #[On('assignUserToProjectMail')]
+//    public function sendAssignUserToProjectMail($userId)
+//    {
+//        $user = User::find($userId);
+//        $author = auth()->user();
+//
+//        Mail::to($user)->send(new AssignToProjectMail($this->record, $author));
+//    }
+//
+//    #[On('changeTaskStatusMail')]
+//    public function sendChangeTaskStatusMail($taskId, $oldStatusId)
+//    {
+//        $task = Task::find($taskId);
+//        $author = auth()->user();
+//        $users = $task->project->users;
+//        $oldStatus = Status::find($oldStatusId);
+//
+//        foreach ($users as $user) {
+//            Mail::to($user)->send(new ChangeTaskStatusMail($task, $author, $oldStatus));
+//        }
+//    }
 }
