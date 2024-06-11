@@ -275,7 +275,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->preload()
                 ->searchable()
                 ->label(__('group.group'))
-                ->default($groupId ?? $this->record->groups->first()->id)
+                ->default($groupId ?? $this->record->groups->first()->id ?? null)
                 ->required()
                 ->options($this->record->groups->pluck('name', 'id')),
 
