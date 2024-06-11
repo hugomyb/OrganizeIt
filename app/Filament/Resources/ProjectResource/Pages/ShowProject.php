@@ -4,12 +4,14 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
+use App\Mail\AssignToProjectMail;
 use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -30,6 +32,7 @@ use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -530,6 +533,11 @@ class ShowProject extends Page implements HasForms, HasActions
     public function addUserToProject($userId)
     {
         $this->record->users()->attach($userId);
+
+        // send mail
+        $user = User::find($userId);
+        $author = auth()->user();
+        Mail::to($user)->send(new AssignToProjectMail($this->record, $author));
 
         $this->showNotification(__('user.added'));
     }
