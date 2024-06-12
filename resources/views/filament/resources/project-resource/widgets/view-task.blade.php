@@ -253,8 +253,7 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap -mt-3"
-             style="margin-bottom: 30px">
+        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap">
             <span class="text-gray-500 text-xs">{{ __('task.commit_numbers') }}</span>
             @if($task->commit_numbers)
                 @foreach($task->commit_numbers as $commit)
@@ -289,24 +288,31 @@
             />
         </div>
 
-        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap -mt-3"
-             style="margin-bottom: 30px">
-            @if($task->start_date && $task->end_date)
-                <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
-                <div class="flex items-center gap-1">
-                    <span class="text-xs font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
-                    <span class="text-xs font-bold">-</span>
-                    <span class="text-xs font-bold">{{ $task->end_date->translatedFormat('d M') }}</span>
+        <div class="flex items-center justify-center gap-2 text-xs font-semibold flex-wrap">
+            @if($task->start_date && $task->due_date)
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
+                    <div class="flex items-center gap-1">
+                        <span class="font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
+                        <x-heroicon-o-arrow-long-right class="h-5 w-5"/>
+                        <span class="font-bold">{{ $task->due_date->translatedFormat('d M') }}</span>
+                    </div>
                 </div>
             @elseif($task->start_date)
-                <span class="text-gray-500 text-xs">{{ __('task.start_date') }}</span>
-                <span class="text-xs font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
-            @elseif($task->end_date)
-                <span class="text-gray-500 text-xs">{{ __('task.end_date') }}</span>
-                <span class="text-xs font-bold">{{ $task->end_date->translatedFormat('d M') }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-xs">{{ __('task.start_date') }}</span>
+                    <span class="font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
+                </div>
+            @elseif($task->due_date)
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-xs">{{ __('task.end_date') }}</span>
+                    <span class="font-bold">{{ $task->due_date->translatedFormat('d M') }}</span>
+                </div>
             @else
-                <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
-                <span class="text-xs font-bold">{{ __('task.no_date') }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
+                    <span class="font-bold">{{ __('task.no_date') }}</span>
+                </div>
             @endif
         </div>
     </div>
