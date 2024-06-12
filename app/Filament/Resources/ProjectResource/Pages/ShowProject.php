@@ -993,4 +993,21 @@ class ShowProject extends Page implements HasForms, HasActions
             $this->showNotification(__('task.commit_number_added'));
         }
     }
+
+    public function deleteCommitNumber($taskId, $commit)
+    {
+        $task = Task::find($taskId);
+
+        $commitNumbers = $task->commit_numbers;
+
+        $commitNumbers = collect($commitNumbers)->filter(function ($commitNumbers) use ($commit) {
+            return $commitNumbers !== $commit;
+        })->values();
+
+        $task->update([
+            'commit_numbers' => $commitNumbers
+        ]);
+
+        $this->showNotification(__('task.commit_number_removed'));
+    }
 }

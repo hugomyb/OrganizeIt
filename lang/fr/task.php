@@ -73,4 +73,5 @@ return [
     'commit_numbers' => 'Numéros de commit',
     'add_commit_number' => 'Ajouter un numéro de commit',
     'commit_number_added' => 'Numéro de commit ajouté',
+    'commit_number_removed' => 'Numéro de commit supprimé',
 ];

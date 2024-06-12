@@ -23,11 +23,15 @@ class Task extends Model
         'created_by',
         'completed_at',
         'commit_numbers',
+        'start_date',
+        'due_date',
     ];
 
     protected $casts = [
         'attachments' => 'array',
         'commit_numbers' => 'array',
+        'start_date' => 'date',
+        'due_date' => 'date',
     ];
 
     public function users(): BelongsToMany

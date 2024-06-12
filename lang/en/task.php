@@ -73,4 +73,5 @@ return [
     'commit_numbers' => 'Commit Numbers',
     'add_commit_number' => 'Add Commit Number',
     'commit_number_added' => 'Commit Number Added',
+    'commit_number_removed' => 'Commit Number Removed',
 ];
