@@ -8,7 +8,7 @@ return [
 
     'assign_to_task' => 'Vous avez été assigné à une tâche',
     'view_task' => 'Voir la tâche',
-    'added_you_to_task' => 'vous a ajouté à la tâche',
+    'added_you_to_task' => 'vous a assigné à la tâche',
     'you_can_view_task' => 'Vous pouvez accéder à la tâche en cliquant sur le bouton ci-dessous',
 
     'project' => 'Projet',
