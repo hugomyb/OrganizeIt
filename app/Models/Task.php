@@ -22,10 +22,12 @@ class Task extends Model
         'order',
         'created_by',
         'completed_at',
+        'commit_numbers',
     ];
 
     protected $casts = [
         'attachments' => 'array',
+        'commit_numbers' => 'array',
     ];
 
     public function users(): BelongsToMany

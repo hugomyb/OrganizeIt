@@ -10,6 +10,7 @@ use App\Mail\AssignToTaskMail;
 use App\Mail\ChangeTaskPriorityMail;
 use App\Mail\ChangeTaskStatusMail;
 use App\Mail\NewCommentMail;
+use App\Mail\NewCommitMail;
 use App\Mail\NewTaskMail;
 use App\Models\Comment;
 use App\Models\Group;
@@ -71,6 +72,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public $attachments;
 
     public $comment;
+    public $commitNumber;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -916,5 +918,32 @@ class ShowProject extends Page implements HasForms, HasActions
         ]);
 
         $this->currentTask = null;
+    }
+
+    public function addCommitNumber($taskId)
+    {
+        $task = Task::find($taskId);
+
+        $commitNumbers = $task->commit_numbers;
+
+        if ($this->commitNumber !== '') {
+            if ($commitNumbers) {
+                $commitNumbers[] = $this->commitNumber;
+            } else {
+                $commitNumbers = [$this->commitNumber];
+            }
+
+            $task->update([
+                'commit_numbers' => $commitNumbers
+            ]);
+
+            $this->dispatch('close-modal', id: 'add-commit');
+
+            SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $this->commitNumber);
+
+            $this->commitNumber = '';
+
+            $this->showNotification(__('task.commit_number_added'));
+        }
     }
 }

@@ -49,12 +49,14 @@
             {{ $task->title }}
 
             @can('manageTasks', \App\Models\User::class)
-                <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer" title="{{ __('task.edit') }}"
+                <x-phosphor-pencil class="h-5 w-5 absolute inline edit-title cursor-pointer"
+                                   title="{{ __('task.edit') }}"
                                    @click="$refs.taskTitle.attributes.contenteditable.value = 'true'; $refs.taskTitle.focus();"
                                    style="margin-left: 10px; margin-top: 5px; color: #8a8a8a"/>
             @endcan
 
-            <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer" title="{{ __('general.copy') }}"
+            <x-heroicon-o-clipboard-document class="h-5 w-5 inline copy-title cursor-pointer"
+                                             title="{{ __('general.copy') }}"
                                              @click="navigator.clipboard.writeText($refs.taskTitle.innerText); $wire.showNotification('{{ __('general.copied') }}');"
                                              style="margin-left: 35px; color: #8a8a8a"/>
         </span>
@@ -252,6 +254,47 @@
         </div>
     </div>
 
+    <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap -mt-3"
+         style="margin-bottom: 30px">
+        <span class="text-gray-500 text-xs">{{ __('task.commit_numbers') }}</span>
+        @if($task->commit_numbers)
+            @foreach($task->commit_numbers as $commit)
+                <div class="flex items-center gap-1">
+                    <x-gmdi-commit class="h-5 w-5" style="color: #f34f29"/>
+                    <span class="text-xs font-bold">{{ $commit }}</span>
+                </div>
+            @endforeach
+        @endif
+        <x-filament::icon-button
+            icon="heroicon-o-plus"
+            style="margin-left: 3px"
+            x-on:click="$wire.dispatch('open-modal', {id: 'add-commit'});"
+            tooltip="{{ __('task.add_commit_number') }}"
+        />
+    </div>
+
+    <x-filament::modal width="xl" id="add-commit">
+        <x-slot name="heading">
+            {{ __('task.add_commit_number') }}
+        </x-slot>
+
+        <x-filament::input.wrapper>
+            <x-filament::input
+                type="text"
+                required
+                wire:model="commitNumber"
+            />
+        </x-filament::input.wrapper>
+
+        <x-slot name="footerActions">
+            <x-filament::button
+                color="primary"
+                wire:click="addCommitNumber({{ $task->id }})"
+            >
+                {{ __('general.save') }}
+            </x-filament::button>
+        </x-slot>
+    </x-filament::modal>
 
     <div x-data="{
             richIsVisible: false,

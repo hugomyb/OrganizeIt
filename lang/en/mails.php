@@ -28,5 +28,8 @@ return [
     'view_comment' => 'View comment',
 
     'new_task' => 'New task: :task, by :author',
-    'new_task_added' => 'A new task has been added by :author'
+    'new_task_added' => 'A new task has been added by :author',
+
+    'new_commit' => ':author added a commit (:commit) to task :task',
+    'new_commit_added' => 'A new commit has been added by :author',
 ];

@@ -69,4 +69,8 @@ return [
     'created_by' => 'Created by',
     'assign_to' => 'Assign to',
     'unassigned' => 'Unassigned',
+
+    'commit_numbers' => 'Commit Numbers',
+    'add_commit_number' => 'Add Commit Number',
+    'commit_number_added' => 'Commit Number Added',
 ];

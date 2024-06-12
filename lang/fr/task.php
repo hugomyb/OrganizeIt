@@ -69,4 +69,8 @@ return [
     'created_by' => 'Créé par',
     'assign_to' => 'Assigner à',
     'unassigned' => 'Non assigné',
+
+    'commit_numbers' => 'Numéros de commit',
+    'add_commit_number' => 'Ajouter un numéro de commit',
+    'commit_number_added' => 'Numéro de commit ajouté',
 ];
