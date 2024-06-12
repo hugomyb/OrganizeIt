@@ -19,6 +19,7 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use App\Models\User;
+use DOMDocument;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -724,6 +725,50 @@ class ShowProject extends Page implements HasForms, HasActions
             ->send();
     }
 
+    function processDescription($htmlContent) {
+        $dom = new DOMDocument();
+        // Load HTML content
+        libxml_use_internal_errors(true);
+        $dom->loadHTML(mb_convert_encoding($htmlContent, 'HTML-ENTITIES', 'UTF-8'));
+        libxml_clear_errors();
+
+        // Get all <a> elements
+        $links = $dom->getElementsByTagName('a');
+
+        foreach ($links as $link) {
+            // Set target attribute to _blank and style to color blue
+            $link->setAttribute('target', '_blank');
+            $link->setAttribute('style', 'color: blue;');
+        }
+
+        // Convert text URLs to <a> elements with target="_blank" and style
+        $body = $dom->getElementsByTagName('body')->item(0);
+        $this->convertTextUrlsToLinks($body, $dom);
+
+        // Save and return modified HTML
+        return $dom->saveHTML($dom->documentElement);
+    }
+
+    function convertTextUrlsToLinks($node, $dom) {
+        if ($node->nodeType == XML_TEXT_NODE) {
+            $text = $node->nodeValue;
+            $newHtml = preg_replace(
+                '#(https?://[^\s<]+)#i',
+                '<a href="$1" target="_blank" style="color: blue;">$1</a>',
+                htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
+            );
+            if ($newHtml !== htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) {
+                $newFragment = $dom->createDocumentFragment();
+                $newFragment->appendXML($newHtml);
+                $node->parentNode->replaceChild($newFragment, $node);
+            }
+        } elseif ($node->nodeType == XML_ELEMENT_NODE) {
+            foreach ($node->childNodes as $child) {
+                $this->convertTextUrlsToLinks($child, $dom);
+            }
+        }
+    }
+
     public function fillRichEditorField($task)
     {
         $this->currentTask = Task::find($task['id']);
@@ -760,8 +805,10 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $task = Task::find($task['id']);
 
+        $modifiedDescription = $this->processDescription($richData['description']);
+
         $task->update([
-            'description' => $richData['description']
+            'description' => $modifiedDescription
         ]);
 
         $this->richEditorFieldForm->fill([
