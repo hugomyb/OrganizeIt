@@ -19,13 +19,17 @@ use App\Models\Status;
 use App\Models\Task;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -204,6 +208,103 @@ class ShowProject extends Page implements HasForms, HasActions
 
                     $this->showNotification(__('task.task_added'));
                 }),
+
+            ActionGroup::make([
+                Action::make('export_completed_tasks')
+                    ->label(__('task.export_completed_tasks'))
+                    ->icon('uni-file-export-o')
+                    ->visible(auth()->user()->hasPermission('export_tasks'))
+                    ->form([
+                        Fieldset::make(__('task.form.period'))
+                            ->columns(2)
+                            ->live()
+                            ->schema([
+                                Select::make('period')
+                                    ->columnSpanFull()
+                                    ->default('this_week')
+                                    ->selectablePlaceholder(false)
+                                    ->options([
+                                        'today' => __('task.form.today'),
+                                        'yesterday' => __('task.form.yesterday'),
+                                        'this_week' => __('task.form.this_week'),
+                                        'last_week' => __('task.form.last_week'),
+                                        'this_month' => __('task.form.this_month'),
+                                        'last_month' => __('task.form.last_month'),
+                                        'custom' => __('task.form.custom'),
+                                    ])
+                                    ->label(__('task.form.period'))
+                                    ->required(),
+
+                                DatePicker::make('start_date')
+                                    ->label(__('task.form.start_date'))
+                                    ->placeholder(__('task.form.select_date'))
+                                    ->native(false)
+                                    ->visible(fn($get) => $get('period') === 'custom')
+                                    ->required(),
+
+                                DatePicker::make('end_date')
+                                    ->label(__('task.form.end_date'))
+                                    ->placeholder(__('task.form.select_date'))
+                                    ->native(false)
+                                    ->visible(fn($get) => $get('period') === 'custom')
+                                    ->required(),
+                            ]),
+
+                        // taches sur cette periode
+                        Fieldset::make(__('task.exported_tasks'))
+                            ->visible(fn($get) => ($get('start_date') && $get('end_date')) || $get('period') !== 'custom')
+                            ->live()
+                            ->columns(1)
+                            ->schema([
+                                Placeholder::make('exported_tasks')
+                                    ->hiddenLabel()
+                                    ->content(function ($get) {
+                                        $tasks = collect();
+
+                                        if ($get('period') === 'today') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->startOfDay())
+                                                ->where('completed_at', '<=', now()->endOfDay())
+                                                ->get();
+                                        } elseif ($get('period') === 'yesterday') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->subDay()->startOfDay())
+                                                ->where('completed_at', '<=', now()->subDay()->endOfDay())
+                                                ->get();
+                                        } elseif ($get('period') === 'this_week') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->startOfWeek())
+                                                ->where('completed_at', '<=', now()->endOfWeek())
+                                                ->get();
+                                        } elseif ($get('period') === 'last_week') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->subWeek()->startOfWeek())
+                                                ->where('completed_at', '<=', now()->subWeek()->endOfWeek())
+                                                ->get();
+                                        } elseif ($get('period') === 'this_month') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->startOfMonth())
+                                                ->where('completed_at', '<=', now()->endOfMonth())
+                                                ->get();
+                                        } elseif ($get('period') === 'last_month') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', now()->subMonth()->startOfMonth())
+                                                ->where('completed_at', '<=', now()->subMonth()->endOfMonth())
+                                                ->get();
+                                        } elseif ($get('period') === 'custom') {
+                                            $tasks = Task::where('project_id', $this->record->id)
+                                                ->where('completed_at', '>=', $get('start_date'))
+                                                ->where('completed_at', '<=', $get('end_date'))
+                                                ->get();
+                                        }
+
+                                        return view('tasks.exported-tasks', compact('tasks'));
+                                    })
+                            ]),
+                    ])
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+            ]),
         ];
     }
 

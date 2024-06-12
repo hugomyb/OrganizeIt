@@ -21,13 +21,34 @@ return [
     'delete_description_subtasks' => ' sous-tâches ?',
     'confirm_delete' => 'Êtes-vous sûr de vouloir supprimer cette tâche ?',
 
+    'export_completed_tasks' => 'Exporter tâches terminées',
+
     'form' => [
         'title' => 'Titre',
         'description' => 'Description',
         'status' => 'Statut',
         'priority' => 'Priorité',
         'attachments' => 'Pièces jointes',
+
+        'start_date' => 'Date de début',
+        'end_date' => 'Date de fin',
+        'period' => 'Période',
+        'select_date' => 'Sélectionner une date',
+
+        'today' => 'Aujourd\'hui',
+        'yesterday' => 'Hier',
+        'this_week' => 'Cette semaine',
+        'last_week' => 'La semaine dernière',
+        'this_month' => 'Ce mois-ci',
+        'last_month' => 'Le mois dernier',
+        'custom' => 'Personnalisé',
     ],
+
+    'export' => 'Exporter',
+    'exported_tasks' => 'Tâches exportées',
+    'copied_tasks' => 'Les tâches ont été copiées dans le presse-papiers.',
+    'copy_tasks' => 'Copier les tâches',
+    'no_tasks' => 'Aucune tâche',
 
     'comments' => 'Commentaires',
     'no_comment' => 'Aucun commentaire',

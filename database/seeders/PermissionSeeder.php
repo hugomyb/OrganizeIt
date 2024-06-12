@@ -72,6 +72,11 @@ class PermissionSeeder extends Seeder
                 'key' => 'add_user_to_project',
                 'name' => 'Ajouter utilisateur au projet',
                 'description' => 'Ajouter un utilisateur au projet',
+            ],
+            [
+                'key' => 'export_tasks',
+                'name' => 'Exporter les tâches',
+                'description' => 'Exporter les tâches dans un projet',
             ]
         ];
 
