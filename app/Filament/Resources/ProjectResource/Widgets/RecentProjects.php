@@ -9,6 +9,8 @@ class RecentProjects extends Widget
 {
     protected static string $view = 'filament.resources.project-resource.widgets.recent-projects';
 
+    protected static ?int $sort = 1;
+
     public $projects = [];
 
     public function mount()

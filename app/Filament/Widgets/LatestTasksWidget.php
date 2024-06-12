@@ -10,6 +10,8 @@ class LatestTasksWidget extends Widget
 {
     protected static string $view = 'filament.widgets.latest-tasks-widget';
 
+    protected static ?int $sort = 2;
+
     public $tasks = [];
 
     public function mount()
