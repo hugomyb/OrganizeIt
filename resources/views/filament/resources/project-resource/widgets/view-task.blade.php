@@ -288,6 +288,27 @@
                 tooltip="{{ __('task.add_commit_number') }}"
             />
         </div>
+
+        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap -mt-3"
+             style="margin-bottom: 30px">
+            @if($task->start_date && $task->end_date)
+                <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
+                    <span class="text-xs font-bold">-</span>
+                    <span class="text-xs font-bold">{{ $task->end_date->translatedFormat('d M') }}</span>
+                </div>
+            @elseif($task->start_date)
+                <span class="text-gray-500 text-xs">{{ __('task.start_date') }}</span>
+                <span class="text-xs font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
+            @elseif($task->end_date)
+                <span class="text-gray-500 text-xs">{{ __('task.end_date') }}</span>
+                <span class="text-xs font-bold">{{ $task->end_date->translatedFormat('d M') }}</span>
+            @else
+                <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
+                <span class="text-xs font-bold">{{ __('task.no_date') }}</span>
+            @endif
+        </div>
     </div>
 
     <x-filament::modal width="xl" id="add-commit">

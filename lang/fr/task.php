@@ -74,4 +74,9 @@ return [
     'add_commit_number' => 'Ajouter un numéro de commit',
     'commit_number_added' => 'Numéro de commit ajouté',
     'commit_number_removed' => 'Numéro de commit supprimé',
+
+    'dates' => 'Date Début/Fin',
+    'start_date' => 'Débute le',
+    'end_date' => 'Finit le',
+    'no_date' => 'Non daté',
 ];

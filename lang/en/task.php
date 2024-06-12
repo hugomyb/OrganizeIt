@@ -74,4 +74,9 @@ return [
     'add_commit_number' => 'Add Commit Number',
     'commit_number_added' => 'Commit Number Added',
     'commit_number_removed' => 'Commit Number Removed',
+
+    'dates' => 'Start/Due Date',
+    'start_date' => 'Start',
+    'end_date' => 'Due',
+    'no_date' => 'No Date',
 ];
