@@ -253,7 +253,7 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap">
+        <div class="flex items-start justify-center gap-2 text-sm font-semibold flex-wrap">
             <span class="text-gray-500 text-xs">{{ __('task.commit_numbers') }}</span>
             @if($task->commit_numbers)
                 @foreach($task->commit_numbers as $commit)
@@ -280,65 +280,41 @@
                     </x-filament::dropdown>
                 @endforeach
             @endif
+
             <x-filament::icon-button
                 icon="heroicon-o-plus"
                 style="margin-left: 3px"
-                x-on:click="$wire.dispatch('open-modal', {id: 'add-commit'});"
+                x-on:click="$wire.replaceMountedAction('addCommit', {task: {{ $task->id }}});"
                 tooltip="{{ __('task.add_commit_number') }}"
             />
         </div>
 
-        <div class="flex items-center justify-center gap-2 text-xs font-semibold flex-wrap">
-            @if($task->start_date && $task->due_date)
-                <div class="flex items-center gap-2">
+        <div class="flex items-start justify-center gap-2 text-sm font-semibold flex-wrap">
+            <div class="flex items-center gap-2">
+                @if($task->start_date && $task->due_date)
                     <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1 cursor-pointer"
+                         x-on:click="$wire.replaceMountedAction('updateDates', {task_id: {{ $task->id }}});">
                         <span class="font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
                         <x-heroicon-o-arrow-long-right class="h-5 w-5"/>
                         <span class="font-bold">{{ $task->due_date->translatedFormat('d M') }}</span>
                     </div>
-                </div>
-            @elseif($task->start_date)
-                <div class="flex items-center gap-2">
+                @elseif($task->start_date)
                     <span class="text-gray-500 text-xs">{{ __('task.start_date') }}</span>
-                    <span class="font-bold">{{ $task->start_date->translatedFormat('d M') }}</span>
-                </div>
-            @elseif($task->due_date)
-                <div class="flex items-center gap-2">
+                    <span class="font-bold cursor-pointer"
+                          x-on:click="$wire.replaceMountedAction('updateDates', {task_id: {{ $task->id }}});">{{ $task->start_date->translatedFormat('d M') }}</span>
+                @elseif($task->due_date)
                     <span class="text-gray-500 text-xs">{{ __('task.end_date') }}</span>
-                    <span class="font-bold">{{ $task->due_date->translatedFormat('d M') }}</span>
-                </div>
-            @else
-                <div class="flex items-center gap-2">
+                    <span class="font-bold cursor-pointer"
+                          x-on:click="$wire.replaceMountedAction('updateDates', {task_id: {{ $task->id }}});">{{ $task->due_date->translatedFormat('d M') }}</span>
+                @else
                     <span class="text-gray-500 text-xs">{{ __('task.dates') }}</span>
-                    <span class="font-bold">{{ __('task.no_date') }}</span>
-                </div>
-            @endif
+                    <span class="font-bold cursor-pointer"
+                          x-on:click="$wire.replaceMountedAction('updateDates', {task_id: {{ $task->id }}});">{{ __('task.no_date') }}</span>
+                @endif
+            </div>
         </div>
     </div>
-
-    <x-filament::modal width="xl" id="add-commit">
-        <x-slot name="heading">
-            {{ __('task.add_commit_number') }}
-        </x-slot>
-
-        <x-filament::input.wrapper>
-            <x-filament::input
-                type="text"
-                required
-                wire:model="commitNumber"
-            />
-        </x-filament::input.wrapper>
-
-        <x-slot name="footerActions">
-            <x-filament::button
-                color="primary"
-                wire:click="addCommitNumber({{ $task->id }})"
-            >
-                {{ __('general.save') }}
-            </x-filament::button>
-        </x-slot>
-    </x-filament::modal>
 
     <div x-data="{
             richIsVisible: false,
@@ -356,7 +332,7 @@
                     <x-filament::icon-button
                         icon="phosphor-pencil"
                         label="Edit description"
-                        x-on:click="$wire.fillRichEditorField({{$task}}); isCollapsed = ! isCollapsed; richIsVisible = true;"
+                        x-on:click="isCollapsed = ! isCollapsed; richIsVisible = true;"
                         tooltip="{{ __('task.edit_description') }}"
                         x-show="!richIsVisible"
                     />
@@ -373,7 +349,7 @@
                         outlined
                         class="text-xs"
                         x-show="richIsVisible"
-                        x-on:click="$wire.cancelRichEditorDescription; richIsVisible = false; isCollapsed = ! isCollapsed;">
+                        x-on:click="richIsVisible = false; isCollapsed = ! isCollapsed;">
                         {{ __('general.cancel') }}
                     </x-filament::button>
                 </x-slot>

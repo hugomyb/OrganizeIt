@@ -31,6 +31,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -73,7 +74,6 @@ class ShowProject extends Page implements HasForms, HasActions
     public $attachments;
 
     public $comment;
-    public $commitNumber;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -495,6 +495,11 @@ class ShowProject extends Page implements HasForms, HasActions
     public function viewTaskAction(): Action
     {
         return ViewAction::make('viewTask')
+            ->mountUsing(function ($arguments) {
+                $task = Task::find($arguments['task_id']);
+                $this->currentTask = $task;
+                $this->fillRichEditorField($task);
+            })
             ->modalHeading('')
             ->slideOver()
             ->modalWidth('6xl')
@@ -725,7 +730,8 @@ class ShowProject extends Page implements HasForms, HasActions
             ->send();
     }
 
-    function processDescription($htmlContent) {
+    function processDescription($htmlContent)
+    {
         $dom = new DOMDocument();
         // Load HTML content
         libxml_use_internal_errors(true);
@@ -749,7 +755,8 @@ class ShowProject extends Page implements HasForms, HasActions
         return $dom->saveHTML($dom->documentElement);
     }
 
-    function convertTextUrlsToLinks($node, $dom) {
+    function convertTextUrlsToLinks($node, $dom)
+    {
         if ($node->nodeType == XML_TEXT_NODE) {
             $text = $node->nodeValue;
             $newHtml = preg_replace(
@@ -769,12 +776,11 @@ class ShowProject extends Page implements HasForms, HasActions
         }
     }
 
-    public function fillRichEditorField($task)
+    public function fillRichEditorField()
     {
-        $this->currentTask = Task::find($task['id']);
         if ($this->currentTask)
             $this->richEditorFieldForm->fill([
-                'description' => $task['description'] ?? ''
+                'description' => $this->currentTask->description ?? ''
             ]);
         else
             $this->richEditorFieldForm->fill([
@@ -811,22 +817,7 @@ class ShowProject extends Page implements HasForms, HasActions
             'description' => $modifiedDescription
         ]);
 
-        $this->richEditorFieldForm->fill([
-            'description' => ''
-        ]);
-
-        $this->currentTask = null;
-
         $this->showNotification(__('task.description_updated'));
-    }
-
-    public function cancelRichEditorDescription()
-    {
-        $this->richEditorFieldForm->fill([
-            'description' => ''
-        ]);
-
-        $this->currentTask = null;
     }
 
     protected function getForms(): array
@@ -956,10 +947,6 @@ class ShowProject extends Page implements HasForms, HasActions
     #[On('modal-closed')]
     public function modalClosed()
     {
-        $this->richEditorFieldForm->fill([
-            'description' => ''
-        ]);
-
         $this->fileUploadFieldForm->fill([
             'attachments' => []
         ]);
@@ -967,31 +954,54 @@ class ShowProject extends Page implements HasForms, HasActions
         $this->currentTask = null;
     }
 
-    public function addCommitNumber($taskId)
+    public function addCommitAction(): Action
     {
-        $task = Task::find($taskId);
+        return Action::make('addCommit')
+            ->hiddenLabel()
+            ->iconButton()
+            ->modal()
+            ->icon('heroicon-o-plus')
+            ->tooltip(__('task.add_commit_number'))
+            ->modalHeading(__('task.add_commit'))
+            ->form([
+                TextInput::make('commitNumber')
+                    ->label(__('task.number'))
+                    ->required(),
+            ])
+            ->action(function (array $data, array $arguments): void {
+                $task = Task::find($arguments['task']);
 
-        $commitNumbers = $task->commit_numbers;
+                $commitNumbers = $task->commit_numbers ?? [];
 
-        if ($this->commitNumber !== '') {
-            if ($commitNumbers) {
-                $commitNumbers[] = $this->commitNumber;
-            } else {
-                $commitNumbers = [$this->commitNumber];
-            }
+                if ($data['commitNumber'] && !in_array($data['commitNumber'], $commitNumbers)) {
+                    if ($commitNumbers) {
+                        $commitNumbers[] = $data['commitNumber'];
+                    } else {
+                        $commitNumbers = [$data['commitNumber']];
+                    }
 
-            $task->update([
-                'commit_numbers' => $commitNumbers
-            ]);
+                    $task->update([
+                        'commit_numbers' => $commitNumbers
+                    ]);
 
-            $this->dispatch('close-modal', id: 'add-commit');
+                    SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
 
-            SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $this->commitNumber);
+                    $this->showNotification(__('task.commit_number_added'));
 
-            $this->commitNumber = '';
-
-            $this->showNotification(__('task.commit_number_added'));
-        }
+                    $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
+                }
+            })
+            ->modalCloseButton(false)
+            ->modalCancelAction(false)
+            ->closeModalByClickingAway(false)
+            ->extraModalFooterActions(function (array $arguments) {
+                return [
+                    Action::make('closeModal')
+                        ->label(__('task.close'))
+                        ->color('gray')
+                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task']]))
+                ];
+            });
     }
 
     public function deleteCommitNumber($taskId, $commit)
@@ -1009,5 +1019,52 @@ class ShowProject extends Page implements HasForms, HasActions
         ]);
 
         $this->showNotification(__('task.commit_number_removed'));
+    }
+
+    public function updateDatesAction(): Action
+    {
+        return Action::make('updateDates')
+            ->fillForm(function (array $arguments) {
+                $record = Task::find($arguments['task_id']);
+
+                return [
+                    'start_date' => $record->start_date,
+                    'due_date' => $record->due_date
+                ];
+            })
+            ->modalHeading(__('task.update_dates'))
+            ->form([
+                Grid::make(2)
+                    ->schema([
+                        DatePicker::make('start_date')
+                            ->label(__('task.start_date')),
+
+                        DatePicker::make('due_date')
+                            ->label(__('task.end_date')),
+                    ])
+            ])
+            ->action(function ($data, array $arguments): void {
+                $task = Task::find($arguments['task_id']);
+
+                $task->update([
+                    'start_date' => $data['start_date'] ?? null,
+                    'due_date' => $data['due_date'] ?? null
+                ]);
+
+                $this->showNotification(__('task.dates_updated'));
+
+                $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
+            })
+            ->modalCloseButton(false)
+            ->modalCancelAction(false)
+            ->closeModalByClickingAway(false)
+            ->extraModalFooterActions(function (array $arguments) {
+                return [
+                    Action::make('closeModal')
+                        ->label(__('task.close'))
+                        ->color('gray')
+                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task_id']]))
+                ];
+            });
     }
 }

@@ -71,12 +71,18 @@ return [
     'unassigned' => 'Unassigned',
 
     'commit_numbers' => 'Commit Numbers',
+    'add_commit' => 'Add Commit',
     'add_commit_number' => 'Add Commit Number',
     'commit_number_added' => 'Commit Number Added',
     'commit_number_removed' => 'Commit Number Removed',
+    'number' => 'Commit number',
 
     'dates' => 'Start/Due Date',
     'start_date' => 'Start',
     'end_date' => 'Due',
     'no_date' => 'No Date',
+
+    'close' => 'Close',
+    'update_dates' => 'Update Dates',
+    'dates_updated' => 'Dates Updated',
 ];

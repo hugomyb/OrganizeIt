@@ -71,12 +71,18 @@ return [
     'unassigned' => 'Non assigné',
 
     'commit_numbers' => 'Numéros de commit',
+    'add_commit' => 'Ajouter un commit',
     'add_commit_number' => 'Ajouter un numéro de commit',
     'commit_number_added' => 'Numéro de commit ajouté',
     'commit_number_removed' => 'Numéro de commit supprimé',
+    'number' => 'Numéro de commit',
 
     'dates' => 'Date Début/Fin',
     'start_date' => 'Débute le',
     'end_date' => 'Finit le',
     'no_date' => 'Non daté',
+
+    'close' => 'Fermer',
+    'update_dates' => 'Mettre à jour les dates',
+    'dates_updated' => 'Dates mises à jour',
 ];
