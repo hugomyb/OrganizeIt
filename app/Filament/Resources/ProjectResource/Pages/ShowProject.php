@@ -498,12 +498,12 @@ class ShowProject extends Page implements HasForms, HasActions
             ->mountUsing(function ($arguments) {
                 $task = Task::find($arguments['task_id']);
                 $this->currentTask = $task;
-                $this->fillRichEditorField($task);
+                $this->fillRichEditorField();
             })
             ->modalHeading('')
             ->slideOver()
             ->modalWidth('6xl')
-            ->record(fn(array $arguments) => Task::find($arguments['task_id']))
+            ->record(fn(array $arguments) => Task::with(['project', 'creator', 'parent', 'status', 'priority', 'users', 'comments', 'children'])->find($arguments['task_id']))
             ->modalContent(fn($record) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
     }
 

@@ -253,7 +253,7 @@
             </div>
         </div>
 
-        <div class="flex items-start justify-center gap-2 text-sm font-semibold flex-wrap">
+        <div class="flex items-center justify-center gap-2 text-sm font-semibold flex-wrap">
             <span class="text-gray-500 text-xs">{{ __('task.commit_numbers') }}</span>
             @if($task->commit_numbers)
                 @foreach($task->commit_numbers as $commit)
