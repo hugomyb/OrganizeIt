@@ -5,8 +5,8 @@
 <span style="font-weight: bold">{{ $task->group->name }}</span>
 # <span style="font-weight: bold">{{ $task->title }}</span>
 
-## @lang('mails.priority')
-<span style="color: {{ $oldPriority->color }}; font-weight: bold">{{ $oldPriority->name }}</span> @lang('mails.to') <span style="color: {{ $task->priority->color }}; font-weight: bold">{{ $task->priority->name }}</span>
+## {{ __('mails.priority') }}
+<span style="color: {{ $oldPriority->color }}; font-weight: bold">{{ $oldPriority->name }}</span> {{ __('mails.to') }} <span style="color: {{ $task->priority->color }}; font-weight: bold">{{ $task->priority->name }}</span>
 </x-mail::panel>
 
 @lang('mails.you_can_view_task').

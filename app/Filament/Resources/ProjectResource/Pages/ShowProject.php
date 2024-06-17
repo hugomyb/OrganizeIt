@@ -740,11 +740,17 @@ class ShowProject extends Page implements HasForms, HasActions
 
         // Get all <a> elements
         $links = $dom->getElementsByTagName('a');
+        $imgs = $dom->getElementsByTagName('img');
 
         foreach ($links as $link) {
             // Set target attribute to _blank and style to color blue
             $link->setAttribute('target', '_blank');
             $link->setAttribute('style', 'color: blue;');
+        }
+
+        foreach ($imgs as $img) {
+            // Set lazy loading attribute to lazy
+            $img->setAttribute('loading', 'lazy');
         }
 
         // Convert text URLs to <a> elements with target="_blank" and style
