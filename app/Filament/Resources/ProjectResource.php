@@ -75,7 +75,7 @@ class ProjectResource extends Resource
                     ->width('200px')
                     ->sortable(),
 
-                Tables\Columns\ImageColumn::make('users.avatar')
+                Tables\Columns\ImageColumn::make('users.avatar_url')
                     ->label(__('project.table.users.assigns'))
                     ->circular()
                     ->tooltip(fn($record) => $record->users->map(fn($user) => $user->name)->join(', '))

@@ -23,7 +23,7 @@
     <div
         class="flex items-center gap-3 mt-6 border-b border-gray-100 dark:border-gray-700 pb-6 task-title">
         @if($task->creator)
-            <img src="{{ asset($task->creator->avatar) }}" alt="{{ $task->creator->name }}"
+            <img src="{{ asset($task->creator->avatar_url) }}" alt="{{ $task->creator->name }}"
                  title="{{ $task->creator->name }}"
                  class="rounded-full" style="height: 60px">
         @else
@@ -67,7 +67,7 @@
             <span class="text-gray-500 text-xs">{{ __('task.created_by') }}</span>
             <div class="flex items-center gap-1">
                 @if($task->creator)
-                    <img src="{{ asset($task->creator->avatar) }}" alt="{{ $task->creator->name }}"
+                    <img src="{{ asset($task->creator->avatar_url) }}" alt="{{ $task->creator->name }}"
                          title="{{ $task->creator->name }}"
                          class="rounded-full" style="height: 20px">
                     <span>{{ $task->creator->name }}, le {{ $task->created_at->translatedFormat('d M') }}</span>
@@ -87,7 +87,7 @@
                     <x-filament::dropdown>
                         <x-slot name="trigger" class="flex items-center gap-1">
                             @forelse($task->users as $user)
-                                <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"
+                                <img src="{{ asset($user->avatar_url) }}" alt="{{ $user->name }}"
                                      title="{{ $user->name }}"
                                      class="rounded-full" style="height: 20px">
                                 @if($task->users()->count() < 2)
@@ -106,7 +106,7 @@
                                     wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
                                     <div class="text-xs font-bold flex justify-between items-center">
                                         <div class="flex items center gap-1 items-center">
-                                            <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                            <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                                  class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                             <span class="mx-1">{{ $user->name }}</span>
                                         </div>
@@ -122,7 +122,7 @@
                     </x-filament::dropdown>
                 @else
                     @forelse($task->users as $user)
-                        <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"
+                        <img src="{{ asset($user->avatar_url) }}" alt="{{ $user->name }}"
                              title="{{ $user->name }}"
                              class="rounded-full" style="height: 20px">
                         @if($task->users()->count() < 2)
@@ -558,7 +558,7 @@
                 @if(count($task->comments) > 0)
                     @foreach($task->comments as $comment)
                         <div class="flex items-start gap-2.5">
-                            <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar }}"
+                            <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar_url }}"
                                  alt="{{ $comment->user->name }}">
                             <div class="flex flex-col gap-1 w-auto">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
@@ -613,7 +613,7 @@
             @can('addComment', \App\Models\User::class)
                 <div id="input-comment">
                     <div class="flex items-center px-3 py-2 rounded-lg bg-transparent gap-2">
-                        <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar }}"
+                        <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar_url }}"
                              alt="{{ auth()->user()->name }}">
                         <textarea id="comment" rows="1"
                                   wire:model="comment"

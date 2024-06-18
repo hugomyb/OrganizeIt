@@ -144,7 +144,7 @@
                                 style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                             @foreach($task->users as $user)
                                 <div class="flex gap-1 items-center cursor-pointer">
-                                    <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                    <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                          class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                     @if($task->users()->count() == 1)
                                         <span class="text-xs"
@@ -160,7 +160,7 @@
                                     wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
                                     <div class="text-xs font-bold flex justify-between items-center">
                                         <div class="flex items center gap-1 items-center">
-                                            <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                                            <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                                  class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                             <span class="mx-1">{{ $user->name }}</span>
                                         </div>
@@ -177,7 +177,7 @@
                 @else
                     @foreach($task->users as $user)
                         <div class="flex gap-1 items-center">
-                            <img src="/storage/{{ $user->avatar }}" alt="{{ $user->name }}"
+                            <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                  class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                             @if($task->users()->count() == 1)
                                 <span class="text-xs" style="color: gray; font-weight: 600">{{ $user->name }}</span>

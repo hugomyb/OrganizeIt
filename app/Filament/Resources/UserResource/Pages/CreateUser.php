@@ -29,7 +29,7 @@ class CreateUser extends CreateRecord
         Storage::disk('public')->put($filename, $avatarContents);
 
         // Met à jour l'utilisateur avec le chemin de l'avatar
-        $data['avatar'] = $filename;
+        $data['avatar_url'] = $filename;
 
         // password temporaire
         $data['password'] = bcrypt(Str::random());

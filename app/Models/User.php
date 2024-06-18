@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\WelcomeNotification\ReceivesWelcomeNotification;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasAvatar
 {
     use HasFactory, Notifiable, ReceivesWelcomeNotification;
 
@@ -24,7 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'avatar'
+        'avatar_url'
     ];
 
     /**
@@ -75,5 +77,10 @@ class User extends Authenticatable
         return $this->role()->whereHas('permissions', function ($query) use ($permission) {
             $query->where('key', $permission);
         })->exists();
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_url ? Storage::url("$this->avatar_url") : null;
     }
 }

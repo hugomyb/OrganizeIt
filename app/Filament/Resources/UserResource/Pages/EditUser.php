@@ -21,7 +21,7 @@ class EditUser extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (!isset($data['avatar'])) {
+        if (!isset($data['avatar_url'])) {
             $avatarUrl = "https://ui-avatars.com/api/?name=" . urlencode($data['name']) . "&background=random&size=128&bold=true&format=svg";
 
             // Télécharge l'image
@@ -34,7 +34,7 @@ class EditUser extends EditRecord
             Storage::disk('public')->put($filename, $avatarContents);
 
             // Met à jour l'utilisateur avec le chemin de l'avatar
-            $data['avatar'] = $filename;
+            $data['avatar_url'] = $filename;
         }
 
         return $data;

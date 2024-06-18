@@ -2,7 +2,7 @@ html {
     scroll-behavior: smooth !important;
 }
 
-.fi-section-content {
+#project-page .fi-section-content {
     padding: 0 !important;
 }
 

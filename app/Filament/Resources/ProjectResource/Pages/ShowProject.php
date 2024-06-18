@@ -61,6 +61,13 @@ class ShowProject extends Page implements HasForms, HasActions
 
     protected static string $view = 'filament.resources.project-resource.pages.show-project';
 
+    public function getExtraBodyAttributes(): array
+    {
+        return [
+            'id' => 'project-page'
+        ];
+    }
+
     public $record;
     public $currentTask;
     public $groups;

@@ -118,7 +118,7 @@
                                                             class="text-xs font-bold flex justify-between items-center"
                                                             title="Assigner au projet">
                                                             <div class="flex items center gap-1 items-center">
-                                                                <img src="/storage/{{ $user->avatar }}"
+                                                                <img src="/storage/{{ $user->avatar_url }}"
                                                                      alt="{{ $user->name }}"
                                                                      class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                                                 <span class="mx-1">{{ $user->name }}</span>
@@ -145,7 +145,7 @@
                                             class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-white/5 px-1.5 py-1 rounded-lg flex items-center text-xs gap-1 cursor-move"
                                             draggable="true"
                                             x-on:dragstart="event.dataTransfer.setData('user-id', '{{ $user->id }}')">
-                                            <img class="rounded-full h-5" src="/storage/{{ $user->avatar }}" alt="">
+                                            <img class="rounded-full h-5" src="/storage/{{ $user->avatar_url }}" alt="">
                                             <span class="dark:text-white text-gray-600">{{ $user->name }}</span>
                                         </div>
                                     @endforeach

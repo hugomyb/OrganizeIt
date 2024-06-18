@@ -8,7 +8,7 @@
 <div
 style="display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 10px; background-color: #f9f9f9; padding: 10px; border-radius: 10px; margin-top: 10px;">
 <div style="grid-column: 1 / 2; grid-row: 1 / 2;">
-<img src="{{ $comment->user->avatar }}" alt="{{ $comment->user->name }}"
+<img src="{{ $comment->user->avatar_url }}" alt="{{ $comment->user->name }}"
 style="border-radius: 50%; width: 40px; height: 40px; margin-right: 10px;">
 <p style="margin: 0; font-weight: bold;">{{ $comment->user->name }}</p>
 </div>
