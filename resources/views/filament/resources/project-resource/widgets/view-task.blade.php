@@ -257,27 +257,34 @@
             <span class="text-gray-500 text-xs">{{ __('task.commit_numbers') }}</span>
             @if($task->commit_numbers)
                 @foreach($task->commit_numbers as $commit)
-                    <x-filament::dropdown>
-                        <x-slot name="trigger" class="flex items-center gap-1">
+                    @can('manageCommit', \App\Models\User::class)
+                        <x-filament::dropdown>
+                            <x-slot name="trigger" class="flex items-center gap-1">
+                                <x-gmdi-commit class="h-5 w-5" style="color: #f34f29"/>
+                                <span class="text-xs font-bold">{{ $commit }}</span>
+                            </x-slot>
+
+                            <x-filament::dropdown.list>
+                                <x-filament::dropdown.list.item
+                                    wire:click="deleteCommitNumber({{$task->id}}, '{{ $commit }}')"
+                                    x-on:click="toggle"
+                                    class="text-xs font-bold">
+                                    <div class="flex items-center">
+                                        <div class="flex items-center" style="color: red">
+                                            <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
+                                            <span class="mx-1">{{ __('general.delete') }}</span>
+                                        </div>
+                                    </div>
+                                </x-filament::dropdown.list.item>
+                            </x-filament::dropdown.list>
+
+                        </x-filament::dropdown>
+                    @else
+                        <div class="flex items-center gap-1">
                             <x-gmdi-commit class="h-5 w-5" style="color: #f34f29"/>
                             <span class="text-xs font-bold">{{ $commit }}</span>
-                        </x-slot>
-
-                        <x-filament::dropdown.list>
-                            <x-filament::dropdown.list.item
-                                wire:click="deleteCommitNumber({{$task->id}}, '{{ $commit }}')"
-                                x-on:click="toggle"
-                                class="text-xs font-bold">
-                                <div class="flex items-center">
-                                    <div class="flex items-center" style="color: red">
-                                        <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                        <span class="mx-1">{{ __('general.delete') }}</span>
-                                    </div>
-                                </div>
-                            </x-filament::dropdown.list.item>
-                        </x-filament::dropdown.list>
-
-                    </x-filament::dropdown>
+                        </div>
+                    @endcan
                 @endforeach
             @endif
 
