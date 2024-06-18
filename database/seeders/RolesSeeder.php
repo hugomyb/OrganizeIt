@@ -24,6 +24,7 @@ class RolesSeeder extends Seeder
                 'name' => 'Utilisateur',
                 'permissions' => [
                     Permission::where('key', 'add_comment')->first()->id,
+                    Permission::where('key', 'manage_commit')->first()->id,
                 ]
             ],
             [
@@ -36,6 +37,7 @@ class RolesSeeder extends Seeder
                     Permission::where('key', 'assign_user')->first()->id,
                     Permission::where('key', 'add_comment')->first()->id,
                     Permission::where('key', 'reorder_tasks')->first()->id,
+                    Permission::where('key', 'manage_commit')->first()->id,
                 ]
             ]
         ];

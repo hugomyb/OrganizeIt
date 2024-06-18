@@ -31,7 +31,7 @@ html {
 
 .task-buttons {
     border: 1px solid #d5d8dc;
-    box-shadow: 4px 24px 56px rgba(147,155,183,.24);
+    box-shadow: 4px 24px 56px rgba(147, 155, 183, .24);
     border-radius: 10px;
     background-color: #fff;
     z-index: 1;
@@ -43,7 +43,7 @@ html {
 html.dark .task-buttons {
     background: #1e1e1e;
     border: 1px solid #2d2d2d;
-    box-shadow: 4px 24px 56px rgba(0,0,0,.24);
+    box-shadow: 4px 24px 56px rgba(0, 0, 0, .24);
 }
 
 html.dark .task-buttons button {
@@ -151,3 +151,9 @@ figcaption.attachment__caption {
 .section-description > ul {
     list-style: inside !important;
 }
+
+
+html.dark li.uk-nestable-item.border-b {
+    border-color: #2d2d2d;
+}
+

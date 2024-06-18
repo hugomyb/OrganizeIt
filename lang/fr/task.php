@@ -67,7 +67,7 @@ return [
     'comment_removed' => 'Commentaire supprimé',
 
     'created_by' => 'Créé par',
-    'assign_to' => 'Assigner à',
+    'assign_to' => 'Assigné à',
     'unassigned' => 'Non assigné',
 
     'commit_numbers' => 'Numéros de commit',

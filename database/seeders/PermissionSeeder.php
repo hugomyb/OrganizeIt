@@ -77,6 +77,16 @@ class PermissionSeeder extends Seeder
                 'key' => 'export_tasks',
                 'name' => 'Exporter les tâches',
                 'description' => 'Exporter les tâches dans un projet',
+            ],
+            [
+                'key' => 'manage_commit',
+                'name' => 'Gérer les commits',
+                'description' => 'Ajouter/Supprimer un commit d\'une tâche',
+            ],
+            [
+                'key' => 'manage_dates',
+                'name' => 'Gérer les dates',
+                'description' => 'Ajouter/Modifier les dates d\'une tâche',
             ]
         ];
 

@@ -1,6 +1,6 @@
 <li data-id="{{ $task->id }}"
     class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm
-    {{ (!$task->parent_id && $task->children->isEmpty()) ? 'border-b dark:border-white/10' : '' }}"
+    {{ (!$task->parent_id) ? 'border-b' : '' }}"
     style="padding-left: 8px;">
     <div class="flex py-3 content-item"
          x-data="{ isOver: false }"

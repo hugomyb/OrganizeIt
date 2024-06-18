@@ -140,4 +140,26 @@ class UserPolicy
     {
         return $user->hasPermission('add_user_to_project');
     }
+
+    /**
+     * Determine if the user can manage dates.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function manageDates(User $user)
+    {
+        return $user->hasPermission('manage_dates');
+    }
+
+    /**
+     * Determine if the user can manage commits.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function manageCommit(User $user)
+    {
+        return $user->hasPermission('manage_commit');
+    }
 }
