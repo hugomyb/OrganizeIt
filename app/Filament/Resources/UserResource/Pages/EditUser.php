@@ -24,7 +24,7 @@ class EditUser extends EditRecord
 
                     Notification::make()
                         ->success()
-                        ->title(__('general.notifications.welcome_email_sent'))
+                        ->title(__('general.actions.welcome_email_sent'))
                         ->send();
                 }),
             Actions\DeleteAction::make(),
