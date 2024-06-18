@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
 use App\Mail\AssignToProjectMail;
+use App\Models\Project;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -40,6 +41,8 @@ class EditProject extends EditRecord
     {
         $record = request()->route()->parameter('record');
 
-        return auth()->user()->hasRole('Admin') && $record->users->contains(auth()->user());
+        $project = Project::find($record);
+
+        return auth()->user()->hasRole('Admin') && $project->users->contains(auth()->user());
     }
 }
