@@ -23,7 +23,7 @@
     <div
         class="flex items-center gap-3 mt-6 border-b border-gray-100 dark:border-gray-700 pb-6 task-title">
         @if($task->creator)
-            <img src="{{ asset($task->creator->avatar_url) }}" alt="{{ $task->creator->name }}"
+            <img src="/storage/{{ $task->creator->avatar_url }}" alt="{{ $task->creator->name }}"
                  title="{{ $task->creator->name }}"
                  class="rounded-full" style="height: 60px">
         @else
@@ -67,7 +67,7 @@
             <span class="text-gray-500 text-xs">{{ __('task.created_by') }}</span>
             <div class="flex items-center gap-1">
                 @if($task->creator)
-                    <img src="{{ asset($task->creator->avatar_url) }}" alt="{{ $task->creator->name }}"
+                    <img src="/storage/{{ $task->creator->avatar_url }}" alt="{{ $task->creator->name }}"
                          title="{{ $task->creator->name }}"
                          class="rounded-full" style="height: 20px">
                     <span>{{ $task->creator->name }}, le {{ $task->created_at->translatedFormat('d M') }}</span>
@@ -87,7 +87,7 @@
                     <x-filament::dropdown>
                         <x-slot name="trigger" class="flex items-center gap-1">
                             @forelse($task->users as $user)
-                                <img src="{{ asset($user->avatar_url) }}" alt="{{ $user->name }}"
+                                <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                      title="{{ $user->name }}"
                                      class="rounded-full" style="height: 20px">
                                 @if($task->users()->count() < 2)
@@ -122,7 +122,7 @@
                     </x-filament::dropdown>
                 @else
                     @forelse($task->users as $user)
-                        <img src="{{ asset($user->avatar_url) }}" alt="{{ $user->name }}"
+                        <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                              title="{{ $user->name }}"
                              class="rounded-full" style="height: 20px">
                         @if($task->users()->count() < 2)
