@@ -717,10 +717,6 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $record = request()->route()->parameter('record');
 
-        if (auth()->user()->hasRole('Admin')) {
-            return true;
-        }
-
         return Project::find($record)->first()->users->contains(auth()->user());
     }
 

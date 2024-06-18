@@ -58,11 +58,9 @@ class ProjectResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function ($query) {
-                if (!auth()->user()->hasRole('Admin')) {
-                    $query->whereHas('users', function ($query) {
-                        $query->where('user_id', auth()->id());
-                    });
-                }
+                $query->whereHas('users', function ($query) {
+                    $query->where('user_id', auth()->id());
+                });
             })
             ->columns([
                 Tables\Columns\ColorColumn::make('color')

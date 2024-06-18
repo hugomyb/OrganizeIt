@@ -38,6 +38,8 @@ class EditProject extends EditRecord
 
     public static function canAccess(array $parameters = []): bool
     {
-        return auth()->user()->hasRole('Admin');
+        $record = request()->route()->parameter('record');
+
+        return auth()->user()->hasRole('Admin') && $record->users->contains(auth()->user());
     }
 }
