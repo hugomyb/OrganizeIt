@@ -16,6 +16,9 @@ return [
 
     'table' => [
         'name' => 'Nom',
-        'color' => 'Couleur'
+        'color' => 'Couleur',
+        'users' => [
+            'assigns' => 'Utilisateurs assignés'
+        ]
     ]
 ];
