@@ -445,6 +445,14 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->allowHtml()
                 ->required(),
 
+            \Filament\Forms\Components\Group::make([
+                DatePicker::make('start_date')
+                    ->label(__('task.start_date')),
+
+                DatePicker::make('due_date')
+                    ->label(__('task.end_date')),
+            ])->columns(2),
+
             FileUpload::make('attachments')
                 ->columnSpanFull()
                 ->multiple()
