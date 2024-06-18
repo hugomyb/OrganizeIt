@@ -14,6 +14,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -65,6 +66,9 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn() => auth()->user()->name)
                     ->url(fn(): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle')
+            ])
+            ->plugins([
+                FilamentErrorMailerPlugin::make()
             ]);
     }
 }

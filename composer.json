@@ -21,6 +21,7 @@
         "codeat3/blade-unicons": "^1.8",
         "codeat3/blade-vaadin-icons": "^1.5",
         "filament/filament": "^3.2",
+        "hugomyb/filament-error-mailer": "^3.1",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "mallardduck/blade-boxicons": "^2.4",
