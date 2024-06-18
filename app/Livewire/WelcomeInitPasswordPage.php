@@ -78,7 +78,8 @@ class WelcomeInitPasswordPage extends SimplePage implements HasForms
 
         $this->user->forceFill([
             'password' => Hash::make($this->data['password']),
-            'welcome_valid_until' => null
+            'welcome_valid_until' => null,
+            'email_verified_at' => now(),
         ]);
 
         $this->user->save();

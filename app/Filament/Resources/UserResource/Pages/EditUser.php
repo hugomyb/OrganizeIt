@@ -19,6 +19,7 @@ class EditUser extends EditRecord
         return [
             Actions\Action::make('send_welcome_email')
                 ->label(__('general.actions.send_welcome_email'))
+                ->visible(fn() => $this->record->email_verified_at === null)
                 ->action(function () {
                     $this->record->sendWelcomeNotification(validUntil: now()->addWeek());
 
