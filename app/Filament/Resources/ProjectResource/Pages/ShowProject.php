@@ -717,7 +717,7 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $record = request()->route()->parameter('record');
 
-        return Project::find($record)->first()->users->contains(auth()->user());
+        return Project::find($record)->first()->users()->exists(auth()->id());
     }
 
     public function saveTaskTitle($taskId, $title)
