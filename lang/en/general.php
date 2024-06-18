@@ -42,6 +42,7 @@ return [
     'download' => 'Download',
 
     'actions' => [
-        'send_welcome_email' => 'Resend welcome email'
+        'send_welcome_email' => 'Resend welcome email',
+        'welcome_email_sent' => 'Welcome email sent'
     ],
 ];

@@ -42,6 +42,7 @@ return [
     'download' => 'Télécharger',
 
     'actions' => [
-        'send_welcome_email' => 'Renvoyer l\'email de bienvenue'
+        'send_welcome_email' => 'Renvoyer l\'email de bienvenue',
+        'welcome_email_sent' => 'Email de bienvenue envoyé'
     ],
 ];

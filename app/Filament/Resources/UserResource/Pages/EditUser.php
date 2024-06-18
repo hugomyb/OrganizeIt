@@ -5,6 +5,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,6 +21,11 @@ class EditUser extends EditRecord
                 ->label(__('general.actions.send_welcome_email'))
                 ->action(function () {
                     $this->record->sendWelcomeNotification(validUntil: now()->addWeek());
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('general.notifications.welcome_email_sent'))
+                        ->send();
                 }),
             Actions\DeleteAction::make(),
         ];
