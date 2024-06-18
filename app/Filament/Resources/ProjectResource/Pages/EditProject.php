@@ -43,6 +43,6 @@ class EditProject extends EditRecord
 
         $project = Project::find($record);
 
-        return auth()->user()->hasRole('Admin') && $project->users()->exists(auth()->id());
+        return auth()->user()->hasRole('Admin') && auth()->user()->projects->contains($project);
     }
 }
