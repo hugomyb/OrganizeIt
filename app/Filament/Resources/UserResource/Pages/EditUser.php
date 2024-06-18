@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,11 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('send_welcome_email')
+                ->label(__('general.actions.send_welcome_email'))
+                ->action(function () {
+                    $this->record->sendWelcomeNotification(validUntil: now()->addWeek());
+                }),
             Actions\DeleteAction::make(),
         ];
     }

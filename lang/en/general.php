@@ -40,4 +40,8 @@ return [
 
     'upload_file' => 'Upload file',
     'download' => 'Download',
+
+    'actions' => [
+        'send_welcome_email' => 'Resend welcome email'
+    ],
 ];

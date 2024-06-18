@@ -40,4 +40,8 @@ return [
 
     'upload_file' => 'Uploader un fichier',
     'download' => 'Télécharger',
+
+    'actions' => [
+        'send_welcome_email' => 'Renvoyer l\'email de bienvenue'
+    ],
 ];
