@@ -54,7 +54,7 @@ class EditProfilePage extends Page implements HasForms
             ->schema([
                 Section::make(__('profile.info'))
                     ->aside()
-                    ->description('Update your profile informations')
+                    ->description(__('profile.update_profile_info'))
                     ->schema([
                         FileUpload::make('avatar_url')
                             ->default('https://ui-avatars.com/api/?name=' . urlencode($this->user->name) . '&background=random&size=128&bold=true&format=svg')

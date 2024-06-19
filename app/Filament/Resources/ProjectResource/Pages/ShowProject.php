@@ -441,6 +441,8 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->preload()
                 ->searchable()
                 ->default(Priority::whereName('Aucune')->first()->id)
+                ->disabled(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
+                ->dehydrated(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
                 ->options($priorityOptions)
                 ->allowHtml()
                 ->required(),
@@ -451,7 +453,8 @@ class ShowProject extends Page implements HasForms, HasActions
 
                 DatePicker::make('due_date')
                     ->label(__('task.end_date')),
-            ])->columns(2),
+            ])->visible(fn() => auth()->user()->hasPermission('manage_dates') ? true : false)
+                ->columns(2),
 
             FileUpload::make('attachments')
                 ->columnSpanFull()

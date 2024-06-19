@@ -25,6 +25,8 @@ class RolesSeeder extends Seeder
                 'permissions' => [
                     Permission::where('key', 'add_comment')->first()->id,
                     Permission::where('key', 'manage_commit')->first()->id,
+                    Permission::where('key', 'view_task_creator')->first()->id,
+                    Permission::where('key', 'view_assigned_users')->first()->id,
                 ]
             ],
             [
@@ -35,9 +37,21 @@ class RolesSeeder extends Seeder
                     Permission::where('key', 'change_status')->first()->id,
                     Permission::where('key', 'change_priority')->first()->id,
                     Permission::where('key', 'assign_user')->first()->id,
-                    Permission::where('key', 'add_comment')->first()->id,
                     Permission::where('key', 'reorder_tasks')->first()->id,
                     Permission::where('key', 'manage_commit')->first()->id,
+                    Permission::where('key', 'view_task_creator')->first()->id,
+                    Permission::where('key', 'view_assigned_users')->first()->id,
+                ]
+            ],
+            [
+                'id' => 4,
+                'name' => 'Client',
+                'permissions' => [
+                    Permission::where('key', 'manage_tasks')->first()->id,
+                    Permission::where('key', 'add_comment')->first()->id,
+                    Permission::where('key', 'change_status')->first()->id,
+                    Permission::where('key', 'manage_attachments')->first()->id,
+                    Permission::where('key', 'edit_description')->first()->id,
                 ]
             ]
         ];

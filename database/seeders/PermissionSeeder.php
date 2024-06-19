@@ -87,6 +87,16 @@ class PermissionSeeder extends Seeder
                 'key' => 'manage_dates',
                 'name' => 'Gérer les dates',
                 'description' => 'Ajouter/Modifier les dates d\'une tâche',
+            ],
+            [
+                'key' => 'view_task_creator',
+                'name' => 'Voir le créateur de la tâche',
+                'description' => 'Voir le créateur de la tâche',
+            ],
+            [
+                'key' => 'view_assigned_users',
+                'name' => 'Voir les utilisateurs assignés à une tâche',
+                'description' => 'Voir les utilisateurs assignés à une tâche',
             ]
         ];
 

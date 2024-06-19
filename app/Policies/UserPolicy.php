@@ -162,4 +162,26 @@ class UserPolicy
     {
         return $user->hasPermission('manage_commit');
     }
+
+    /**
+     * Determine if the user can view the task creator.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function viewTaskCreator(User $user)
+    {
+        return $user->hasPermission('view_task_creator');
+    }
+
+    /**
+     * Determine if the user can view assigned users.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function viewAssignedUsers(User $user)
+    {
+        return $user->hasPermission('view_assigned_users');
+    }
 }
