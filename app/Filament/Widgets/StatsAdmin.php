@@ -43,7 +43,7 @@ class StatsAdmin extends BaseWidget
 
     protected function getNbTasksByDay($type, $startDate, $endDate)
     {
-        $projects = Project::all();
+        $projects = auth()->user()->projects()->get();
         $tasksByDay = [];
         $currentDate = $startDate->copy();
 
