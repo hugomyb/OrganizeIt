@@ -314,7 +314,7 @@ class ShowProject extends Page implements HasForms, HasActions
                     ])
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
-            ]),
+            ])->visible(auth()->user()->hasPermission('export_tasks')),
         ];
     }
 
