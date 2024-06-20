@@ -25,7 +25,20 @@ trait InteractsWithTooltipActions
             ->iconSize(IconSize::Small)
             ->icon('heroicon-o-pencil')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->form($this->getTaskForm());
+            ->form($this->getTaskForm())
+            ->action(function (array $data, array $arguments): void {
+                $task = Task::find($arguments['task_id']);
+
+                $data['description'] =  $this->processDescription($data['description']);
+
+                $task->update($data);
+
+                Notification::make()
+                    ->success()
+                    ->duration(2000)
+                    ->title(__('task.task_updated'))
+                    ->send();
+            });
     }
 
     public function addSubtaskTooltipAction(): Action
@@ -46,6 +59,8 @@ trait InteractsWithTooltipActions
             ->action(function (array $data, array $arguments): void {
                 $parentTask = Task::find($arguments['parent_id']);
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
+
+                $data['description'] =  $this->processDescription($data['description']);
 
                 $task = $parentTask->children()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,

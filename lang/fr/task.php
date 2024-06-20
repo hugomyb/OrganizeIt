@@ -85,4 +85,6 @@ return [
     'close' => 'Fermer',
     'update_dates' => 'Mettre à jour les dates',
     'dates_updated' => 'Dates mises à jour',
+
+    'task_updated' => 'Tâche mise à jour',
 ];

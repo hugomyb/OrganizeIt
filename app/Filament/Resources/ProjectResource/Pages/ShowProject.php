@@ -204,6 +204,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
+                    $data['description'] = $this->processDescription($data['description']);
                     $task = $this->record->tasks()->create(array_merge($data, [
                         'order' => $lastTask ? $lastTask->order + 1 : 0,
                         'created_by' => auth()->id()
@@ -487,6 +488,8 @@ class ShowProject extends Page implements HasForms, HasActions
             ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
+
+                $data['description'] = $this->processDescription($data['description']);
                 $task = $this->record->tasks()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
@@ -531,7 +534,16 @@ class ShowProject extends Page implements HasForms, HasActions
             ->modalWidth('7xl')
             ->label('Éditer')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->form($this->getTaskForm());
+            ->form($this->getTaskForm())
+            ->action(function (array $data, $record): void {
+                $task = $record;
+
+                $data['description'] = $this->processDescription($data['description']);
+
+                $task->update($data);
+
+                $this->showNotification(__('task.task_updated'));
+            });
     }
 
     public function setTaskStatus($taskId, $statusId)

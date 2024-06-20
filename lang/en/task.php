@@ -85,4 +85,6 @@ return [
     'close' => 'Close',
     'update_dates' => 'Update Dates',
     'dates_updated' => 'Dates Updated',
+
+    'task_updated' => 'Task Updated',
 ];
