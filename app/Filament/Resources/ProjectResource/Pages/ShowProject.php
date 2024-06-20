@@ -204,7 +204,9 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-                    $data['description'] = $this->processDescription($data['description']);
+                    if (isset($data['description']) && trim($data['description']) != '') {
+                        $data['description'] = $this->processDescription($data['description']);
+                    }
                     $task = $this->record->tasks()->create(array_merge($data, [
                         'order' => $lastTask ? $lastTask->order + 1 : 0,
                         'created_by' => auth()->id()
@@ -489,7 +491,9 @@ class ShowProject extends Page implements HasForms, HasActions
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
 
-                $data['description'] = $this->processDescription($data['description']);
+                if (isset($data['description']) && trim($data['description']) != '') {
+                    $data['description'] = $this->processDescription($data['description']);
+                }
                 $task = $this->record->tasks()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
@@ -538,7 +542,9 @@ class ShowProject extends Page implements HasForms, HasActions
             ->action(function (array $data, $record): void {
                 $task = $record;
 
-                $data['description'] = $this->processDescription($data['description']);
+                if (isset($data['description']) && trim($data['description']) != '') {
+                    $data['description'] = $this->processDescription($data['description']);
+                }
 
                 $task->update($data);
 
