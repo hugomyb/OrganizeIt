@@ -35,7 +35,6 @@ class ProjectResource extends Resource
                         Forms\Components\ColorPicker::make('color')
                             ->label(__('project.form.color'))
                             ->unique(ignoreRecord: true)
-                            ->suffixAction(A)
                             ->default('#000000'),
                     ]),
 
