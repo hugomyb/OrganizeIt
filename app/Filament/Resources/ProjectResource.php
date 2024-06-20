@@ -35,6 +35,11 @@ class ProjectResource extends Resource
                         Forms\Components\ColorPicker::make('color')
                             ->label(__('project.form.color'))
                             ->unique(ignoreRecord: true)
+                            ->suffixAction(Forms\Components\Actions\Action::make('randomize')
+                                ->label(__('project.form.color.randomize'))
+                                ->icon('heroicon-o-arrow-path')
+                                ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
+                            )
                             ->default('#000000'),
                     ]),
 
