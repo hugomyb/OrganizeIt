@@ -851,7 +851,11 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $task = Task::find($task['id']);
 
-        $modifiedDescription = $this->processDescription($richData['description']);
+        if (isset($richData['description']) && trim($richData['description']) != '') {
+            $modifiedDescription = $this->processDescription($richData['description']);
+        } else {
+            $modifiedDescription = '';
+        }
 
         $task->update([
             'description' => $modifiedDescription
