@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StatusResource\Pages;
 use App\Filament\Resources\StatusResource\RelationManagers;
 use App\Models\Status;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -55,6 +56,12 @@ class StatusResource extends Resource
                     ->required(),
 
                 ColorPicker::make('color')
+                    ->suffixAction(Action::make('randomize')
+                        ->label(__('project.form.color.randomize'))
+                        ->icon('heroicon-o-arrow-path')
+                        ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
+                    )
+                    ->unique(ignoreRecord: true)
                     ->label(__('status.table.color'))
             ]);
     }
@@ -72,10 +79,10 @@ class StatusResource extends Resource
             ->filters([
                 //
             ])
-            ->recordUrl(fn($record) => $record->name !== 'À faire' && $record->name !== 'En cours' && $record->name !== 'Terminé' ? StatusResource::getUrl('edit', ['record' => $record]) : null)
+            ->recordUrl(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::whereName('Terminé')->first()->id ? StatusResource::getUrl('edit', ['record' => $record]) : null)
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn($record) => $record->name !== 'À faire' && $record->name !== 'En cours' && $record->name !== 'Terminé'),
+                    ->visible(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::whereName('Terminé')->first()->id),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

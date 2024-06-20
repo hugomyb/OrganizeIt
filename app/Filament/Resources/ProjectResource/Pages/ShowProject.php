@@ -435,6 +435,12 @@ class ShowProject extends Page implements HasForms, HasActions
                         ->required(),
 
                     ColorPicker::make('color')
+                        ->suffixAction(\Filament\Forms\Components\Actions\Action::make('randomize')
+                            ->label(__('project.form.color.randomize'))
+                            ->icon('heroicon-o-arrow-path')
+                            ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
+                        )
+                        ->unique(ignoreRecord: true)
                         ->label(__('status.table.color'))
                 ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
                 ->required(),
