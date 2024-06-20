@@ -70,7 +70,7 @@
                                                                         style="color: {{ $status->color }}"/>
                                             @break
                                     @endswitch
-                                    <span class="mx-1">{{ $status->name }}</span>
+                                    <span class="mx-1" title="{{ $status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
                                 </div>
                             </x-filament::dropdown.list.item>
                         @endforeach
