@@ -7,6 +7,7 @@ return [
     'cancel' => 'Annuler',
     'view' => 'Voir',
     'delete' => 'Supprimer',
+    'deleted' => 'Supprimé',
 
     'send' => 'Envoyer',
 

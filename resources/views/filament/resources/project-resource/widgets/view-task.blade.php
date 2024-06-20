@@ -591,8 +591,8 @@
 
             <div id="comments" class="comments flex flex-col px-6 py-3 gap-3 text-sm section-description">
                 @if(count($task->comments) > 0)
-                    @foreach($task->comments as $comment)
-                        <div class="flex items-start gap-2.5">
+                    @foreach($task->comments()->withTrashed()->get() as $comment)
+                        <div class="flex items-start gap-2.5" style="{{ $comment->trashed() ? 'opacity: 0.5' : '' }}">
                             <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar_url }}"
                                  alt="{{ $comment->user->name }}">
                             <div class="flex flex-col gap-1 w-auto">
@@ -601,6 +601,11 @@
                                         class="text-sm font-semibold">{{ $comment->user->name }}</span>
                                     <span
                                         class="text-xs font-normal">{{ $comment->created_at->diffForHumans() }}</span>
+                                    @if($comment->trashed())
+                                        <x-filament::badge color="danger">
+                                            {{ __('general.deleted') }}
+                                        </x-filament::badge>
+                                    @endif
                                 </div>
                                 <div class="flex items-center">
                                     <div
@@ -608,33 +613,35 @@
                                         <p class="text-sm font-normal">{{ $comment->content }}</p>
                                     </div>
 
-                                    @if(($comment->user->id == auth()->user()->id) || (auth()->user()->hasPermission('delete_any_comment')))
-                                        <x-filament::dropdown placement="right">
-                                            <x-slot name="trigger">
-                                                <div class="px-2">
-                                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                                         viewBox="0 0 4 15">
-                                                        <path
-                                                            d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                                                    </svg>
-                                                </div>
-                                            </x-slot>
-
-                                            <x-filament::dropdown.list>
-                                                <x-filament::dropdown.list.item
-                                                    x-on:click="toggle; $wire.deleteComment({{ $comment->id }})"
-                                                    class="text-xs font-bold">
-                                                    <div class="flex items-center">
-                                                        <div class="flex items-center" style="color: red">
-                                                            <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
-                                                            <span class="mx-1">{{ __('general.delete') }}</span>
-                                                        </div>
+                                    @if(!$comment->trashed())
+                                        @if(($comment->user->id == auth()->user()->id) || (auth()->user()->hasPermission('delete_any_comment')))
+                                            <x-filament::dropdown placement="right">
+                                                <x-slot name="trigger">
+                                                    <div class="px-2">
+                                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                                             viewBox="0 0 4 15">
+                                                            <path
+                                                                d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                                                        </svg>
                                                     </div>
-                                                </x-filament::dropdown.list.item>
-                                            </x-filament::dropdown.list>
-                                        </x-filament::dropdown>
+                                                </x-slot>
+
+                                                <x-filament::dropdown.list>
+                                                    <x-filament::dropdown.list.item
+                                                        x-on:click="toggle; $wire.deleteComment({{ $comment->id }})"
+                                                        class="text-xs font-bold">
+                                                        <div class="flex items-center">
+                                                            <div class="flex items-center" style="color: red">
+                                                                <x-heroicon-o-trash class="h-5 w-5 mx-1"/>
+                                                                <span class="mx-1">{{ __('general.delete') }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </x-filament::dropdown.list.item>
+                                                </x-filament::dropdown.list>
+                                            </x-filament::dropdown>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

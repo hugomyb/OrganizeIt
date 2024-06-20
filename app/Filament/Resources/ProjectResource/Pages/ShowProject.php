@@ -953,7 +953,7 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $task = Task::find($taskId);
 
-        if ($this->comment !== null) {
+        if ($this->comment !== null && trim($this->comment) !== '') {
             $comment = $task->comments()->create([
                 'user_id' => auth()->id(),
                 'content' => $this->comment
