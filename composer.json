@@ -28,7 +28,9 @@
         "owenvoke/blade-fontawesome": "^2.6",
         "saade/blade-iconsax": "^1.2",
         "spatie/laravel-welcome-notification": "^2.4",
-        "stichoza/google-translate-php": "^5.1"
+        "stichoza/google-translate-php": "^5.1",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
