@@ -442,7 +442,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->searchable()
                 ->default(Priority::whereName('Aucune')->first()->id)
                 ->disabled(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
-                ->dehydrated(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
+                ->dehydrated()
                 ->options($priorityOptions)
                 ->allowHtml()
                 ->required(),
