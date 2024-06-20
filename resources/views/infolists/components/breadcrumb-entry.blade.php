@@ -30,7 +30,7 @@
                 <div class="flex items-center gap-2">
                     <x-fas-tasks class="h-4 w-4" :style="'color: #2563eb'"/>
 
-                    <span>Tâches</span>
+                    <span>{{ __('task.tasks') }}</span>
                 </div>
             </a>
         </li>

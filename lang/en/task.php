@@ -3,6 +3,7 @@
 return [
 
     'task' => 'Task',
+    'tasks' => 'Tasks',
 
     'add_task' => 'Add Task',
     'add' => 'Add',
