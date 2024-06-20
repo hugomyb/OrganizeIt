@@ -70,7 +70,8 @@
                                                                         style="color: {{ $status->color }}"/>
                                             @break
                                     @endswitch
-                                    <span class="mx-1" title="{{ $status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
+                                    <span class="mx-1"
+                                          title="{{ $status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
                                 </div>
                             </x-filament::dropdown.list.item>
                         @endforeach
@@ -99,6 +100,13 @@
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}"
                 wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
+
+            @if($task->children->count() > 0)
+                <x-filament::badge color="gray" class="cursor-default"
+                                   style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
+                    <span class="text-gray-400">{{ $task->children->where('status_id', \App\Models\Status::whereName('Terminé')->first()->id)->count() }}/{{ $task->children->count() }}</span>
+                </x-filament::badge>
+            @endif
 
             @can('changePriority', \App\Models\User::class)
                 <!-- Priority dropdown -->
