@@ -45,6 +45,7 @@ use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -97,11 +98,12 @@ class ShowProject extends Page implements HasForms, HasActions
     {
 
         $this->record = Project::find($record);
-        $this->statusFilters = collect();
-        $this->priorityFilters = collect();
+        $this->getStatusFilters();
+        $this->getPriorityFilters();
 
-        $this->toggleShowCompletedTasks();
-
+        if (!$this->statusFilters->contains('name', 'Terminé')) {
+            $this->toggleCompletedTasks = false;
+        }
     }
 
     public function openTaskById($taskId)
@@ -707,6 +709,19 @@ class ShowProject extends Page implements HasForms, HasActions
             } else {
                 $this->toggleCompletedTasks = false;
             }
+
+            $filters = $this->statusFilters->toArray();
+            Cookie::queue('status_filters', json_encode($filters), 60 * 24 * 30);
+        }
+    }
+
+    public function getStatusFilters()
+    {
+        $cookie = Cookie::get('status_filters');
+        if ($cookie) {
+            $this->statusFilters = collect(json_decode($cookie, true));
+        } else {
+            $this->statusFilters = collect(); // Par défaut, pas de filtres
         }
     }
 
@@ -719,6 +734,19 @@ class ShowProject extends Page implements HasForms, HasActions
             } else {
                 $this->priorityFilters->push($priority);
             }
+
+            $filters = $this->priorityFilters->toArray();
+            Cookie::queue('priority_filters', json_encode($filters), 60 * 24 * 30);
+        }
+    }
+
+    public function getPriorityFilters()
+    {
+        $cookie = Cookie::get('priority_filters');
+        if ($cookie) {
+            $this->priorityFilters = collect(json_decode($cookie, true));
+        } else {
+            $this->priorityFilters = collect(); // Par défaut, pas de filtres
         }
     }
 
@@ -733,6 +761,9 @@ class ShowProject extends Page implements HasForms, HasActions
             $statusesExceptCompleted = Status::where('name', '!=', 'Terminé')->get();
             $this->statusFilters = $statusesExceptCompleted;
         }
+
+        $filters = $this->statusFilters->toArray();
+        Cookie::queue('status_filters', json_encode($filters), 60 * 24 * 30);
     }
 
     public function addUserToProject($userId)
