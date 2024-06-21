@@ -18,18 +18,23 @@ class Status extends Model
 
     public function getNameAttribute($value)
     {
-        $route = request()->route();
+        try {
+            $route = request()->route();
 
-        if ($route === null) {
-            return app()->getLocale() === 'en' ? $this->en_name : $value;
-        }
+            if ($route === null) {
+                return app()->getLocale() === 'en' ? $this->en_name : $value;
+            }
 
-        $routeAction = $route->getAction('as');
+            $routeAction = $route->getAction('as') ?? null;
 
-        if ($routeAction === 'filament.admin.resources.statuses.edit') {
-            return $value;
-        } else {
+            if ($routeAction === 'filament.admin.resources.statuses.edit') {
+                return $value;
+            } else {
+                return app()->getLocale() === 'en' ? $this->en_name : $value;
+            }
+        } catch (\Exception $e) {
             return app()->getLocale() === 'en' ? $this->en_name : $value;
         }
     }
+
 }
