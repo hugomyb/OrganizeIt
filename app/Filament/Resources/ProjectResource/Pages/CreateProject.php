@@ -29,4 +29,9 @@ class CreateProject extends CreateRecord
     {
         return auth()->user()->hasRole('Admin');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return ProjectResource::getUrl('show', ['record' => $this->record->id]);
+    }
 }
