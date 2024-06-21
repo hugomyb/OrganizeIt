@@ -76,7 +76,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public $statusFilters;
     public $priorityFilters;
 
-    public $toggleCompletedTasks = false;
+    public $toggleCompletedTasks;
 
     public $description;
     public $attachments;
@@ -96,15 +96,14 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public function mount($record)
     {
-
         $this->record = Project::find($record);
         $this->getStatusFilters();
         $this->getPriorityFilters();
 
-        if (!$this->statusFilters->contains('name', 'Terminé')) {
-            $this->toggleCompletedTasks = false;
-        } else {
+        if ($this->statusFilters->contains('name', 'Terminé')) {
             $this->toggleCompletedTasks = true;
+        } else {
+            $this->toggleCompletedTasks = false;
         }
     }
 

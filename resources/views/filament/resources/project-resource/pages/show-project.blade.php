@@ -326,9 +326,9 @@
 
                     <div
                         wire:click="toggleShowCompletedTasks()"
-                        style="{{ !$toggleCompletedTasks ? 'background-color: #2563eb; color: #fff' : '' }}"
+                        style="{{ $toggleCompletedTasks ? '' : 'background-color: #2563eb; color: #fff' }}"
                         class="border border-gray-200 dark:border-white/10 text-center rounded-lg px-2 text-sm py-2 justify-center flex items-center gap-1 cursor-pointer">
-                        {{ !$toggleCompletedTasks ? __('general.completed_task_hidden') : __('general.hide_completed_task') }}
+                        {{ $toggleCompletedTasks ? __('general.hide_completed_task') : __('general.completed_task_hidden') }}
                     </div>
                 </div>
             </x-filament::section>
