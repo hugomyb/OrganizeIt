@@ -76,7 +76,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public $statusFilters;
     public $priorityFilters;
 
-    public $toggleCompletedTasks = true;
+    public $toggleCompletedTasks = false;
 
     public $description;
     public $attachments;
