@@ -701,6 +701,12 @@ class ShowProject extends Page implements HasForms, HasActions
             } else {
                 $this->statusFilters->push($status);
             }
+
+            if ($this->statusFilters->contains('name', 'Terminé')) {
+                $this->toggleCompletedTasks = true;
+            } else {
+                $this->toggleCompletedTasks = false;
+            }
         }
     }
 
