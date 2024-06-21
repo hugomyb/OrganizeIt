@@ -102,7 +102,7 @@ class ShowProject extends Page implements HasForms, HasActions
         $this->getPriorityFilters();
 
         if (!$this->statusFilters->contains('name', 'Terminé')) {
-            $this->toggleCompletedTasks = false;
+            $this->toggleCompletedTasks = true;
         }
     }
 
