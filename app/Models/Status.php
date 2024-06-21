@@ -18,7 +18,7 @@ class Status extends Model
 
     public function getNameAttribute($value)
     {
-        if (request()->route()->getAction('as') == 'filament.admin.resources.statuses.edit') {
+        if (request()->route() && request()->route()->getAction('as') == 'filament.admin.resources.statuses.edit') {
             return $value;
         } else {
             return app()->getLocale() === 'en' ? $this->en_name : $value;
