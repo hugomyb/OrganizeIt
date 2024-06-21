@@ -29,7 +29,9 @@ trait InteractsWithTooltipActions
             ->action(function (array $data, array $arguments): void {
                 $task = Task::find($arguments['task_id']);
 
-                $data['description'] =  $this->processDescription($data['description']);
+                if (isset($data['description']) && trim($data['description']) != '') {
+                    $data['description'] = $this->processDescription($data['description']);
+                }
 
                 $task->update($data);
 
@@ -60,7 +62,7 @@ trait InteractsWithTooltipActions
                 $parentTask = Task::find($arguments['parent_id']);
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
 
-                $data['description'] =  $this->processDescription($data['description']);
+                $data['description'] = $this->processDescription($data['description']);
 
                 $task = $parentTask->children()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
