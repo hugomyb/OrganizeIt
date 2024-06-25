@@ -6,6 +6,7 @@ use App\Jobs\SendEmailJob;
 use App\Mail\NewTaskMail;
 use App\Models\Task;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
@@ -45,13 +46,14 @@ trait InteractsWithTooltipActions
 
     public function addSubtaskTooltipAction(): Action
     {
-        return Action::make('addSubtaskTooltip')
+        return CreateAction::make('addSubtaskTooltip')
             ->tooltip(__('task.add_subtask'))
             ->modalWidth('5xl')
             ->modal()
             ->iconButton()
             ->iconSize(IconSize::Small)
             ->icon('heroicon-o-plus')
+            ->model(Task::class)
             ->modalHeading(__('task.add_subtask'))
             ->form(function (array $arguments) {
                 return array_merge($this->getTaskForm($arguments['group_id']), [
@@ -62,12 +64,17 @@ trait InteractsWithTooltipActions
                 $parentTask = Task::find($arguments['parent_id']);
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
 
-                $data['description'] = $this->processDescription($data['description']);
+                if (isset($data['description']) && trim($data['description']) != '') {
+                    $data['description'] = $this->processDescription($data['description']);
+                }
 
                 $task = $parentTask->children()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
                 ]));
+
+                $usersToAssign = $data['users'] ?? [];
+                $task->users()->sync($usersToAssign);
 
                 $users = $task->project->users;
                 $author = auth()->user();

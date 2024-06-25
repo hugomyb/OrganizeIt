@@ -24,6 +24,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
@@ -45,6 +46,7 @@ use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -216,6 +218,9 @@ class ShowProject extends Page implements HasForms, HasActions
                         'order' => $lastTask ? $lastTask->order + 1 : 0,
                         'created_by' => auth()->id()
                     ]));
+
+                    $usersToAssign = $data['users'] ?? [];
+                    $task->users()->sync($usersToAssign);
 
                     $users = $this->record->users;
                     $author = auth()->user();
@@ -411,55 +416,71 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->fileAttachmentsDirectory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
                 ->label('Description'),
 
-            Select::make('status_id')
-                ->label(__('task.form.status'))
-                ->default(Status::whereName('À faire')->first()->id)
-                ->preload()
-                ->searchable()
-                ->options($statusOptions)
-                ->allowHtml()
-                ->createOptionForm([
-                    TextInput::make('name')
-                        ->live(onBlur: true)
-                        ->unique('statuses', ignoreRecord: true)
-                        ->label(__('status.table.name'))
-                        ->afterStateUpdated(function (Set $set, $state) {
-                            $translate = app()->make(GoogleTranslate::class);
-                            $translate->setSource('fr');
-                            $translate->setTarget('en');
-                            $result = $translate->translate($state ?? "");
+            \Filament\Forms\Components\Group::make([
+                Select::make('status_id')
+                    ->label(__('task.form.status'))
+                    ->default(Status::whereName('À faire')->first()->id)
+                    ->preload()
+                    ->searchable()
+                    ->options($statusOptions)
+                    ->allowHtml()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->live(onBlur: true)
+                            ->unique('statuses', ignoreRecord: true)
+                            ->label(__('status.table.name'))
+                            ->afterStateUpdated(function (Set $set, $state) {
+                                $translate = app()->make(GoogleTranslate::class);
+                                $translate->setSource('fr');
+                                $translate->setTarget('en');
+                                $result = $translate->translate($state ?? "");
 
-                            $set('en_name', $result);
-                        })
-                        ->required(),
+                                $set('en_name', $result);
+                            })
+                            ->required(),
 
-                    TextInput::make('en_name')
-                        ->live(onBlur: true)
-                        ->unique('statuses', ignoreRecord: true)
-                        ->label(__('status.table.en_name'))
-                        ->required(),
+                        TextInput::make('en_name')
+                            ->live(onBlur: true)
+                            ->unique('statuses', ignoreRecord: true)
+                            ->label(__('status.table.en_name'))
+                            ->required(),
 
-                    ColorPicker::make('color')
-                        ->suffixAction(\Filament\Forms\Components\Actions\Action::make('randomize')
-                            ->label(__('project.form.color.randomize'))
-                            ->icon('heroicon-o-arrow-path')
-                            ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
-                        )
-                        ->unique(ignoreRecord: true)
-                        ->label(__('status.table.color'))
-                ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
-                ->required(),
+                        ColorPicker::make('color')
+                            ->suffixAction(\Filament\Forms\Components\Actions\Action::make('randomize')
+                                ->label(__('project.form.color.randomize'))
+                                ->icon('heroicon-o-arrow-path')
+                                ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
+                            )
+                            ->unique(ignoreRecord: true)
+                            ->label(__('status.table.color'))
+                    ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
+                    ->required(),
 
-            Select::make('priority_id')
-                ->label(__('task.form.priority'))
-                ->preload()
-                ->searchable()
-                ->default(Priority::whereName('Aucune')->first()->id)
-                ->disabled(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
+                Select::make('priority_id')
+                    ->label(__('task.form.priority'))
+                    ->preload()
+                    ->searchable()
+                    ->default(Priority::whereName('Aucune')->first()->id)
+                    ->disabled(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
+                    ->dehydrated()
+                    ->options($priorityOptions)
+                    ->allowHtml()
+                    ->required(),
+            ])->columns(2),
+
+            Select::make('users')
+                ->relationship(
+                    name: 'users',
+                    titleAttribute: 'name',
+                    modifyQueryUsing: fn (Builder $query) => $this->record->users()->getQuery()
+                )
+                ->label(__('task.assign_to'))
                 ->dehydrated()
-                ->options($priorityOptions)
-                ->allowHtml()
-                ->required(),
+                ->disabled(fn() => !auth()->user()->hasPermission('assign_user'))
+                ->visible(fn() => auth()->user()->hasPermission('view_assigned_users'))
+                ->preload()
+                ->searchable()
+                ->multiple(),
 
             \Filament\Forms\Components\Group::make([
                 DatePicker::make('start_date')
@@ -488,10 +509,11 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public function createTaskAction(): Action
     {
-        return Action::make('createTask')
+        return CreateAction::make('createTask')
             ->icon('heroicon-o-plus')
             ->link()
             ->modalWidth('7xl')
+            ->model(Task::class)
             ->label(__('task.add_task'))
             ->form(function ($livewire, array $arguments) {
                 $group_id = $arguments['group_id'];
@@ -509,6 +531,9 @@ class ShowProject extends Page implements HasForms, HasActions
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
                 ]));
+
+                $usersToAssign = $data['users'] ?? [];
+                $task->users()->sync($usersToAssign);
 
                 $users = $this->record->users;
                 $author = auth()->user();
