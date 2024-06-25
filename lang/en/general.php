@@ -28,6 +28,8 @@ return [
     'filters' => 'Filters',
     'no_filter' => 'No filter',
 
+    'sort_by' => 'Sort by',
+
     'completed_task_hidden' => 'Completed tasks hidden',
     'hide_completed_task' => 'Hide completed tasks',
 

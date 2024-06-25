@@ -60,8 +60,8 @@
                             }
                         }"
                         x-init="initNestable()">
-                        @forelse($group->tasks->whereNull('parent_id')->sortBy('order') as $task)
-                            @include('tasks.task', ['task' => $task])
+                        @forelse($group->tasks->whereNull('parent_id') as $task)
+                            @include('tasks.task', ['task' => $task, 'sortBy' => $sortBy])
                         @empty
                             <li class="uk-nestable-item placeholder dark:hover:bg-white/5" data-id="placeholder">
                                 <div class="uk-nestable-content bg-transparent" style="height: 1px"></div>
@@ -332,6 +332,29 @@
                     </div>
                 </div>
             </x-filament::section>
+
+            <!-- sort -->
+            <x-filament::section
+                collapsible
+                style="width: 100%">
+                <x-slot name="heading">
+                    {{ __('general.sort_by') }}
+                </x-slot>
+
+                <div class="flex flex-col px-6 py-3 gap-3">
+                    <div class="text-xs font-semibold">
+                        <div style="font-weight: 500; {{ $sortBy === 'priority' ? 'background-color: #2563eb; color: #fff !important' : '' }}"
+                             wire:click="toggleSortByPriority()"
+                             class="w-full cursor-pointer border border-gray-100 dark:border-gray-700 px-3 py-2 rounded-lg flex items-center text-xs justify-between">
+                            <div class="flex items-center">
+                                <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1" />
+                                <span class="mx-1">{{ __('priority.priority') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </x-filament::section>
+
         </div>
     </div>
 

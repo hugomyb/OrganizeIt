@@ -28,6 +28,8 @@ return [
     'filters' => 'Filtres',
     'no_filter' => 'Aucun filtre',
 
+    'sort_by' => 'Trier par',
+
     'completed_task_hidden' => 'Tâches terminées masquées',
     'hide_completed_task' => 'Masquer tâches terminées',
 

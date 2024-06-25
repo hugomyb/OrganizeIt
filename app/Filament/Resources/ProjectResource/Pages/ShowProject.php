@@ -77,6 +77,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public $statusFilters;
     public $priorityFilters;
+    public string $sortBy = 'default';
 
     public $toggleCompletedTasks;
 
@@ -122,10 +123,11 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         $statusIds = $this->statusFilters->pluck('id')->toArray();
         $priorityIds = $this->priorityFilters->pluck('id')->toArray();
+        $sortBy = $this->sortBy;
 
         $this->groups = Group::where('project_id', $this->record->id)
-            ->with(['tasks' => function ($query) use ($statusIds, $priorityIds) {
-                $query->where(function ($query) use ($statusIds, $priorityIds) {
+            ->with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
+                $query->where(function ($query) use ($statusIds, $priorityIds, $sortBy) {
                     if (!empty($statusIds)) {
                         $query->whereIn('status_id', $statusIds);
                     }
@@ -144,14 +146,20 @@ class ShowProject extends Page implements HasForms, HasActions
                         });
                     });
 
-                $query->with(['children' => function ($query) use ($statusIds, $priorityIds) {
-                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds);
+                if ($sortBy === 'priority') {
+                    $query->orderByDesc('priority_id');
+                } else {
+                    $query->orderBy('order');
+                }
+
+                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
+                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
                 }, 'parent']);
             }])
             ->get();
     }
 
-    protected function applyRecursiveFilters($query, $statusIds, $priorityIds)
+    protected function applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy)
     {
         $query->where(function ($query) use ($statusIds, $priorityIds) {
             if (!empty($statusIds)) {
@@ -161,7 +169,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 $query->whereIn('priority_id', $priorityIds);
             }
         })
-            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
+            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $sortBy) {
                 $query->where(function ($query) use ($statusIds, $priorityIds) {
                     if (!empty($statusIds)) {
                         $query->whereIn('status_id', $statusIds);
@@ -171,11 +179,23 @@ class ShowProject extends Page implements HasForms, HasActions
                     }
                 });
 
+                if ($sortBy === 'priority') {
+                    $query->orderByDesc('priority_id');
+                } else {
+                    $query->orderBy('order');
+                }
+
                 // Appel récursif pour les enfants
-                $query->with(['children' => function ($query) use ($statusIds, $priorityIds) {
-                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds);
+                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
+                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
                 }]);
             });
+
+        if ($sortBy === 'priority') {
+            $query->orderBy('priority_id');
+        } else {
+            $query->orderBy('order');
+        }
     }
 
     public function getTitle(): string|Htmlable
@@ -1183,5 +1203,14 @@ class ShowProject extends Page implements HasForms, HasActions
                         ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task_id']]))
                 ];
             });
+    }
+
+    public function toggleSortByPriority()
+    {
+        if ($this->sortBy == 'priority') {
+            $this->sortBy = 'default';
+        } else {
+            $this->sortBy = 'priority';
+        }
     }
 }

@@ -20,7 +20,9 @@
          :class="{ 'highlight': isOver }">
         <div class="flex">
             @can('reorderTasks', \App\Models\User::class)
-                <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
+                @if($sortBy === 'default')
+                    <x-iconpark-drag class="h-5 w-5 mx-1 text-gray-400 cursor-move uk-nestable-handle"/>
+                @endif
             @endcan
 
             @can('changeStatus', \App\Models\User::class)
@@ -235,7 +237,15 @@
 
     @if ($task->children->isNotEmpty())
         <ul class="uk-nestable-list child-list">
-            @each('tasks.task', $task->children, 'task')
+            @php
+                $sortedChildren = $task->children;
+                if ($sortBy === 'priority') {
+                    $sortedChildren = $sortedChildren->sortByDesc('priority_id');
+                }
+            @endphp
+            @foreach ($sortedChildren as $childTask)
+                @include('tasks.task', ['task' => $childTask, 'sortBy' => $sortBy])
+            @endforeach
         </ul>
     @endif
 </li>
