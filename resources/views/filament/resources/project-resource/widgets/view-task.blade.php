@@ -196,7 +196,8 @@
                                                                             style="color: {{ $status->color }}"/>
                                                 @break
                                         @endswitch
-                                        <span class="mx-1" title="{{ $task->status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
+                                        <span class="mx-1"
+                                              title="{{ $task->status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
                                     </div>
                                 </x-filament::dropdown.list.item>
                             @endforeach
@@ -593,12 +594,16 @@
                 @if(count($task->comments) > 0)
                     @foreach($task->comments()->withTrashed()->get() as $comment)
                         <div class="flex items-start gap-2.5" style="{{ $comment->trashed() ? 'opacity: 0.5' : '' }}">
-                            <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar_url }}"
-                                 alt="{{ $comment->user->name }}">
+                            @if(auth()->user()->hasRole('Client') && $comment->user->id != auth()->user()->id)
+                                <img class="w-8 h-8 rounded-full" src="{{ asset('img/avatar.png') }}" alt="avatar">
+                            @else
+                                <img class="w-8 h-8 rounded-full" src="/storage/{{ $comment->user->avatar_url }}"
+                                     alt="{{ $comment->user->name }}">
+                            @endif
                             <div class="flex flex-col gap-1 w-auto">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span
-                                        class="text-sm font-semibold">{{ $comment->user->name }}</span>
+                                        class="text-sm font-semibold">{{ auth()->user()->hasRole('Client') && $comment->user->id != auth()->user()->id ? __('user.user') : $comment->user->name }}</span>
                                     <span
                                         class="text-xs font-normal">{{ $comment->created_at->diffForHumans() }}</span>
                                     @if($comment->trashed())

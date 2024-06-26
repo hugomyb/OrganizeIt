@@ -80,6 +80,7 @@ class ProjectResource extends Resource
 
                 Tables\Columns\ImageColumn::make('users.avatar_url')
                     ->label(__('project.table.users.assigns'))
+                    ->visible(!auth()->user()->hasRole('Client'))
                     ->circular()
                     ->tooltip(fn($record) => $record->users->map(fn($user) => $user->name)->join(', '))
                     ->stacked()

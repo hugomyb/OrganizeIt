@@ -60,17 +60,18 @@
                     </div>
                     <!-- right side -->
                     <div class="flex items-center space-x-4">
-                        @if($task->creator)
-                            <img src="/storage/{{ $task->creator->avatar_url }}" alt="{{ $task->creator->name }}"
-                                 title="{{ __('task.created_by') . ' ' . $task->creator->name }}"
-                                 class="rounded-full h-6">
-                        @else
-                            <img class="rounded-full h-6"
-                                 title="{{ __('task.created_by') . ' ' . __('general.unknown')  }}"
-                                 src="{{ asset('img/avatar.png') }}" alt="avatar">
+                        @if(auth()->user()->hasPermission('view_assigned_users'))
+                            @if($task->creator)
+                                <img src="/storage/{{ $task->creator->avatar_url }}" alt="{{ $task->creator->name }}"
+                                     title="{{ __('task.created_by') . ' ' . $task->creator->name }}"
+                                     class="rounded-full h-6">
+                            @else
+                                <img class="rounded-full h-6"
+                                     title="{{ __('task.created_by') . ' ' . __('general.unknown')  }}"
+                                     src="{{ asset('img/avatar.png') }}" alt="avatar">
+                            @endif
                         @endif
                         <p class="text-xs text-gray-500">{{ $task->created_at->diffForHumans() }}</p>
-
                     </div>
                 </div>
             </a>
