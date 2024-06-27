@@ -857,6 +857,20 @@ class ShowProject extends Page implements HasForms, HasActions
         foreach ($imgs as $img) {
             // Set lazy loading attribute to lazy
             $img->setAttribute('loading', 'lazy');
+
+            // Check if img is inside an <a> element
+            $parent = $img->parentNode;
+            if ($parent->nodeName !== 'a') {
+                // Create <a> element
+                $a = $dom->createElement('a');
+                $a->setAttribute('href', $img->getAttribute('src'));
+                $a->setAttribute('target', '_blank');
+                $a->setAttribute('style', 'color: blue;');
+
+                // Replace img with the new <a> element containing the img
+                $parent->replaceChild($a, $img);
+                $a->appendChild($img);
+            }
         }
 
         // Convert text URLs to <a> elements with target="_blank" and style
