@@ -7,7 +7,12 @@
         @endforelse
     </ul>
 
-    <textarea class="w-full mt-4 p-2" rows="5" hidden readonly>- {{ $tasks->pluck('title')->join("\n- ") }}</textarea>
+    <div class="flex w-full items-center justify-center my-2">
+        <x-filament::loading-indicator class="h-5 w-5" wire:loading/>
+    </div>
+
+    <textarea wire:loading.remove class="w-full mt-4 p-2" rows="5" hidden
+              readonly>- {{ $tasks->pluck('title')->join("\n- ") }}</textarea>
 
     @if($tasks->count())
         <x-filament::button
