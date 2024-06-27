@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Status extends Model
 {
@@ -37,4 +38,10 @@ class Status extends Model
         }
     }
 
+    public static function getCompletedStatusId()
+    {
+        return Cache::rememberForever('status.completed.id', function () {
+            return self::whereName('Terminé')->first()->id;
+        });
+    }
 }

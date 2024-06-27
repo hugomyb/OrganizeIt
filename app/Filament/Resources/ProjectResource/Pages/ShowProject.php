@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
+use App\Concerns\CanShowNotification;
 use App\Concerns\InteractsWithTooltipActions;
 use App\Filament\Resources\ProjectResource;
 use App\Jobs\SendEmailJob;
@@ -59,6 +60,7 @@ class ShowProject extends Page implements HasForms, HasActions
     use InteractsWithActions;
     use InteractsWithTooltipActions;
     use CanAuthorizeResourceAccess;
+    use CanShowNotification;
 
     protected static string $resource = ProjectResource::class;
 
@@ -99,7 +101,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public function mount($record)
     {
-        $this->record = Project::find($record);
+        $this->record = Project::with(['users'])->find($record);
         $this->getStatusFilters();
         $this->getPriorityFilters();
 
@@ -125,37 +127,37 @@ class ShowProject extends Page implements HasForms, HasActions
         $priorityIds = $this->priorityFilters->pluck('id')->toArray();
         $sortBy = $this->sortBy;
 
-        $this->groups = Group::where('project_id', $this->record->id)
-            ->with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                $query->where(function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                    if (!empty($statusIds)) {
-                        $query->whereIn('status_id', $statusIds);
-                    }
-                    if (!empty($priorityIds)) {
-                        $query->whereIn('priority_id', $priorityIds);
-                    }
-                })
-                    ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
-                        $query->where(function ($query) use ($statusIds, $priorityIds) {
-                            if (!empty($statusIds)) {
-                                $query->whereIn('status_id', $statusIds);
-                            }
-                            if (!empty($priorityIds)) {
-                                $query->whereIn('priority_id', $priorityIds);
-                            }
-                        });
-                    });
-
-                if ($sortBy === 'priority') {
-                    $query->orderByDesc('priority_id');
-                } else {
-                    $query->orderBy('order');
+        $this->groups = Group::with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
+            $query->where(function ($query) use ($statusIds, $priorityIds) {
+                if (!empty($statusIds)) {
+                    $query->whereIn('status_id', $statusIds);
                 }
+                if (!empty($priorityIds)) {
+                    $query->whereIn('priority_id', $priorityIds);
+                }
+            })
+                ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
+                    $query->where(function ($query) use ($statusIds, $priorityIds) {
+                        if (!empty($statusIds)) {
+                            $query->whereIn('status_id', $statusIds);
+                        }
+                        if (!empty($priorityIds)) {
+                            $query->whereIn('priority_id', $priorityIds);
+                        }
+                    });
+                });
 
-                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
-                }, 'parent']);
-            }])
+            if ($sortBy === 'priority') {
+                $query->orderByDesc('priority_id');
+            } else {
+                $query->orderBy('order');
+            }
+
+            $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
+                $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
+            }, 'parent']);
+        }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project'])
+            ->where('project_id', $this->record->id)
             ->get();
     }
 
@@ -188,7 +190,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 // Appel récursif pour les enfants
                 $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
                     $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
-                }]);
+                }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project']);
             });
 
         if ($sortBy === 'priority') {
@@ -618,7 +620,7 @@ class ShowProject extends Page implements HasForms, HasActions
         $oldStatus = Status::find($oldStatusId);
 
         if ($statusId != $task->status_id) {
-            if ($statusId === Status::whereName('Terminé')->first()->id) {
+            if ($statusId === Status::getCompletedStatusId()) {
                 $task->update(['status_id' => $statusId, 'completed_at' => now()]);
             } else {
                 $task->update(['status_id' => $statusId, 'completed_at' => null]);
@@ -628,7 +630,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
             foreach ($users as $user) {
                 if ($user->hasRole('Client')) {
-                    if ($task->status->id === Status::whereName('Terminé')->first()->id)
+                    if ($task->status->id === Status::getCompletedStatusId())
                         SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
                 } else {
                     SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
@@ -689,31 +691,6 @@ class ShowProject extends Page implements HasForms, HasActions
             foreach ($task['children'] as $childIndex => $child) {
                 $this->updateTask($child, $groupId, $taskModel->id, $childIndex);
             }
-        }
-    }
-
-    protected function reorderTasksInGroup($groupId)
-    {
-        $tasks = Task::where('group_id', $groupId)->whereNull('parent_id')->orderBy('order')->get();
-        $order = 0;
-        foreach ($tasks as $task) {
-            $task->order = $order++;
-            $task->save();
-
-            // Réorganiser les sous-tâches
-            $this->reorderSubTasks($task);
-        }
-    }
-
-    protected function reorderSubTasks($task)
-    {
-        $subTasks = $task->children()->orderBy('order')->get();
-        $order = 0;
-        foreach ($subTasks as $subTask) {
-            $subTask->order = $order++;
-            $subTask->save();
-
-            $this->reorderSubTasks($subTask);
         }
     }
 
@@ -857,15 +834,6 @@ class ShowProject extends Page implements HasForms, HasActions
 
             $this->showNotification(__('task.title_updated'));
         }
-    }
-
-    public function showNotification($title)
-    {
-        Notification::make()
-            ->success()
-            ->title($title)
-            ->duration(2000)
-            ->send();
     }
 
     function processDescription($htmlContent)

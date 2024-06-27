@@ -79,10 +79,10 @@ class StatusResource extends Resource
             ->filters([
                 //
             ])
-            ->recordUrl(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::whereName('Terminé')->first()->id ? StatusResource::getUrl('edit', ['record' => $record]) : null)
+            ->recordUrl(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::getCompletedStatusId() ? StatusResource::getUrl('edit', ['record' => $record]) : null)
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::whereName('Terminé')->first()->id),
+                    ->visible(fn($record) => $record->id !== Status::whereName('À faire')->first()->id && $record->id !== Status::whereName('En cours')->first()->id && $record->id !== Status::getCompletedStatusId()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

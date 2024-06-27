@@ -61,7 +61,7 @@
                         }"
                         x-init="initNestable()">
                         @forelse($group->tasks->whereNull('parent_id') as $task)
-                            @include('tasks.task', ['task' => $task, 'sortBy' => $sortBy])
+                            @include('tasks.task', ['task' => $task, 'sortBy' => $sortBy, 'project' => $record])
                         @empty
                             <li class="uk-nestable-item placeholder dark:hover:bg-white/5" data-id="placeholder">
                                 <div class="uk-nestable-content bg-transparent" style="height: 1px"></div>

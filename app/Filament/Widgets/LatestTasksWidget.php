@@ -19,7 +19,7 @@ class LatestTasksWidget extends Widget
 
         $this->tasks = $authUser->projects()
             ->with(['tasks' => function ($query) {
-                $query->where('status_id', '!=', Status::whereName('Terminé')->first()->id);
+                $query->where('status_id', '!=', Status::getCompletedStatusId());
             }])
             ->get()
             ->pluck('tasks')

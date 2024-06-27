@@ -106,7 +106,7 @@
             @if($task->children->count() > 0)
                 <x-filament::badge color="gray" class="cursor-default"
                                    style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
-                    <span class="text-gray-400">{{ $task->children->where('status_id', \App\Models\Status::whereName('Terminé')->first()->id)->count() }}/{{ $task->children->count() }}</span>
+                    <span class="text-gray-400">{{ $task->children->where('status_id', \App\Models\Status::getCompletedStatusId())->count() }}/{{ $task->children->count() }}</span>
                 </x-filament::badge>
             @endif
 
@@ -166,7 +166,7 @@
                             </x-slot>
 
                             <x-filament::dropdown.list>
-                                @foreach($task->project->users as $user)
+                                @foreach($project->users as $user)
                                     <x-filament::dropdown.list.item
                                         wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
                                         <div class="text-xs font-bold flex justify-between items-center">
@@ -227,7 +227,7 @@
 
         <!-- actions task -->
         @can('manageTasks', \App\Models\User::class)
-            <div class="task-buttons absolute flex hidden group-hover:flex">
+            <div class="task-buttons absolute hidden group-hover:flex">
                 {{ ($this->editTaskTooltipAction)(['task_id' => $task->id]) }}
                 {{ ($this->addSubtaskTooltipAction)(['parent_id' => $task->id, 'group_id' => $task->group_id]) }}
                 {{ ($this->deleteTaskTooltipAction)(['task_id' => $task->id]) }}
@@ -244,7 +244,7 @@
                 }
             @endphp
             @foreach ($sortedChildren as $childTask)
-                @include('tasks.task', ['task' => $childTask, 'sortBy' => $sortBy])
+                @include('tasks.task', ['task' => $childTask, 'sortBy' => $sortBy, 'project' => $record])
             @endforeach
         </ul>
     @endif

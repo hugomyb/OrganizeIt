@@ -4,184 +4,119 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Cache;
 
 class UserPolicy
 {
     use HandlesAuthorization;
 
     /**
-     * Determine if the user can manage tasks.
+     * Cache user permissions for optimization.
      *
      * @param User $user
+     * @return \Illuminate\Support\Collection
+     */
+    private function getUserPermissions(User $user)
+    {
+        return Cache::remember('user_permissions_' . $user->id, 60, function () use ($user) {
+            return $user->role()
+                ->join('permission_role', 'roles.id', '=', 'permission_role.role_id')
+                ->join('permissions', 'permissions.id', '=', 'permission_role.permission_id')
+                ->pluck('permissions.key');
+        });
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     *
+     * @param User $user
+     * @param string $permission
      * @return bool
      */
+    private function hasPermission(User $user, $permission)
+    {
+        $permissions = $this->getUserPermissions($user);
+        return $permissions->contains($permission);
+    }
+
     public function manageTasks(User $user)
     {
-        return $user->hasPermission('manage_tasks');
+        return $this->hasPermission($user, 'manage_tasks');
     }
 
-    /**
-     * Determine if the user can manage statuses.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function manageStatus(User $user)
     {
-        return $user->hasPermission('manage_status');
+        return $this->hasPermission($user, 'manage_status');
     }
 
-    /**
-     * Determine if the user can change statuses.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function changeStatus(User $user)
     {
-        return $user->hasPermission('change_status');
+        return $this->hasPermission($user, 'change_status');
     }
 
-    /**
-     * Determine if the user can change priorities.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function changePriority(User $user)
     {
-        return $user->hasPermission('change_priority');
+        return $this->hasPermission($user, 'change_priority');
     }
 
-    /**
-     * Determine if the user can assign users.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function assignUser(User $user)
     {
-        return $user->hasPermission('assign_user');
+        return $this->hasPermission($user, 'assign_user');
     }
 
-    /**
-     * Determine if the user can edit task descriptions.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function editDescription(User $user)
     {
-        return $user->hasPermission('edit_description');
+        return $this->hasPermission($user, 'edit_description');
     }
 
-    /**
-     * Determine if the user can manage attachments.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function manageAttachments(User $user)
     {
-        return $user->hasPermission('manage_attachments');
+        return $this->hasPermission($user, 'manage_attachments');
     }
 
-    /**
-     * Determine if the user can add comments.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function addComment(User $user)
     {
-        return $user->hasPermission('add_comment');
+        return $this->hasPermission($user, 'add_comment');
     }
 
-    /**
-     * Determine if the user can delete any comments.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function deleteAnyComment(User $user)
     {
-        return $user->hasPermission('delete_any_comment');
+        return $this->hasPermission($user, 'delete_any_comment');
     }
 
-    /**
-     * Determine if the user can manage groups.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function manageGroups(User $user)
     {
-        return $user->hasPermission('manage_groups');
+        return $this->hasPermission($user, 'manage_groups');
     }
 
-    /**
-     * Determine if the user can reorder tasks.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function reorderTasks(User $user)
     {
-        return $user->hasPermission('reorder_tasks');
+        return $this->hasPermission($user, 'reorder_tasks');
     }
 
-    /**
-     * Determine if the user can add users to projects.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function addUserToProject(User $user)
     {
-        return $user->hasPermission('add_user_to_project');
+        return $this->hasPermission($user, 'add_user_to_project');
     }
 
-    /**
-     * Determine if the user can manage dates.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function manageDates(User $user)
     {
-        return $user->hasPermission('manage_dates');
+        return $this->hasPermission($user, 'manage_dates');
     }
 
-    /**
-     * Determine if the user can manage commits.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function manageCommit(User $user)
     {
-        return $user->hasPermission('manage_commit');
+        return $this->hasPermission($user, 'manage_commit');
     }
 
-    /**
-     * Determine if the user can view the task creator.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function viewTaskCreator(User $user)
     {
-        return $user->hasPermission('view_task_creator');
+        return $this->hasPermission($user, 'view_task_creator');
     }
 
-    /**
-     * Determine if the user can view assigned users.
-     *
-     * @param User $user
-     * @return bool
-     */
     public function viewAssignedUsers(User $user)
     {
-        return $user->hasPermission('view_assigned_users');
+        return $this->hasPermission($user, 'view_assigned_users');
     }
 }
+
