@@ -246,7 +246,8 @@ class ShowProject extends Page implements HasForms, HasActions
                     $author = auth()->user();
 
                     foreach ($users as $user) {
-                        SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                        if (!$user->hasRole('Client'))
+                            SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
                     }
 
                     $this->showNotification(__('task.task_added'));
@@ -492,7 +493,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->relationship(
                     name: 'users',
                     titleAttribute: 'name',
-                    modifyQueryUsing: fn (Builder $query) => $this->record->users()->getQuery()
+                    modifyQueryUsing: fn(Builder $query) => $this->record->users()->getQuery()
                 )
                 ->label(__('task.assign_to'))
                 ->dehydrated()
@@ -559,7 +560,8 @@ class ShowProject extends Page implements HasForms, HasActions
                 $author = auth()->user();
 
                 foreach ($users as $user) {
-                    SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                    if (!$user->hasRole('Client'))
+                        SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
                 }
 
                 $this->showNotification(__('task.task_added'));
@@ -625,7 +627,12 @@ class ShowProject extends Page implements HasForms, HasActions
             $users = $task->project->users;
 
             foreach ($users as $user) {
-                SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus);
+                if ($user->hasRole('Client')) {
+                    if ($task->status->id === Status::whereName('Terminé')->first()->id)
+                        SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
+                } else {
+                    SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
+                }
             }
 
             $this->showNotification(__('status.status_updated'));
@@ -645,7 +652,9 @@ class ShowProject extends Page implements HasForms, HasActions
             $users = $task->project->users;
 
             foreach ($users as $user) {
-                SendEmailJob::dispatch(ChangeTaskPriorityMail::class, $user, $task, auth()->user(), $oldPriority);
+                if (!$user->hasRole('Client')) {
+                    SendEmailJob::dispatch(ChangeTaskPriorityMail::class, $user, $task, auth()->user(), $oldPriority);
+                }
             }
 
             $this->showNotification(__('priority.priority_updated'));
@@ -718,7 +727,9 @@ class ShowProject extends Page implements HasForms, HasActions
             }
         }
 
-        SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+        if (!auth()->user()->hasRole('Client')) {
+            SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+        }
 
         $this->showNotification(__('user.assigned'));
     }
@@ -735,7 +746,9 @@ class ShowProject extends Page implements HasForms, HasActions
             } else {
                 $task->users()->attach($userId);
 
-                SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+                if (!auth()->user()->hasRole('Client')) {
+                    SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+                }
 
                 $this->showNotification(__('user.assigned'));
             }
@@ -1064,7 +1077,9 @@ class ShowProject extends Page implements HasForms, HasActions
 
             $users = $task->users;
             foreach ($users as $user) {
-                SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
+                if (!$user->hasRole('Client')) {
+                    SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
+                }
             }
 
             $this->showNotification(__('task.comment_added'));
@@ -1121,7 +1136,8 @@ class ShowProject extends Page implements HasForms, HasActions
                         'commit_numbers' => $commitNumbers
                     ]);
 
-                    SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
+                    if (!$task->creator->hasRole('Client'))
+                        SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
 
                     $this->showNotification(__('task.commit_number_added'));
 

@@ -80,7 +80,8 @@ trait InteractsWithTooltipActions
                 $author = auth()->user();
 
                 foreach ($users as $user) {
-                    SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
+                    if (!$user->hasRole('Client'))
+                        SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
                 }
 
                 Notification::make()

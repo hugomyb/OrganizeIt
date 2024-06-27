@@ -11,11 +11,3 @@ Route::group(['middleware' => ['web', WelcomesNewUsers::class,]], function () {
     Route::get('welcome/{user}', WelcomeInitPasswordPage::class)->name('welcome');
     Route::post('welcome/{user}', [WelcomeController::class, 'savePassword']);
 });
-
-Route::get('/mailable', function () {
-
-    $task = App\Models\Task::find(8);
-    $comment = App\Models\Comment::first();
-
-    return new \App\Mail\NewCommentMail($task, $comment);
-});
