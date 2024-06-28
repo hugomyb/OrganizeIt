@@ -8,6 +8,8 @@
 @endphp
 
 @if($task)
+    <meta name="description" content="{{ $task->title }}">
+
     <meta property="og:title" content="{{ $project->name }}">
     <meta property="og:description" content="{{ $task->title }}">
     <meta property="og:image" content="{{ asset('/img/organize-it.png') }}">
