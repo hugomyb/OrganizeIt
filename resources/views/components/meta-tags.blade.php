@@ -12,9 +12,11 @@
     <meta property="og:description" content="{{ $task->title }}">
     <meta property="og:image" content="{{ asset('/img/organize-it.png') }}">
     <meta property="og:url" content="{{ url()->full() }}">
+    <meta property="og:type" content="website">
 @else
-<meta property="og:title" content="{{ $project->name }}">
+    <meta property="og:title" content="{{ $project->name }}">
     <meta property="og:description" content="{{ __('project.project') . ': ' . $project->name }}">
     <meta property="og:image" content="{{ asset('/img/organize-it.png') }}">
     <meta property="og:url" content="{{ url()->full() }}">
+    <meta property="og:type" content="website">
 @endif
