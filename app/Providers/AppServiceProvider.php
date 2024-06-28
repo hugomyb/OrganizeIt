@@ -2,14 +2,18 @@
 
 namespace App\Providers;
 
+use App\Filament\Resources\ProjectResource\Pages\ShowProject;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Support\Assets\AssetManager;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\View;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class AppServiceProvider extends ServiceProvider
@@ -45,5 +49,11 @@ class AppServiceProvider extends ServiceProvider
             Css::make('custom-css', Vite::asset('resources/css/custom.css')),
             Css::make('nestable-css', Vite::asset('resources/css/components/nestable.css')),
         ]);
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_START,
+            fn (): View => view('components.meta-tags'),
+            scopes: ShowProject::class,
+        );
     }
 }
