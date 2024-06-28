@@ -221,7 +221,7 @@
                                                                                         style="color: {{ $status->color }}"/>
                                                             @break
                                                     @endswitch
-                                                    <span class="mx-1">{{ $status->name }}</span>
+                                                    <span class="mx-1">{{ \Illuminate\Support\Str::limit($status->name, 20) }}</span>
                                                 </div>
 
                                                 @if(in_array($status->id, collect($statusFilters)->pluck('id')->toArray()))
