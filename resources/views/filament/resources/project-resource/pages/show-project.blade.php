@@ -18,7 +18,7 @@
     }"
 >
     <div class="flex justify-center items-start w-full gap-6">
-        <div class="flex justify-center items-center flex-col w-4/5">
+        <div style="width: 78%" class="flex justify-center items-center flex-col">
             @foreach($groups as $group)
                 <x-filament::section
                     collapsible
@@ -82,8 +82,8 @@
             @endcan
         </div>
 
-        <div style="top: 85px"
-             class="w-1/5 hidden flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl lg:flex"
+        <div style="width: 20%; top: 85px"
+             class="hidden flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl lg:flex"
              x-data>
             @canany(['changePriority', 'assignUser'], \App\Models\User::class)
                 <x-filament::section
