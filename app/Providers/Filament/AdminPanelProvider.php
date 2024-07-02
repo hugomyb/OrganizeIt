@@ -31,7 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('/')
-            ->favicon(asset('/img/organize-it.png', true))
+            ->favicon(asset('/img/favicon.png', true))
+            ->brandLogo(asset('/img/logo-oi.png', true))
+            ->darkModeBrandLogo(asset('/img/logo-oi-dark.png', true))
             ->login()
             ->colors([
                 'primary' => Color::Blue,
