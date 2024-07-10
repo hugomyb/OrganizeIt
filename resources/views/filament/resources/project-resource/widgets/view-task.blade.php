@@ -3,8 +3,9 @@
      {
         richIsVisible: false,
         fileUploadIsVisible: false,
+
         init() {
-            this.updateUrl(taskId);
+            this.updateUrl('{{ $task->id }}');
             this.preventEnterInTitle();
             this.setupCommentEvent();
         },
