@@ -55,5 +55,7 @@ class AppServiceProvider extends ServiceProvider
             fn(): View => view('components.meta-tags'),
             scopes: ShowProject::class,
         );
+
+        Model::preventLazyLoading(!app()->isProduction());
     }
 }
