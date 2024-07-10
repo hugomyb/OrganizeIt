@@ -140,7 +140,7 @@
     </x-filament::section>
 
     <x-filament::section icon="heroicon-o-folder" badge="{{ count($task->attachments) }}" collapsible
-                         style="width: 100%">
+                         style="width: 100%; margin-top: 30px">
         <x-slot name="heading">
             <span style="height: 32px">{{ __('task.form.attachments') }}</span>
         </x-slot>
@@ -174,7 +174,7 @@
         </div>
     </x-filament::section>
 
-    <x-filament::section collapsible icon="uni-comment-alt-lines-o" style="width: 100%">
+    <x-filament::section collapsible icon="uni-comment-alt-lines-o" style="width: 100%; margin-top: 30px">
         <x-slot name="heading">
             <span style="height: 32px">{{ __('task.comments') }}</span>
         </x-slot>
