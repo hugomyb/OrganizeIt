@@ -48,4 +48,6 @@ return [
         'send_welcome_email' => 'Renvoyer l\'email de bienvenue',
         'welcome_email_sent' => 'Email de bienvenue envoyé'
     ],
+
+    'search_task_placeholder' => 'Rechercher une tâche',
 ];

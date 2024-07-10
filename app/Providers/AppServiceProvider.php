@@ -4,12 +4,12 @@ namespace App\Providers;
 
 use App\Filament\Resources\ProjectResource\Pages\ShowProject;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
-use Filament\Support\Assets\AssetManager;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_START,
-            fn (): View => view('components.meta-tags'),
+            fn(): View => view('components.meta-tags'),
             scopes: ShowProject::class,
         );
     }

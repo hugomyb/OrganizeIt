@@ -77,6 +77,7 @@ class ShowProject extends Page implements HasForms, HasActions
     public $currentTask;
     public $groups;
 
+    public $search;
     public $statusFilters;
     public $priorityFilters;
     public string $sortBy = 'default';
@@ -126,23 +127,30 @@ class ShowProject extends Page implements HasForms, HasActions
         $statusIds = $this->statusFilters->pluck('id')->toArray();
         $priorityIds = $this->priorityFilters->pluck('id')->toArray();
         $sortBy = $this->sortBy;
+        $search = $this->search;
 
-        $this->groups = Group::with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
-            $query->where(function ($query) use ($statusIds, $priorityIds) {
+        $this->groups = Group::with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+            $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
                 if (!empty($statusIds)) {
                     $query->whereIn('status_id', $statusIds);
                 }
                 if (!empty($priorityIds)) {
                     $query->whereIn('priority_id', $priorityIds);
                 }
+                if (!empty($search)) {
+                    $query->where('title', 'like', '%' . $search . '%');
+                }
             })
-                ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds) {
-                    $query->where(function ($query) use ($statusIds, $priorityIds) {
+                ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
+                    $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
                         if (!empty($statusIds)) {
                             $query->whereIn('status_id', $statusIds);
                         }
                         if (!empty($priorityIds)) {
                             $query->whereIn('priority_id', $priorityIds);
+                        }
+                        if (!empty($search)) {
+                            $query->where('title', 'like', '%' . $search . '%');
                         }
                     });
                 });
@@ -153,31 +161,37 @@ class ShowProject extends Page implements HasForms, HasActions
                 $query->orderBy('order');
             }
 
-            $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
+            $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+                $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search);
             }, 'parent']);
         }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project'])
             ->where('project_id', $this->record->id)
             ->get();
     }
 
-    protected function applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy)
+    protected function applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search)
     {
-        $query->where(function ($query) use ($statusIds, $priorityIds) {
+        $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
             if (!empty($statusIds)) {
                 $query->whereIn('status_id', $statusIds);
             }
             if (!empty($priorityIds)) {
                 $query->whereIn('priority_id', $priorityIds);
             }
+            if (!empty($search)) {
+                $query->where('title', 'like', '%' . $search . '%');
+            }
         })
-            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                $query->where(function ($query) use ($statusIds, $priorityIds) {
+            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+                $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
                     if (!empty($statusIds)) {
                         $query->whereIn('status_id', $statusIds);
                     }
                     if (!empty($priorityIds)) {
                         $query->whereIn('priority_id', $priorityIds);
+                    }
+                    if (!empty($search)) {
+                        $query->where('title', 'like', '%' . $search . '%');
                     }
                 });
 
@@ -188,8 +202,8 @@ class ShowProject extends Page implements HasForms, HasActions
                 }
 
                 // Appel récursif pour les enfants
-                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy) {
-                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy);
+                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search);
                 }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project']);
             });
 

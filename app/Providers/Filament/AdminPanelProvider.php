@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\EditProfilePage;
+use App\Filament\Resources\ProjectResource\Pages\ShowProject;
 use App\Filament\Resources\ProjectResource\Widgets\RecentProjects;
 use App\Filament\Widgets\LatestTasksWidget;
 use App\Filament\Widgets\StatsAdmin;
@@ -14,6 +15,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -72,6 +74,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentErrorMailerPlugin::make()
-            ]);
+            ])
+            ->renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE,
+                fn () => view('components.searchbar'),
+                scopes: [ShowProject::class]);
     }
 }
