@@ -16,6 +16,6 @@ class RecentProjects extends Widget
     {
         $authUser = auth()->user();
 
-        $this->projects = $authUser->projects()->orderByDesc('created_at')->get();
+        $this->projects = $authUser->projects()->orderByDesc('created_at')->get()->take(10);
     }
 }
