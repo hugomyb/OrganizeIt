@@ -13,7 +13,7 @@ class GlobalSearchbar extends Component
 
     public function updatedSearch()
     {
-        if (strlen($this->search) < 2) {
+        if (strlen($this->search) < 1) {
             $this->results = [];
             return;
         } else {
