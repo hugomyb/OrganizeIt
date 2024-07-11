@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Project;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class GlobalSearchbar extends Component
@@ -16,8 +17,12 @@ class GlobalSearchbar extends Component
             $this->results = [];
             return;
         } else {
-            $this->results = Project::search($this->search)->get();
-//            dd($this->results);
+            $userId = Auth::id();
+            $this->results = Project::search($this->search)
+                ->whereHas('users', function($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })
+                ->get();
         }
     }
 
