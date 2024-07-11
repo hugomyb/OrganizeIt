@@ -1,31 +1,6 @@
-@php
-    use Illuminate\Support\Facades\Cache;
-    use App\Models\Status;
-    use App\Models\Priority;
-
-    // Cache statuses for 1 hour
-    $statuses = Cache::remember('all_statuses', 60 * 60, function () {
-        return Status::all();
-    });
-
-    // Cache priorities for 1 hour
-    $priorities = Cache::remember('all_priorities', 60 * 60, function () {
-        return Priority::all();
-    });
-
-    // Fetch completed status ID
-    $completedStatusId = Cache::remember('completed_status_id', 60 * 60, function () use ($statuses) {
-        return $statuses->firstWhere('name', 'Terminé')->id;
-    });
-
-    // Fetch 'Aucune' priority ID
-    $noPriorityName = Cache::remember('no_priority_name', 60 * 60, function () use ($priorities) {
-        return $priorities->firstWhere('name', 'Aucune')->name;
-    });
-@endphp
-
 <li data-id="{{ $task->id }}"
-    class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm {{ (!$task->parent_id) ? 'border-b' : '' }}"
+    class="uk-nestable-item flex flex-col justify-between dark:hover:bg-white/5 text-sm
+    {{ (!$task->parent_id) ? 'border-b' : '' }}"
     style="padding-left: 8px;">
     <div class="flex py-3 content-item"
          x-data="{ isOver: false }"
@@ -53,10 +28,12 @@
             @can('changeStatus', \App\Models\User::class)
                 <!-- Status dropdown -->
                 <x-filament::dropdown>
-                    <x-slot name="trigger" style="{{ $task->style }}">
+                    <x-slot name="trigger"
+                            style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4' : '' }}">
                         @switch($task->status->name)
                             @case('À faire')
-                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }};"/>
+                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                            style="color: {{ $task->status->color }};"/>
                                 @break
                             @case('En cours')
                                 <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
@@ -65,32 +42,38 @@
                                 <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
                                 @break
                             @default
-                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
+                                <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                            style="color: {{ $task->status->color }}"/>
                         @endswitch
                     </x-slot>
 
                     <x-filament::dropdown.list>
-                        @foreach($statuses as $status)
+                        @foreach(\App\Models\Status::all() as $status)
                             <x-filament::dropdown.list.item
-                                wire:click="setTaskStatus({{ $task->id }}, {{ $status->id }})"
+                                wire:click="setTaskStatus({{$task->id}}, {{$status->id}})"
                                 x-on:click="toggle"
                                 class="text-xs font-bold">
                                 <div class="flex items-center">
                                     @switch($status->name)
                                         @case('À faire')
-                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                        style="color: {{ $status->color }}"/>
                                             @break
                                         @case('En cours')
-                                            <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-carbon-in-progress class="h-5 w-5 mx-1"
+                                                                  style="color: {{ $status->color }}"/>
                                             @break
                                         @case('Terminé')
-                                            <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-grommet-status-good class="h-5 w-5 mx-1"
+                                                                   style="color: {{ $status->color }}"/>
                                             @break
                                         @default
-                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $status->color }}"/>
+                                            <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                                        style="color: {{ $status->color }}"/>
                                             @break
                                     @endswitch
-                                    <span class="mx-1" title="{{ $status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
+                                    <span class="mx-1"
+                                          title="{{ $status->name }}">{{ \Illuminate\Support\Str::limit($status->name, 25) }}</span>
                                 </div>
                             </x-filament::dropdown.list.item>
                         @endforeach
@@ -99,7 +82,8 @@
             @else
                 @switch($task->status->name)
                     @case('À faire')
-                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }};"/>
+                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                    style="color: {{ $task->status->color }};"/>
                         @break
                     @case('En cours')
                         <x-carbon-in-progress class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
@@ -108,42 +92,44 @@
                         <x-grommet-status-good class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
                         @break
                     @default
-                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1" style="color: {{ $task->status->color }}"/>
+                        <x-pepicon-hourglass-circle class="h-5 w-5 mx-1"
+                                                    style="color: {{ $task->status->color }}"/>
                 @endswitch
             @endcan
         </div>
 
         <div class="flex gap-2 items-center flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
-                style="{{ $task->status->id == $completedStatusId ? 'opacity: 0.4;' : '' }}"
-                wire:click="mountAction('viewTaskAction', { 'task_id': '{{ $task->id }}' })">{{ $task->title }}</h3>
+                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}"
+                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
             @if($task->children->count() > 0)
                 <x-filament::badge color="gray" class="cursor-default"
-                                   style="{{ $task->status->id == $completedStatusId ? 'opacity: 0.4;' : '' }}">
-                    <span class="text-gray-400">{{ $task->children->where('status_id', $completedStatusId)->count() }}/{{ $task->children->count() }}</span>
+                                   style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
+                    <span class="text-gray-400">{{ $task->children->where('status_id', \App\Models\Status::getCompletedStatusId())->count() }}/{{ $task->children->count() }}</span>
                 </x-filament::badge>
             @endif
 
             @can('changePriority', \App\Models\User::class)
                 <!-- Priority dropdown -->
-                @if($task->priority->name != $noPriorityName)
+                @if($task->priority->name != \App\Models\Priority::where('name', 'Aucune')->first()->name)
                     <x-filament::dropdown>
                         <x-slot name="trigger" class="flex items-center mx-1"
-                                style="{{ $task->status->id == $completedStatusId ? 'opacity: 0.4;' : '' }}">
+                                style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                             <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
                             <span class="text-xs font-bold task-title"
                                   style="color: {{ $task->priority->color }}">{{ $task->priority->name }}</span>
                         </x-slot>
 
                         <x-filament::dropdown.list>
-                            @foreach($priorities as $priority)
+                            @foreach(\App\Models\Priority::all() as $priority)
                                 <x-filament::dropdown.list.item
-                                    wire:click="setTaskPriority({{ $task->id }}, {{ $priority->id }})"
+                                    wire:click="setTaskPriority({{$task->id}}, {{$priority->id}})"
                                     x-on:click="toggle"
                                     class="text-xs font-bold">
                                     <div class="flex items-center">
-                                        <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1" style="color: {{ $priority->color }}"/>
+                                        <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1"
+                                                              style="color: {{ $priority->color }}"/>
                                         <span class="mx-1">{{ $priority->name }}</span>
                                     </div>
                                 </x-filament::dropdown.list.item>
@@ -152,7 +138,7 @@
                     </x-filament::dropdown>
                 @endif
             @else
-                @if($task->priority->name != $noPriorityName)
+                @if($task->priority->name != \App\Models\Priority::where('name', 'Aucune')->first()->name)
                     <div class="flex items-center mx-1">
                         <x-iconsax-bol-flag-2 class="h-5 w-5" style="color: {{ $task->priority->color }}"/>
                         <span class="text-xs font-bold task-title"
@@ -166,13 +152,14 @@
                     @can('assignUser', \App\Models\User::class)
                         <x-filament::dropdown>
                             <x-slot name="trigger" class="flex gap-1 items-center"
-                                    style="{{ $task->status->id == $completedStatusId ? 'opacity: 0.4;' : '' }}">
+                                    style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                                 @foreach($task->users as $user)
                                     <div class="flex gap-1 items-center cursor-pointer">
                                         <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                              class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                         @if($task->users()->count() == 1)
-                                            <span class="text-xs" style="color: gray; font-weight: 600">{{ $user->name }}</span>
+                                            <span class="text-xs"
+                                                  style="color: gray; font-weight: 600">{{ $user->name }}</span>
                                         @endif
                                     </div>
                                 @endforeach
@@ -181,7 +168,7 @@
                             <x-filament::dropdown.list>
                                 @foreach($project->users as $user)
                                     <x-filament::dropdown.list.item
-                                        wire:click="toggleUserToTask({{ $user->id }}, {{ $task->id }})">
+                                        wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
                                         <div class="text-xs font-bold flex justify-between items-center">
                                             <div class="flex items center gap-1 items-center">
                                                 <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
@@ -213,22 +200,26 @@
             @endcan
 
             @if($task->description)
-                <x-gmdi-description-o wire:click="mountAction('viewTaskAction', { 'task_id': '{{ $task->id }}' })"
-                                      icon="gmdi-description-o" class="h-5 w-5 cursor-pointer tooltip-link relative text-gray-400 hover:text-gray-700/75"/>
+                <x-gmdi-description-o
+                    wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })"
+                    icon="gmdi-description-o"
+                    class="h-5 w-5 cursor-pointer tooltip-link relative text-gray-400 hover:text-gray-700/75"/>
             @endif
 
             @if(count($task->attachments) > 0)
                 <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
-                    <x-heroicon-o-folder x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{ $task->id }}' });"
-                                         class="h-5 w-5 cursor-pointer tooltip-link relative"/>
+                    <x-heroicon-o-folder
+                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' });"
+                        class="h-5 w-5 cursor-pointer tooltip-link relative"/>
                     <span class="text-xs">{{ count($task->attachments) }}</span>
                 </div>
             @endif
 
             @if($task->comments->count() > 0)
                 <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
-                    <x-forkawesome-comments-o x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{ $task->id }}' });"
-                                              class="h-5 w-5 cursor-pointer tooltip-link relative"/>
+                    <x-forkawesome-comments-o
+                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' });"
+                        class="h-5 w-5 cursor-pointer tooltip-link relative"/>
                     <span class="text-xs">{{ $task->comments->count() }}</span>
                 </div>
             @endif
