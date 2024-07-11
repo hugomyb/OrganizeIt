@@ -6,6 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "algolia/algoliasearch-client-php": "^3.4",
+        "algolia/scout-extended": "^3.1",
         "andreiio/blade-iconoir": "^4.3",
         "andreiio/blade-remix-icon": "^3.2",
         "bezhansalleh/filament-language-switch": "^3.1",
@@ -23,14 +27,13 @@
         "filament/filament": "^3.2",
         "hugomyb/filament-error-mailer": "^3.1",
         "laravel/framework": "^11.0",
+        "laravel/scout": "^10.10",
         "laravel/tinker": "^2.9",
         "mallardduck/blade-boxicons": "^2.4",
         "owenvoke/blade-fontawesome": "^2.6",
         "saade/blade-iconsax": "^1.2",
         "spatie/laravel-welcome-notification": "^2.4",
-        "stichoza/google-translate-php": "^5.1",
-        "ext-dom": "*",
-        "ext-libxml": "*"
+        "stichoza/google-translate-php": "^5.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",

@@ -50,4 +50,6 @@ return [
     ],
 
     'search_task_placeholder' => 'Search for a task',
+    'research_placeholder' => 'Search project',
+    'no_results' => 'No results found',
 ];

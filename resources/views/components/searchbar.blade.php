@@ -1,7 +1,6 @@
 <x-filament::input.wrapper
     prefix-icon="heroicon-m-magnifying-glass"
     prefix-icon-alias="panels::global-search.field"
-    suffix="Ctrl+K"
     suffix-color="gray"
     inline-prefix
     inline-suffix
@@ -19,8 +18,7 @@
         :attributes="
                 \Filament\Support\prepare_inherited_attributes(
                     new \Illuminate\View\ComponentAttributeBag([
-                        'wire:model.live' => 'search',
-                        'x-mousetrap.command-k.ctrl-k' => 'document.getElementById(\'taskSearchbar\').focus()'
+                        'wire:model.live' => 'search'
                     ])
                 )
             "

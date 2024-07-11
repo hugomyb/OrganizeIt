@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Filament\Resources\ProjectResource;
 use App\Mail\AssignToProjectMail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Scout\Searchable;
 
 class Project extends Model
 {
     use HasFactory;
+    use Searchable;
 
     protected $fillable = ['name', 'color'];
 
@@ -26,5 +29,10 @@ class Project extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'project_user');
+    }
+
+    public function getUrlAttribute()
+    {
+        return ProjectResource::getUrl('show', ['record' => $this->id]);
     }
 }
