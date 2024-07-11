@@ -18,7 +18,10 @@ class GlobalSearchbar extends Component
             return;
         } else {
             $userId = Auth::id();
-            $this->results = Project::search($this->search)
+
+            $projectIds = Project::search($this->search)->get()->pluck('id');
+
+            $this->results = Project::whereIn('id', $projectIds)
                 ->whereHas('users', function($query) use ($userId) {
                     $query->where('user_id', $userId);
                 })
