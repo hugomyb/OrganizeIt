@@ -48,6 +48,7 @@ use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -100,19 +101,22 @@ class ShowProject extends Page implements HasForms, HasActions
         return MaxWidth::ScreenTwoExtraLarge;
     }
 
-    public function mount($record)
+    public function mount($record): void
     {
-        $this->record = Project::with(['users'])->find($record);
-        $this->getStatusFilters();
-        $this->getPriorityFilters();
+        $this->record = Project::with(['users', 'groups.tasks.status', 'groups.tasks.priority'])->find($record);
+        $this->loadStatusAndPriorityFilters();
+        $this->toggleCompletedTasks = $this->statusFilters->contains('name', 'Terminé') || $this->statusFilters->isEmpty();
+    }
 
-        if ($this->statusFilters->contains('name', 'Terminé')) {
-            $this->toggleCompletedTasks = true;
-        } elseif ($this->statusFilters->isEmpty()) {
-            $this->toggleCompletedTasks = true;
-        } else {
-            $this->toggleCompletedTasks = false;
-        }
+    private function loadStatusAndPriorityFilters(): void
+    {
+        $this->statusFilters = Cache::remember('statuses.all', 60*60, function() {
+            return Status::all();
+        });
+
+        $this->priorityFilters = Cache::remember('priorities.all', 60*60, function() {
+            return Priority::all();
+        });
     }
 
     public function openTaskById($taskId)
@@ -129,44 +133,54 @@ class ShowProject extends Page implements HasForms, HasActions
         $sortBy = $this->sortBy;
         $search = $this->search;
 
-        $this->groups = Group::with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-            $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                if (!empty($statusIds)) {
-                    $query->whereIn('status_id', $statusIds);
-                }
-                if (!empty($priorityIds)) {
-                    $query->whereIn('priority_id', $priorityIds);
-                }
-                if (!empty($search)) {
-                    $query->where('title', 'like', '%' . $search . '%');
-                }
-            })
-                ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
-                    $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                        if (!empty($statusIds)) {
-                            $query->whereIn('status_id', $statusIds);
-                        }
-                        if (!empty($priorityIds)) {
-                            $query->whereIn('priority_id', $priorityIds);
-                        }
-                        if (!empty($search)) {
-                            $query->where('title', 'like', '%' . $search . '%');
-                        }
+        $completedStatus = Status::where('name', 'Terminé')->first();
+        $completedStatusId = $completedStatus ? $completedStatus->id : null;
+
+        // Charger toutes les relations nécessaires pour éviter les problèmes de lazy loading
+        $this->groups = Group::with([
+            'tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+                $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
+                    if (!empty($statusIds)) {
+                        $query->whereIn('status_id', $statusIds);
+                    }
+                    if (!empty($priorityIds)) {
+                        $query->whereIn('priority_id', $priorityIds);
+                    }
+                    if (!empty($search)) {
+                        $query->where('title', 'like', '%' . $search . '%');
+                    }
+                })
+                    ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
+                        $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
+                            if (!empty($statusIds)) {
+                                $query->whereIn('status_id', $statusIds);
+                            }
+                            if (!empty($priorityIds)) {
+                                $query->whereIn('priority_id', $priorityIds);
+                            }
+                            if (!empty($search)) {
+                                $query->where('title', 'like', '%' . $search . '%');
+                            }
+                        });
                     });
-                });
 
-            if ($sortBy === 'priority') {
-                $query->orderByDesc('priority_id');
-            } else {
-                $query->orderBy('order');
+                if ($sortBy === 'priority') {
+                    $query->orderByDesc('priority_id');
+                } else {
+                    $query->orderBy('order');
+                }
+
+                // Précharger toutes les relations nécessaires
+                $query->with(['children', 'users', 'status', 'comments', 'priority', 'creator', 'project']);
             }
+        ])->where('project_id', $this->record->id)->get();
 
-            $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-                $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search);
-            }, 'parent']);
-        }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project'])
-            ->where('project_id', $this->record->id)
-            ->get();
+        // Préparez les styles pour chaque tâche
+        $this->groups->each(function ($group) use ($completedStatusId) {
+            $group->tasks->each(function ($task) use ($completedStatusId) {
+                $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
+            });
+        });
     }
 
     protected function applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search)
@@ -202,9 +216,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 }
 
                 // Appel récursif pour les enfants
-                $query->with(['children' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-                    $this->applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search);
-                }, 'tasks.children', 'tasks.users', 'tasks.status', 'tasks.comments', 'tasks.priority', 'tasks.creator', 'tasks.project']);
+                $query->with(['children', 'users', 'status', 'comments', 'priority', 'creator', 'project']);
             });
 
         if ($sortBy === 'priority') {
@@ -421,15 +433,22 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public function getTaskForm($groupId = null): array
     {
-        $statusOptions = Status::all()->mapWithKeys(function ($status) {
-            $iconHtml = view('components.status-icon', ['status' => $status])->render();
-            return [$status->id => $iconHtml];
-        })->toArray();
+        static $statusOptions = null;
+        static $priorityOptions = null;
 
-        $priorityOptions = Priority::all()->mapWithKeys(function ($priority) {
-            $iconHtml = view('components.priority-icon', ['priority' => $priority])->render();
-            return [$priority->id => $iconHtml];
-        })->toArray();
+        if (!$statusOptions) {
+            $statusOptions = Status::all()->mapWithKeys(function ($status) {
+                $iconHtml = view('components.status-icon', ['status' => $status])->render();
+                return [$status->id => $iconHtml];
+            })->toArray();
+        }
+
+        if (!$priorityOptions) {
+            $priorityOptions = Priority::all()->mapWithKeys(function ($priority) {
+                $iconHtml = view('components.priority-icon', ['priority' => $priority])->render();
+                return [$priority->id => $iconHtml];
+            })->toArray();
+        }
 
         return [
             Select::make('group_id')

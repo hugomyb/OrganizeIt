@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Spatie\WelcomeNotification\ReceivesWelcomeNotification;
 
@@ -77,9 +78,11 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
 
     public function hasPermission($permission)
     {
-        return $this->role()->whereHas('permissions', function ($query) use ($permission) {
-            $query->where('key', $permission);
-        })->exists();
+        $permissions = Cache::remember("user_permissions_{$this->id}", 60 * 60, function () {
+            return $this->role()->with('permissions')->get()->pluck('permissions.*.key')->flatten()->unique();
+        });
+
+        return $permissions->contains($permission);
     }
 
     public function getFilamentAvatarUrl(): ?string

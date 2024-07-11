@@ -34,6 +34,8 @@ class Task extends Model
         'due_date' => 'date',
     ];
 
+    protected $with = ['priority', 'status', 'creator', 'children', 'comments', 'users'];
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
