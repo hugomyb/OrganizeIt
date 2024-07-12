@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class RoleResource extends Resource
 {
@@ -48,6 +49,9 @@ class RoleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                $query->with('permissions');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('role.table.name')),

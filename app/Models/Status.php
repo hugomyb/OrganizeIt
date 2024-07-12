@@ -21,6 +21,11 @@ class Status extends Model
     {
         try {
             $route = request()->route();
+
+            if ($route === null) {
+                return app()->getLocale() === 'en' ? $this->en_name : $value;
+            }
+
             $routeAction = $route->getAction('as') ?? null;
 
             if ($routeAction === 'filament.admin.resources.statuses.edit') {
