@@ -47,7 +47,7 @@
                     style="scrollbar-color: #4F46E5 #E5E7EB; overflow-y: auto; max-height: 50vh; scrollbar-width: thin">
                     <ul class="flex flex-col gap-2 rounded-lg">
                         @forelse ($results as $result)
-                            <li class="rounded-lg w-full bg-gray-200 dark:bg-gray-800">
+                            <li class="rounded-lg w-full bg-gray-100 dark:bg-gray-800">
                                 <a href="{{ $result['url'] }}"
                                    class="rounded-lg w-full">
                                     <div class="flex justify-between items-center px-4 py-4 sm:px-6 hover:bg-gray-400/10 dark:hover:bg-white/5 w-full">
