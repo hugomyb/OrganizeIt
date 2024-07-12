@@ -1,7 +1,7 @@
 <div x-data="{
         open: false,
         selectedResult: null,
-        results: @entangle('results'),
+        results: @entangle('results').live,
         selectedIndex: null,
         search: @entangle('search').live,
 
