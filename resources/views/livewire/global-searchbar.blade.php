@@ -113,7 +113,7 @@
                      style="scrollbar-color: #4F46E5 #E5E7EB; overflow-y: auto; max-height: 50vh; scrollbar-width: thin">
                     <ul class="flex flex-col gap-2 rounded-lg">
                         <template x-for="(result, index) in results" :key="index">
-                            <li class="rounded-lg w-full bg-gray-100 dark:bg-gray-800 transition ease-in-out focus:!bg-blue-100 hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
+                            <li class="rounded-lg !outline-none w-full bg-gray-100 dark:bg-gray-800 transition ease-in-out focus:!bg-blue-100 hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
                                 tabindex="-1" x-bind:id="'result-' + index">
                                 <a :href="result.url"
                                    class="rounded-lg w-full">
