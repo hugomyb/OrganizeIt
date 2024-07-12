@@ -18,9 +18,10 @@
         selectResult(index) {
             this.selectedIndex = index;
             this.selectedResult = this.results[index];
+
             this.$nextTick(() => {
-                if (this.$refs['result-' + index]) {
-                    this.$refs['result-' + index].focus();
+                if (document.getElementById('result-' + index)) {
+                    document.getElementById('result-' + index).focus();
                 }
             });
         },
@@ -34,6 +35,8 @@
             if (this.results.length < 1) {
                 return;
             }
+
+            console.log(event.key);
 
             if (event.key === 'ArrowDown') {
                 event.preventDefault();
@@ -111,7 +114,7 @@
                     <ul class="flex flex-col gap-2 rounded-lg">
                         <template x-for="(result, index) in results" :key="index">
                             <li class="rounded-lg w-full bg-gray-100 dark:bg-gray-800 transition ease-in-out focus:!bg-blue-100 hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
-                                x-ref="'result-' + index" tabindex="-1">
+                                tabindex="-1" x-bind:id="'result-' + index">
                                 <a :href="result.url"
                                    class="rounded-lg w-full">
                                     <div class="flex justify-between items-center px-4 py-4 sm:px-6 w-full rounded-lg">
