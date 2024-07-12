@@ -8,7 +8,7 @@
         init() {
             this.$watch('results', (value) => {
                 if (value.length > 0) {
-                    this.selectResult(0);
+                    this.selectedIndex = 0;
                 } else {
                     this.clearSelection();
                 }
