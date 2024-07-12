@@ -7,9 +7,7 @@
 
         init() {
             this.$watch('results', (value) => {
-                if (value.length > 0) {
-                    this.selectedIndex = 0;
-                } else {
+                if (value.length === 0) {
                     this.clearSelection();
                 }
             });
@@ -35,8 +33,6 @@
             if (this.results.length < 1) {
                 return;
             }
-
-            console.log(event.key);
 
             if (event.key === 'ArrowDown') {
                 event.preventDefault();
