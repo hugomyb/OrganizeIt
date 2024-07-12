@@ -1,4 +1,4 @@
-<div x-data="{ open: false,}"
+<div x-data="searchComponent()"
      x-mousetrap.command-k.ctrl-k.prevent="open = true; $nextTick(() => { document.getElementById('research').focus(); });"
      @keydown.window.escape="open = false">
 
@@ -30,9 +30,12 @@
                         <input type="search" wire:model.live="search" id="research"
                                class="block ring-0 w-full p-4 text-sm bg-gray-50 dark:bg-gray-700 dark:placeholder-gray-400"
                                style="padding-left: 2.5rem; padding-right: 3.5rem; border-bottom: 1px; outline: none !important; -webkit-box-shadow: none; box-shadow: none; border: none; {{ strlen($search) < 1 ? 'border-radius: 0.5rem;' : 'border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; border-bottom: 1px solid rgba(175,175,175,0.28);' }}"
-                               placeholder="{{ __('general.research_placeholder') }}" required/>
+                               placeholder="{{ __('general.research_placeholder') }}" required
+                               @keydown.arrow-up.prevent="highlightPreviousResult()"
+                               @keydown.arrow-down.prevent="highlightNextResult()"
+                               @keydown.enter.prevent="goToSelectedResult()"/>
                         <kbd
-                            @click="open =false"
+                            @click="open = false"
                             style="margin: 10px; vertical-align: middle; display: flex; align-items: center"
                             class="absolute cursor-pointer inset-y-0 end-0 px-2 py-1.5 text-xs font-semibold bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:border-gray-500">
                             <p>Echap</p>
@@ -44,10 +47,13 @@
             <!-- Search Results -->
             @if ($search)
                 <div class="my-4 mx-2 rounded-lg"
-                    style="scrollbar-color: #4F46E5 #E5E7EB; overflow-y: auto; max-height: 50vh; scrollbar-width: thin">
-                    <ul class="flex flex-col gap-2 rounded-lg">
-                        @forelse ($results as $result)
-                            <li class="rounded-lg w-full bg-gray-100 dark:bg-gray-800 transition ease-in-out hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black">
+                     style="scrollbar-color: #4F46E5 #E5E7EB; overflow-y: auto; max-height: 50vh; scrollbar-width: thin">
+                    <ul class="flex flex-col gap-2 rounded-lg" x-ref="resultsList">
+                        @forelse ($results as $index => $result)
+                            <li class="rounded-lg w-full bg-gray-100 dark:bg-gray-800 transition ease-in-out hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
+                                :class="{ 'bg-blue-200 dark:bg-blue-200 dark:text-black': selectedIndex === {{ $index }} }"
+                                @mouseenter="selectedIndex = {{ $index }}"
+                                x-on:click="goToResult('{{ $result['url'] }}')">
                                 <a href="{{ $result['url'] }}"
                                    class="rounded-lg w-full">
                                     <div class="flex justify-between items-center px-4 py-4 sm:px-6 w-full rounded-lg">
@@ -60,12 +66,12 @@
                                         @elseif($result instanceof \App\Models\Task)
                                             <!-- TODO -->
                                         @endif
-                                            <x-filament::icon
-                                                class="w-5 h-5"
-                                                color="gray"
-                                                icon="heroicon-m-chevron-right"
-                                                label="New label"
-                                            />
+                                        <x-filament::icon
+                                            class="w-5 h-5"
+                                            color="gray"
+                                            icon="heroicon-m-chevron-right"
+                                            label="New label"
+                                        />
                                     </div>
                                 </a>
                             </li>
@@ -81,4 +87,43 @@
             @endif
         </div>
     </div>
+
+    <script>
+        function searchComponent() {
+            return {
+                open: false,
+                selectedIndex: -1,
+                results: @entangle('results'),
+                highlightNextResult() {
+                    if (this.selectedIndex < this.results.length - 1) {
+                        this.selectedIndex++;
+                        this.scrollToSelectedResult();
+                    }
+                },
+                highlightPreviousResult() {
+                    if (this.selectedIndex > 0) {
+                        this.selectedIndex--;
+                        this.scrollToSelectedResult();
+                    }
+                },
+                scrollToSelectedResult() {
+                    const resultsList = this.$refs.resultsList;
+                    const selectedResult = resultsList.children[this.selectedIndex];
+                    if (selectedResult) {
+                        selectedResult.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                },
+                goToSelectedResult() {
+                    if (this.selectedIndex >= 0 && this.selectedIndex < this.results.length) {
+                        const selectedResult = this.results[this.selectedIndex];
+                        window.location.href = selectedResult.url;
+                    }
+                },
+                goToResult(url) {
+                    window.location.href = url;
+                }
+            }
+        }
+    </script>
+
 </div>
