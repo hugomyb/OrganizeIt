@@ -9,7 +9,7 @@ use Livewire\Component;
 class GlobalSearchbar extends Component
 {
     public $search = '';
-    public $results = [];
+    public ?array $results = [];
 
     public function updatedSearch()
     {
@@ -25,7 +25,8 @@ class GlobalSearchbar extends Component
                 ->whereHas('users', function($query) use ($userId) {
                     $query->where('user_id', $userId);
                 })
-                ->get();
+                ->get()
+                ->toArray();
         }
     }
 
