@@ -104,19 +104,16 @@ class ShowProject extends Page implements HasForms, HasActions
     public function mount($record): void
     {
         $this->record = Project::with(['users', 'groups.tasks.status', 'groups.tasks.priority'])->find($record);
-        $this->loadStatusAndPriorityFilters();
-        $this->toggleCompletedTasks = $this->statusFilters->contains('name', 'Terminé') || $this->statusFilters->isEmpty();
-    }
+        $this->getStatusFilters();
+        $this->getPriorityFilters();
 
-    private function loadStatusAndPriorityFilters(): void
-    {
-        $this->statusFilters = Cache::remember('statuses.all', 60*60, function() {
-            return Status::all();
-        });
-
-        $this->priorityFilters = Cache::remember('priorities.all', 60*60, function() {
-            return Priority::all();
-        });
+        if ($this->statusFilters->contains('name', 'Terminé')) {
+            $this->toggleCompletedTasks = true;
+        } elseif ($this->statusFilters->isEmpty()) {
+            $this->toggleCompletedTasks = true;
+        } else {
+            $this->toggleCompletedTasks = false;
+        }
     }
 
     public function openTaskById($taskId)
