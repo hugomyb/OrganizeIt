@@ -43,9 +43,9 @@
 
             <!-- Search Results -->
             @if ($search)
-                <div class="my-4 mx-1 rounded-lg"
+                <div class="my-4 mx-2 rounded-lg"
                     style="scrollbar-color: #4F46E5 #E5E7EB; overflow-y: auto; max-height: 50vh; scrollbar-width: thin">
-                    <ul class="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg">
+                    <ul class="gap-y-2 rounded-lg bg-gray-400 dark:bg-gray-800">
                         @forelse ($results as $result)
                             <li class="rounded-lg w-full">
                                 <a href="{{ $result['url'] }}"
