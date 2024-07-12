@@ -104,7 +104,7 @@
                     <ul class="flex flex-col gap-2 rounded-lg">
                         <template x-for="(result, index) in results" :key="index">
                             <li class="rounded-lg !outline-none w-full transition ease-in-out hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
-                                :class="{'bg-blue-100': selectedIndex === index, 'bg-gray-100 dark:bg-gray-800': selectedIndex !== index}" tabindex="-1" x-bind:id="'result-' + index">
+                                :class="{'bg-blue-100': selectedIndex === index, 'bg-gray-100 dark:bg-gray-800 dark:!text-black': selectedIndex !== index}" tabindex="-1" x-bind:id="'result-' + index">
                                 <a :href="result.url"
                                    class="rounded-lg w-full">
                                     <div class="flex justify-between items-center px-4 py-4 sm:px-6 w-full rounded-lg">
