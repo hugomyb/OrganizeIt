@@ -249,6 +249,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->modalWidth('7xl')
                 ->model(Task::class)
                 ->label(__('task.add_task'))
+                ->closeModalByClickingAway(false)
                 ->icon('heroicon-o-plus')
                 ->modalHeading(__('task.add_task'))
                 ->form($this->getTaskForm())
@@ -616,6 +617,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 $this->fillRichEditorField();
             })
             ->modalHeading('')
+            ->closeModalByClickingAway(false)
             ->slideOver()
             ->modalWidth('6xl')
             ->record(fn(array $arguments) => Task::with(['project', 'creator', 'parent', 'status', 'priority', 'users', 'comments', 'children'])->find($arguments['task_id']))
