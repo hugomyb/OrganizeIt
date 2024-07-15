@@ -6,7 +6,6 @@ export default {
   ],
   theme: {
     extend: {
-        // add bg-blue-100 background color on focus
         colors: {
             'blue-100': 'rgb(219, 234, 254)',
         },
