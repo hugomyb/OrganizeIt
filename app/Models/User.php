@@ -43,6 +43,8 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'remember_token',
     ];
 
+    protected $with = ['role'];
+
     /**
      * Get the attributes that should be cast.
      *

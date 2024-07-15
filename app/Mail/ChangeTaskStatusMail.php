@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\Status;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -22,7 +24,7 @@ class ChangeTaskStatusMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($task, $author, $oldStatus, User $recipient)
+    public function __construct(Task $task, User $author, Status $oldStatus, User $recipient)
     {
         $this->task = $task;
         $this->author = $author;

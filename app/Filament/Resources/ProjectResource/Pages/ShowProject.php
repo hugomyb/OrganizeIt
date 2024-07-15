@@ -656,12 +656,15 @@ class ShowProject extends Page implements HasForms, HasActions
                 $task->update(['status_id' => $statusId, 'completed_at' => null]);
             }
 
+            $task->refresh();
+
             $users = $task->project->users;
 
             foreach ($users as $user) {
                 if ($user->hasRole('Client')) {
-                    if ($task->status->id === Status::getCompletedStatusId())
+                    if ($task->status->id === Status::getCompletedStatusId()) {
                         SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
+                    }
                 } else {
                     SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
                 }
@@ -680,6 +683,8 @@ class ShowProject extends Page implements HasForms, HasActions
 
         if ($priorityId != $task->priority_id) {
             $task->update(['priority_id' => $priorityId]);
+
+            $task->refresh();
 
             $users = $task->project->users;
 
