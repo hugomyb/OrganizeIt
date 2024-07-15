@@ -574,6 +574,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
                 return $this->getTaskForm($group_id);
             })
+            ->closeModalByClickingAway(false)
             ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
             ->action(function (array $data): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
