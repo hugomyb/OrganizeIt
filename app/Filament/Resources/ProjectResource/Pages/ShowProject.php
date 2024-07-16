@@ -106,6 +106,7 @@ class ShowProject extends Page implements HasForms, HasActions
         $this->record = Project::with(['users', 'groups.tasks.status', 'groups.tasks.priority'])->find($record);
         $this->getStatusFilters();
         $this->getPriorityFilters();
+        $this->getSortByFilter();
 
         if ($this->statusFilters->contains('name', 'Terminé')) {
             $this->toggleCompletedTasks = true;
@@ -826,6 +827,16 @@ class ShowProject extends Page implements HasForms, HasActions
         }
     }
 
+    public function getSortByFilter()
+    {
+        $cookie = Cookie::get('sort_by');
+        if ($cookie) {
+            $this->sortBy = $cookie;
+        } else {
+            $this->sortBy = 'default'; // Par défaut, pas de filtres
+        }
+    }
+
     public function toggleShowCompletedTasks()
     {
         $this->toggleCompletedTasks = !$this->toggleCompletedTasks;
@@ -1245,8 +1256,10 @@ class ShowProject extends Page implements HasForms, HasActions
     {
         if ($this->sortBy == 'priority') {
             $this->sortBy = 'default';
+            Cookie::queue('sort_by', 'default', 60 * 24 * 30);
         } else {
             $this->sortBy = 'priority';
+            Cookie::queue('sort_by', 'priority', 60 * 24 * 30);
         }
     }
 }
