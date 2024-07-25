@@ -22,6 +22,7 @@
             @foreach($groups as $group)
                 <x-filament::section
                     collapsible
+                    persist-collapsed
                     style="margin-bottom: 30px; width: 100%"
                     wire:key="group-{{ $group->id }}"
                     id="group-{{ $group->id }}">
