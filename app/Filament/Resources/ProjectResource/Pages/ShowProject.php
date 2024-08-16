@@ -145,7 +145,10 @@ class ShowProject extends Page implements HasForms, HasActions
                         $query->whereIn('priority_id', $priorityIds);
                     }
                     if (!empty($search)) {
-                        $query->where('title', 'like', '%' . $search . '%');
+                        $query->where(function ($query) use ($search) {
+                            $query->where('title', 'like', '%' . $search . '%')
+                                ->orWhere('id', $search);
+                        });
                     }
                 })
                     ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
@@ -157,7 +160,10 @@ class ShowProject extends Page implements HasForms, HasActions
                                 $query->whereIn('priority_id', $priorityIds);
                             }
                             if (!empty($search)) {
-                                $query->where('title', 'like', '%' . $search . '%');
+                                $query->where(function ($query) use ($search) {
+                                    $query->where('title', 'like', '%' . $search . '%')
+                                        ->orWhere('id', $search);
+                                });
                             }
                         });
                     });
@@ -191,7 +197,10 @@ class ShowProject extends Page implements HasForms, HasActions
                 $query->whereIn('priority_id', $priorityIds);
             }
             if (!empty($search)) {
-                $query->where('title', 'like', '%' . $search . '%');
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('id', $search);
+                });
             }
         })
             ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
@@ -203,7 +212,10 @@ class ShowProject extends Page implements HasForms, HasActions
                         $query->whereIn('priority_id', $priorityIds);
                     }
                     if (!empty($search)) {
-                        $query->where('title', 'like', '%' . $search . '%');
+                        $query->where(function ($query) use ($search) {
+                            $query->where('title', 'like', '%' . $search . '%')
+                                ->orWhere('id', $search);
+                        });
                     }
                 });
 
