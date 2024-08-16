@@ -76,13 +76,16 @@
             <div class="sm:flex sm:items-start">
                 <div class="text-center sm:text-left w-full">
                     <div class="relative">
+
                         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                            </svg>
+                            <x-filament::loading-indicator class="h-5 w-5" wire:loading/>
+
+                            <x-filament::icon
+                                wire:loading.remove
+                                class="w-5 h-5 text-gray-500 dark:text-gray-400"
+                                icon="heroicon-o-magnifying-glass"/>
                         </div>
+
                         <input type="search" wire:model.live="search" id="research"
                                class="block ring-0 w-full p-4 text-sm bg-gray-50 dark:bg-gray-700 dark:placeholder-gray-400"
                                style="padding-left: 2.5rem; padding-right: 3.5rem; border-bottom: 1px; outline: none !important; -webkit-box-shadow: none; box-shadow: none; border: none; {{ strlen($search) < 1 ? 'border-radius: 0.5rem;' : 'border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; border-bottom: 1px solid rgba(175,175,175,0.28);' }}"
@@ -104,7 +107,8 @@
                     <ul class="flex flex-col gap-2 rounded-lg">
                         <template x-for="(result, index) in results" :key="index">
                             <li class="rounded-lg !outline-none w-full transition ease-in-out hover:bg-blue-100 dark:hover:!bg-blue-100 dark:hover:!text-black"
-                                :class="{'bg-blue-100 dark:!text-black': selectedIndex === index, 'bg-gray-100 dark:bg-gray-800': selectedIndex !== index}" tabindex="-1" x-bind:id="'result-' + index">
+                                :class="{'bg-blue-100 dark:!text-black': selectedIndex === index, 'bg-gray-100 dark:bg-gray-800': selectedIndex !== index}"
+                                tabindex="-1" x-bind:id="'result-' + index">
                                 <a :href="result.url"
                                    class="rounded-lg w-full">
                                     <div class="flex justify-between items-center px-4 py-4 sm:px-6 w-full rounded-lg">
