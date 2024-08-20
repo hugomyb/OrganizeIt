@@ -14,6 +14,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
@@ -33,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->spa()
             ->path('/')
             ->favicon(asset('/img/favicon.png', true))
             ->brandLogo(asset('/img/logo-oi.png', true))

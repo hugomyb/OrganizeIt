@@ -714,33 +714,91 @@ class ShowProject extends Page implements HasForms, HasActions
         }
     }
 
-    public function updateTaskOrder($groupId, $nestableJson)
+    public function updateTaskOrder($data)
     {
-        $taskData = json_decode($nestableJson, true);
-        $taskData = array_filter($taskData, function ($task) {
-            return $task['id'] !== 'placeholder';
-        });
-        $this->updateOrder($taskData, $groupId);
-    }
+        // Restructurer les données pour organiser les groupes et les tâches correctement
+        $structuredData = $this->restructureData($data);
 
-    private function updateOrder($tasks, $groupId)
-    {
-        foreach ($tasks as $index => $task) {
-            $this->updateTask($task, $groupId, null, $index);
+        // Parcourir les données structurées pour mettre à jour la base de données
+        foreach ($structuredData as $groupData) {
+            $groupId = $groupData['group_id'];
+            $tasks = $groupData['tasks'];
+
+            foreach ($tasks as $task) {
+                $this->updateTaskAndChildren($task, $groupId);
+            }
         }
     }
 
-    private function updateTask($task, $groupId, $parentId, $order)
+    private function restructureData($data)
     {
-        $taskModel = Task::find($task['id']);
-        $taskModel->order = $order;
-        $taskModel->group_id = $groupId;
-        $taskModel->parent_id = $parentId;
-        $taskModel->save();
+        $taskMap = [];
+        $structuredData = [];
 
-        if (isset($task['children'])) {
-            foreach ($task['children'] as $childIndex => $child) {
-                $this->updateTask($child, $groupId, $taskModel->id, $childIndex);
+        // Construire un mappage de toutes les tâches
+        foreach ($data as $item) {
+            if (isset($item['value']) && strpos($item['value'], 'group-') === false) {
+                $taskMap[$item['value']] = [
+                    'value' => $item['value'],
+                    'order' => $item['order'],
+                    'parent_id' => null,
+                    'items' => []
+                ];
+            }
+        }
+
+        // Associer les sous-tâches à leurs parents
+        foreach ($data as $item) {
+            if (isset($item['items']) && is_array($item['items'])) {
+                foreach ($item['items'] as $subItem) {
+                    if (isset($taskMap[$subItem['value']])) {
+                        // Vérifier que parent_id est un entier valide
+                        if (isset($taskMap[$item['value']])) {
+                            $taskMap[$subItem['value']]['parent_id'] = $item['value'];
+                            $taskMap[$item['value']]['items'][] = &$taskMap[$subItem['value']];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Réassembler les groupes avec les tâches de premier niveau
+        foreach ($data as $item) {
+            if (isset($item['value']) && strpos($item['value'], 'group-') !== false) {
+                $groupId = str_replace('group-', '', $item['value']);
+                $groupTasks = [];
+                if (isset($item['items'])) {
+                    foreach ($item['items'] as $groupItem) {
+                        if (isset($taskMap[$groupItem['value']])) {
+                            $groupTasks[] = $taskMap[$groupItem['value']];
+                        }
+                    }
+                }
+                $structuredData[] = [
+                    'group_id' => $groupId,
+                    'tasks' => $groupTasks
+                ];
+            }
+        }
+
+        return $structuredData;
+    }
+
+    private function updateTaskAndChildren($task, $groupId)
+    {
+        $taskModel = Task::find($task['value']);
+        if ($taskModel) {
+            // Assurez-vous que parent_id est un entier valide ou null
+            $taskModel->group_id = $groupId;
+            $taskModel->parent_id = is_numeric($task['parent_id']) ? (int) $task['parent_id'] : null;
+            $taskModel->order = $task['order'];
+            $taskModel->save();
+
+            // Traiter les sous-tâches récursivement
+            if (isset($task['items']) && is_array($task['items'])) {
+                foreach ($task['items'] as $childTask) {
+                    $this->updateTaskAndChildren($childTask, $groupId);
+                }
             }
         }
     }

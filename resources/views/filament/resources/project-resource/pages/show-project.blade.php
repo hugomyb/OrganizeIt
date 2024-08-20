@@ -17,71 +17,28 @@
         }
     }"
 >
+
+    @vite('resources/js/app.js')
+
     <div class="flex justify-center items-start w-full gap-6">
-        <div style="width: 78%" class="flex justify-center items-center flex-col">
+        <div style="width: 78%"
+             class="flex justify-center items-center flex-col"
+             wire:sortable-group="updateTaskOrder">
             @foreach($groups as $group)
-                <x-filament::section
-                    collapsible
-                    persist-collapsed
-                    style="margin-bottom: 30px; width: 100%"
+                <div
+                    class="w-full"
                     wire:key="group-{{ $group->id }}"
                     id="group-{{ $group->id }}">
 
-                    <x-slot name="heading">
-                        {{ $group->name }}
-                    </x-slot>
-
-                    @can('manageGroups', \App\Models\User::class)
-                        <x-slot name="headerEnd">
-                            <x-filament::icon-button
-                                icon="heroicon-o-pencil"
-                                wire:click.prevent="mountAction('editGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
-                                label="Edit label group"
-                                tooltip="{{ __('group.edit_group') }}"
-                            />
-                            <x-filament::icon-button
-                                color="danger"
-                                icon="heroicon-o-trash"
-                                wire:click.prevent="mountAction('deleteGroupAction', { 'group_id': '{{ $group->id }}' }); isCollapsed = ! isCollapsed"
-                                label="Delete group"
-                                tooltip="{{ __('group.delete') }}"
-                            />
-                        </x-slot>
-                    @endcan
-
-                    <ul class="uk-nestable"
-                        data-uk-nestable="{group:'task-groups', handleClass:'uk-nestable-handle'}"
-                        x-data="{
-                            initNestable() {
-                                const nestable = UIkit.nestable($el);
-                                nestable.on('change.uk.nestable', (e, sortable, draggedElement, action) => {
-                                    const serialized = nestable.serialize().filter(item => item.id !== 'placeholder');
-                                    $wire.updateTaskOrder('{{ $group->id }}', JSON.stringify(serialized));
-                                });
-                            }
-                        }"
-                        x-init="initNestable()">
-                        @forelse($group->tasks->whereNull('parent_id') as $task)
-                            @include('tasks.task', ['task' => $task, 'sortBy' => $sortBy, 'project' => $record])
-                        @empty
-                            <li class="uk-nestable-item placeholder dark:hover:bg-white/5" data-id="placeholder">
-                                <div class="uk-nestable-content bg-transparent" style="height: 1px"></div>
-                            </li>
-                        @endforelse
-                    </ul>
-
-                    @can('manageTasks', \App\Models\User::class)
-                        <div class="mx-3 mt-3 mb-2 text-xs">
-                            {{ ($this->createTaskAction)(['group_id' => $group->id]) }}
-                        </div>
-                    @endcan
-                </x-filament::section>
+                    <livewire:tasks-group :group="$group" :key="'group-' . $group->id" />
+                </div>
             @endforeach
 
             @can('manageGroups', \App\Models\User::class)
                 {{ $this->createGroupAction }}
             @endcan
         </div>
+
 
         <div style="width: 20%; top: 85px"
              class="hidden flex-col gap-4 items-center justify-center sticky bg-white dark:bg-gray-900 dark:ring-white/10 p-4 ring-1 ring-gray-950/5 shadow-sm rounded-xl lg:flex"

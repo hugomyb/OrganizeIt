@@ -19,3 +19,4 @@ yarn-error.log
 /.vscode
 composer.lock
 /storage/debugbar/
+package-lock.json

@@ -42,12 +42,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         FilamentAsset::register([
-            Js::make('jquery-js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
-            Js::make('uikit-js', Vite::asset('resources/js/uikit.js')),
-            Js::make('nestable-js', Vite::asset('resources/js/components/nestable.js')),
             Css::make('app-css', Vite::asset('resources/css/app.css')),
+            Js::make('app-js', Vite::asset('resources/js/app.js')),
             Css::make('custom-css', Vite::asset('resources/css/custom.css')),
-            Css::make('nestable-css', Vite::asset('resources/css/components/nestable.css')),
         ]);
 
         FilamentView::registerRenderHook(
