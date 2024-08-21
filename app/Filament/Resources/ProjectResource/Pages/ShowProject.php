@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\ProjectResource\Pages;
 
+use App\Concerns\CanProcessDescription;
 use App\Concerns\CanShowNotification;
-use App\Concerns\InteractsWithTooltipActions;
+use App\Concerns\InteractsWithTaskForm;
 use App\Filament\Resources\ProjectResource;
 use App\Jobs\SendEmailJob;
+use App\Livewire\TaskRow;
+use App\Livewire\TasksGroup;
 use App\Mail\AssignToProjectMail;
 use App\Mail\AssignToTaskMail;
 use App\Mail\ChangeTaskPriorityMail;
@@ -20,7 +23,6 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use App\Models\User;
-use DOMDocument;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -42,25 +44,25 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ShowProject extends Page implements HasForms, HasActions
 {
     use InteractsWithForms;
+    use InteractsWithTaskForm;
     use InteractsWithActions;
-    use InteractsWithTooltipActions;
     use CanAuthorizeResourceAccess;
+    use CanProcessDescription;
     use CanShowNotification;
 
     protected static string $resource = ProjectResource::class;
@@ -75,7 +77,6 @@ class ShowProject extends Page implements HasForms, HasActions
     }
 
     public $record;
-    public $currentTask;
     public $groups;
 
     public $search;
@@ -84,11 +85,6 @@ class ShowProject extends Page implements HasForms, HasActions
     public string $sortBy = 'default';
 
     public $toggleCompletedTasks;
-
-    public $description;
-    public $attachments;
-
-    public $comment;
 
     public function render(): \Illuminate\Contracts\View\View
     {
@@ -265,7 +261,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->closeModalByClickingAway(false)
                 ->icon('heroicon-o-plus')
                 ->modalHeading(__('task.add_task'))
-                ->form($this->getTaskForm())
+                ->form($this->getTaskForm($this->record))
                 ->modalSubmitActionLabel(__('task.add'))
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
                 ->action(function (array $data): void {
@@ -442,275 +438,10 @@ class ShowProject extends Page implements HasForms, HasActions
             });
     }
 
-    public function getTaskForm($groupId = null): array
-    {
-        static $statusOptions = null;
-        static $priorityOptions = null;
-
-        if (!$statusOptions) {
-            $statusOptions = Status::all()->mapWithKeys(function ($status) {
-                $iconHtml = view('components.status-icon', ['status' => $status])->render();
-                return [$status->id => $iconHtml];
-            })->toArray();
-        }
-
-        if (!$priorityOptions) {
-            $priorityOptions = Priority::all()->mapWithKeys(function ($priority) {
-                $iconHtml = view('components.priority-icon', ['priority' => $priority])->render();
-                return [$priority->id => $iconHtml];
-            })->toArray();
-        }
-
-        return [
-            Select::make('group_id')
-                ->preload()
-                ->searchable()
-                ->label(__('group.group'))
-                ->default($groupId ?? $this->record->groups->first()->id ?? null)
-                ->required()
-                ->options($this->record->groups->pluck('name', 'id')),
-
-            TextInput::make('title')
-                ->autofocus()
-                ->label(__('task.form.title'))
-                ->columnSpanFull()
-                ->live()
-                ->required(),
-
-            RichEditor::make('description')
-                ->columnSpanFull()
-                ->fileAttachmentsDisk('public')
-                ->fileAttachmentsDirectory(fn($record) => $record ? 'tasks/' . $record->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
-                ->label('Description'),
-
-            \Filament\Forms\Components\Group::make([
-                Select::make('status_id')
-                    ->label(__('task.form.status'))
-                    ->default(Status::whereName('À faire')->first()->id)
-                    ->preload()
-                    ->searchable()
-                    ->options($statusOptions)
-                    ->allowHtml()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->live(onBlur: true)
-                            ->unique('statuses', ignoreRecord: true)
-                            ->label(__('status.table.name'))
-                            ->afterStateUpdated(function (Set $set, $state) {
-                                $translate = app()->make(GoogleTranslate::class);
-                                $translate->setSource('fr');
-                                $translate->setTarget('en');
-                                $result = $translate->translate($state ?? "");
-
-                                $set('en_name', $result);
-                            })
-                            ->required(),
-
-                        TextInput::make('en_name')
-                            ->live(onBlur: true)
-                            ->unique('statuses', ignoreRecord: true)
-                            ->label(__('status.table.en_name'))
-                            ->required(),
-
-                        ColorPicker::make('color')
-                            ->suffixAction(\Filament\Forms\Components\Actions\Action::make('randomize')
-                                ->label(__('project.form.color.randomize'))
-                                ->icon('heroicon-o-arrow-path')
-                                ->action(fn($set) => $set('color', '#' . bin2hex(random_bytes(3))))
-                            )
-                            ->unique(ignoreRecord: true)
-                            ->label(__('status.table.color'))
-                    ])->createOptionUsing(fn(array $data) => Status::create($data)->getKey())
-                    ->required(),
-
-                Select::make('priority_id')
-                    ->label(__('task.form.priority'))
-                    ->preload()
-                    ->searchable()
-                    ->default(Priority::whereName('Aucune')->first()->id)
-                    ->disabled(fn() => auth()->user()->hasPermission('change_priority') ? false : true)
-                    ->dehydrated()
-                    ->options($priorityOptions)
-                    ->allowHtml()
-                    ->required(),
-            ])->columns(2),
-
-            Select::make('users')
-                ->relationship(
-                    name: 'users',
-                    titleAttribute: 'name',
-                    modifyQueryUsing: fn(Builder $query) => $this->record->users()->getQuery()
-                )
-                ->label(__('task.assign_to'))
-                ->dehydrated()
-                ->disabled(fn() => !auth()->user()->hasPermission('assign_user'))
-                ->visible(fn() => auth()->user()->hasPermission('view_assigned_users'))
-                ->preload()
-                ->searchable()
-                ->multiple(),
-
-            \Filament\Forms\Components\Group::make([
-                DatePicker::make('start_date')
-                    ->label(__('task.start_date')),
-
-                DatePicker::make('due_date')
-                    ->label(__('task.end_date')),
-            ])->visible(fn() => auth()->user()->hasPermission('manage_dates') ? true : false)
-                ->columns(2),
-
-            FileUpload::make('attachments')
-                ->columnSpanFull()
-                ->multiple()
-                ->previewable()
-                ->downloadable()
-                ->multiple()
-                ->appendFiles()
-                ->preserveFilenames()
-                ->reorderable()
-                ->visibility('private')
-                ->openable()
-                ->directory(fn($record) => $record ? 'tasks/' . $record->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
-                ->label(__('task.form.attachments'))
-        ];
-    }
-
-    public function createTaskAction(): Action
-    {
-        return CreateAction::make('createTask')
-            ->icon('heroicon-o-plus')
-            ->link()
-            ->modalWidth('7xl')
-            ->model(Task::class)
-            ->label(__('task.add_task'))
-            ->form(function ($livewire, array $arguments) {
-                $group_id = $arguments['group_id'];
-
-                return $this->getTaskForm($group_id);
-            })
-            ->closeModalByClickingAway(false)
-            ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
-            ->action(function (array $data): void {
-                $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
-
-                if (isset($data['description']) && trim($data['description']) != '') {
-                    $data['description'] = $this->processDescription($data['description']);
-                }
-                $task = $this->record->tasks()->create(array_merge($data, [
-                    'order' => $lastTask ? $lastTask->order + 1 : 0,
-                    'created_by' => auth()->id()
-                ]));
-
-                $usersToAssign = $data['users'] ?? [];
-                $task->users()->sync($usersToAssign);
-
-                $users = $this->record->users;
-                $author = auth()->user();
-
-                foreach ($users as $user) {
-                    if (!$user->hasRole('Client'))
-                        SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
-                }
-
-                $this->showNotification(__('task.task_added'));
-            });
-    }
-
     public function cancelCreateTask()
     {
         if (Storage::exists('tasks/' . Task::latest()->first()->id + 1)) {
             Storage::deleteDirectory('tasks/' . Task::latest()->first()->id + 1);
-        }
-    }
-
-    public function viewTaskAction(): Action
-    {
-        return ViewAction::make('viewTask')
-            ->mountUsing(function ($arguments) {
-                $task = Task::find($arguments['task_id']);
-                $this->currentTask = $task;
-                $this->fillRichEditorField();
-            })
-            ->modalHeading('')
-            ->closeModalByClickingAway(false)
-            ->slideOver()
-            ->modalWidth('6xl')
-            ->record(fn(array $arguments) => Task::with(['project', 'creator', 'parent', 'status', 'priority', 'users', 'comments', 'children'])->find($arguments['task_id']))
-            ->modalContent(fn($record) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
-    }
-
-    public function editTaskAction(): Action
-    {
-        return EditAction::make('editTask')
-            ->modalWidth('7xl')
-            ->label('Éditer')
-            ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->form($this->getTaskForm())
-            ->action(function (array $data, $record): void {
-                $task = $record;
-
-                if (isset($data['description']) && trim($data['description']) != '') {
-                    $data['description'] = $this->processDescription($data['description']);
-                }
-
-                $task->update($data);
-
-                $this->showNotification(__('task.task_updated'));
-            });
-    }
-
-    public function setTaskStatus($taskId, $statusId)
-    {
-        $task = Task::find($taskId);
-
-        $oldStatusId = $task->status_id;
-        $oldStatus = Status::find($oldStatusId);
-
-        if ($statusId != $task->status_id) {
-            if ($statusId === Status::getCompletedStatusId()) {
-                $task->update(['status_id' => $statusId, 'completed_at' => now()]);
-            } else {
-                $task->update(['status_id' => $statusId, 'completed_at' => null]);
-            }
-
-            $task->refresh();
-
-            $users = $task->project->users;
-
-            foreach ($users as $user) {
-                if ($user->hasRole('Client')) {
-                    if ($task->status->id === Status::getCompletedStatusId()) {
-                        SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
-                    }
-                } else {
-                    SendEmailJob::dispatch(ChangeTaskStatusMail::class, $user, $task, auth()->user(), $oldStatus, $user);
-                }
-            }
-
-            $this->showNotification(__('status.status_updated'));
-        }
-    }
-
-    public function setTaskPriority($taskId, $priorityId)
-    {
-        $task = Task::find($taskId);
-
-        $oldPriorityId = $task->priority_id;
-        $oldPriority = Priority::find($oldPriorityId);
-
-        if ($priorityId != $task->priority_id) {
-            $task->update(['priority_id' => $priorityId]);
-
-            $task->refresh();
-
-            $users = $task->project->users;
-
-            foreach ($users as $user) {
-                if (!$user->hasRole('Client')) {
-                    SendEmailJob::dispatch(ChangeTaskPriorityMail::class, $user, $task, auth()->user(), $oldPriority);
-                }
-            }
-
-            $this->showNotification(__('priority.priority_updated'));
         }
     }
 
@@ -719,7 +450,6 @@ class ShowProject extends Page implements HasForms, HasActions
         // Restructurer les données pour organiser les groupes et les tâches correctement
         $structuredData = $this->restructureData($data);
 
-        // Parcourir les données structurées pour mettre à jour la base de données
         foreach ($structuredData as $groupData) {
             $groupId = $groupData['group_id'];
             $tasks = $groupData['tasks'];
@@ -790,7 +520,7 @@ class ShowProject extends Page implements HasForms, HasActions
         if ($taskModel) {
             // Assurez-vous que parent_id est un entier valide ou null
             $taskModel->group_id = $groupId;
-            $taskModel->parent_id = is_numeric($task['parent_id']) ? (int) $task['parent_id'] : null;
+            $taskModel->parent_id = is_numeric($task['parent_id']) ? (int)$task['parent_id'] : null;
             $taskModel->order = $task['order'];
             $taskModel->save();
 
@@ -799,44 +529,6 @@ class ShowProject extends Page implements HasForms, HasActions
                 foreach ($task['items'] as $childTask) {
                     $this->updateTaskAndChildren($childTask, $groupId);
                 }
-            }
-        }
-    }
-
-    public function assignUserToTask($userId, $taskId)
-    {
-        $task = Task::find($taskId);
-        $user = User::find($userId);
-        if ($task) {
-            if (!$task->users()->where('user_id', $userId)->exists()) {
-                $task->users()->attach($userId);
-            }
-        }
-
-        if (!auth()->user()->hasRole('Client')) {
-            SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
-        }
-
-        $this->showNotification(__('user.assigned'));
-    }
-
-    public function toggleUserToTask($userId, $taskId)
-    {
-        $task = Task::find($taskId);
-        $user = User::find($userId);
-        if ($task) {
-            if ($task->users()->where('user_id', $userId)->exists()) {
-                $task->users()->detach($userId);
-
-                $this->showNotification(__('user.unassigned'));
-            } else {
-                $task->users()->attach($userId);
-
-                if (!auth()->user()->hasRole('Client')) {
-                    SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
-                }
-
-                $this->showNotification(__('user.assigned'));
             }
         }
     }
@@ -941,385 +633,6 @@ class ShowProject extends Page implements HasForms, HasActions
         $project = Project::find($record);
 
         return auth()->user()->projects->contains($project);
-    }
-
-    public function saveTaskTitle($taskId, $title)
-    {
-        $task = Task::find($taskId);
-
-        if ($title !== $task->title) {
-            $task->title = $title;
-            $task->save();
-
-            $this->showNotification(__('task.title_updated'));
-        }
-    }
-
-    function processDescription($htmlContent)
-    {
-        $dom = new DOMDocument();
-        // Load HTML content
-        libxml_use_internal_errors(true);
-        $dom->loadHTML(mb_convert_encoding($htmlContent, 'HTML-ENTITIES', 'UTF-8'));
-        libxml_clear_errors();
-
-        // Get all <a> elements
-        $links = $dom->getElementsByTagName('a');
-        $imgs = $dom->getElementsByTagName('img');
-
-        foreach ($links as $link) {
-            // Set target attribute to _blank and style to color blue
-            $link->setAttribute('target', '_blank');
-            $link->setAttribute('style', 'color: blue;');
-        }
-
-        foreach ($imgs as $img) {
-            // Set lazy loading attribute to lazy
-            $img->setAttribute('loading', 'lazy');
-
-            // Check if img is inside an <a> element
-            $parent = $img->parentNode;
-            if ($parent->nodeName !== 'a') {
-                // Create <a> element
-                $a = $dom->createElement('a');
-                $a->setAttribute('href', $img->getAttribute('src'));
-                $a->setAttribute('target', '_blank');
-                $a->setAttribute('style', 'color: blue;');
-
-                // Replace img with the new <a> element containing the img
-                $parent->replaceChild($a, $img);
-                $a->appendChild($img);
-            }
-        }
-
-        // Convert text URLs to <a> elements with target="_blank" and style
-        $body = $dom->getElementsByTagName('body')->item(0);
-        $this->convertTextUrlsToLinks($body, $dom);
-
-        // Save and return modified HTML
-        return $dom->saveHTML($dom->documentElement);
-    }
-
-    function convertTextUrlsToLinks($node, $dom)
-    {
-        if ($node->nodeType == XML_TEXT_NODE) {
-            $text = $node->nodeValue;
-            $newHtml = preg_replace(
-                '#(https?://[^\s<]+)#i',
-                '<a href="$1" target="_blank" style="color: blue;">$1</a>',
-                htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
-            );
-            if ($newHtml !== htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) {
-                $newFragment = $dom->createDocumentFragment();
-                $newFragment->appendXML($newHtml);
-                $node->parentNode->replaceChild($newFragment, $node);
-            }
-        } elseif ($node->nodeType == XML_ELEMENT_NODE) {
-            foreach ($node->childNodes as $child) {
-                $this->convertTextUrlsToLinks($child, $dom);
-            }
-        }
-    }
-
-    public function fillRichEditorField()
-    {
-        if ($this->currentTask)
-            $this->richEditorFieldForm->fill([
-                'description' => $this->currentTask->description ?? ''
-            ]);
-        else
-            $this->richEditorFieldForm->fill([
-                'description' => ''
-            ]);
-    }
-
-    public function richEditorFieldForm(Form $form): Form
-    {
-        return $form
-            ->extraAttributes([
-                'class' => 'w-full'
-            ])
-            ->model($this->currentTask)
-            ->schema([
-                RichEditor::make('description')
-                    ->hiddenLabel()
-                    ->columnSpanFull()
-                    ->fileAttachmentsDisk('public')
-                    ->fileAttachmentsDirectory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/files' : 'tasks/' . Task::latest()->first()->id + 1 . '/files')
-                    ->label(__('task.form.description')),
-            ]);
-    }
-
-    public function saveRichEditorDescription($task)
-    {
-        $richData = $this->richEditorFieldForm->getState();
-
-        $task = Task::find($task['id']);
-
-        if (isset($richData['description']) && trim($richData['description']) != '') {
-            $modifiedDescription = $this->processDescription($richData['description']);
-        } else {
-            $modifiedDescription = '';
-        }
-
-        $task->update([
-            'description' => $modifiedDescription
-        ]);
-
-        $this->showNotification(__('task.description_updated'));
-    }
-
-    protected function getForms(): array
-    {
-        return [
-            'richEditorFieldForm',
-            'fileUploadFieldForm'
-        ];
-    }
-
-    public function deleteAttachment($taskId, $attachment)
-    {
-        $task = Task::find($taskId);
-        $previousAttachments = $task->attachments;
-
-        $attachments = collect($previousAttachments)->filter(function ($previousAttachments) use ($attachment) {
-            return $previousAttachments !== $attachment;
-        })->values();
-
-        Storage::disk('public')->delete($attachment);
-
-        $task->update([
-            'attachments' => $attachments
-        ]);
-
-        $this->showNotification(__('task.attachment_removed'));
-    }
-
-    public function fillFileUploadField($taskId)
-    {
-        $this->currentTask = Task::find($taskId);
-
-        $this->fileUploadFieldForm->fill([
-            'attachments' => []
-        ]);
-    }
-
-    public function fileUploadFieldForm(Form $form): Form
-    {
-        return $form
-            ->live()
-            ->extraAttributes([
-                'class' => 'w-full'
-            ])
-            ->model($this->currentTask)
-            ->schema([
-                FileUpload::make('attachments')
-                    ->columnSpanFull()
-                    ->multiple()
-                    ->hiddenLabel()
-                    ->previewable()
-                    ->downloadable()
-                    ->multiple()
-                    ->appendFiles()
-                    ->reorderable()
-                    ->preserveFilenames()
-                    ->visibility('private')
-                    ->openable()
-                    ->directory(fn() => $this->currentTask ? 'tasks/' . $this->currentTask->id . '/attachments' : 'tasks/' . Task::latest()->first()->id + 1 . '/attachments')
-                    ->label(__('task.form.attachments')),
-            ]);
-    }
-
-    public function saveFileUploadAttachments($taskId)
-    {
-        $fileData = $this->fileUploadFieldForm->getState();
-
-        $task = Task::find($taskId);
-
-        $attachments = $task->attachments;
-
-        foreach ($fileData['attachments'] as $attachment) {
-            $attachments[] = $attachment;
-        }
-
-        $task->update([
-            'attachments' => $attachments
-        ]);
-
-        $this->fileUploadFieldForm->fill([
-            'attachments' => []
-        ]);
-
-        $this->currentTask = null;
-
-        $this->showNotification(__('task.attachment_added'));
-    }
-
-    public function cancelFileUploadAttachments()
-    {
-        $this->fileUploadFieldForm->fill([
-            'attachments' => []
-        ]);
-
-        $this->currentTask = null;
-    }
-
-    public function sendComment($taskId)
-    {
-        $task = Task::find($taskId);
-
-        if ($this->comment !== null && trim($this->comment) !== '') {
-            $comment = $task->comments()->create([
-                'user_id' => auth()->id(),
-                'content' => $this->comment
-            ]);
-
-            $this->comment = '';
-
-            $users = $task->users;
-            foreach ($users as $user) {
-                if (!$user->hasRole('Client')) {
-                    SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
-                }
-            }
-
-            $this->showNotification(__('task.comment_added'));
-            $this->dispatch('commentSent');
-        }
-    }
-
-    public function deleteComment($commentId)
-    {
-        $comment = Comment::find($commentId);
-
-        $comment->delete();
-
-        $this->showNotification(__('task.comment_removed'));
-    }
-
-    #[On('modal-closed')]
-    public function modalClosed()
-    {
-        $this->fileUploadFieldForm->fill([
-            'attachments' => []
-        ]);
-
-        $this->currentTask = null;
-    }
-
-    public function addCommitAction(): Action
-    {
-        return Action::make('addCommit')
-            ->hiddenLabel()
-            ->iconButton()
-            ->modal()
-            ->icon('heroicon-o-plus')
-            ->tooltip(__('task.add_commit_number'))
-            ->modalHeading(__('task.add_commit'))
-            ->form([
-                TextInput::make('commitNumber')
-                    ->label(__('task.number'))
-                    ->required(),
-            ])
-            ->action(function (array $data, array $arguments): void {
-                $task = Task::find($arguments['task']);
-
-                $commitNumbers = $task->commit_numbers ?? [];
-
-                if ($data['commitNumber'] && !in_array($data['commitNumber'], $commitNumbers)) {
-                    if ($commitNumbers) {
-                        $commitNumbers[] = $data['commitNumber'];
-                    } else {
-                        $commitNumbers = [$data['commitNumber']];
-                    }
-
-                    $task->update([
-                        'commit_numbers' => $commitNumbers
-                    ]);
-
-                    if (!$task->creator->hasRole('Client'))
-                        SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
-
-                    $this->showNotification(__('task.commit_number_added'));
-
-                    $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
-                }
-            })
-            ->modalCloseButton(false)
-            ->modalCancelAction(false)
-            ->closeModalByClickingAway(false)
-            ->extraModalFooterActions(function (array $arguments) {
-                return [
-                    Action::make('closeModal')
-                        ->label(__('task.close'))
-                        ->color('gray')
-                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task']]))
-                ];
-            });
-    }
-
-    public function deleteCommitNumber($taskId, $commit)
-    {
-        $task = Task::find($taskId);
-
-        $commitNumbers = $task->commit_numbers;
-
-        $commitNumbers = collect($commitNumbers)->filter(function ($commitNumbers) use ($commit) {
-            return $commitNumbers !== $commit;
-        })->values();
-
-        $task->update([
-            'commit_numbers' => $commitNumbers
-        ]);
-
-        $this->showNotification(__('task.commit_number_removed'));
-    }
-
-    public function updateDatesAction(): Action
-    {
-        return Action::make('updateDates')
-            ->fillForm(function (array $arguments) {
-                $record = Task::find($arguments['task_id']);
-
-                return [
-                    'start_date' => $record->start_date,
-                    'due_date' => $record->due_date
-                ];
-            })
-            ->modalHeading(__('task.update_dates'))
-            ->form([
-                Grid::make(2)
-                    ->schema([
-                        DatePicker::make('start_date')
-                            ->label(__('task.start_date')),
-
-                        DatePicker::make('due_date')
-                            ->label(__('task.end_date')),
-                    ])
-            ])
-            ->action(function ($data, array $arguments): void {
-                $task = Task::find($arguments['task_id']);
-
-                $task->update([
-                    'start_date' => $data['start_date'] ?? null,
-                    'due_date' => $data['due_date'] ?? null
-                ]);
-
-                $this->showNotification(__('task.dates_updated'));
-
-                $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
-            })
-            ->modalCloseButton(false)
-            ->modalCancelAction(false)
-            ->closeModalByClickingAway(false)
-            ->extraModalFooterActions(function (array $arguments) {
-                return [
-                    Action::make('closeModal')
-                        ->label(__('task.close'))
-                        ->color('gray')
-                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task_id']]))
-                ];
-            });
     }
 
     public function toggleSortByPriority()

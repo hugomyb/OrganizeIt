@@ -174,7 +174,7 @@
                         <x-filament::dropdown.list>
                             @foreach(\App\Models\Status::all() as $status)
                                 <x-filament::dropdown.list.item
-                                    wire:click="setTaskStatus({{$task->id}}, {{$status->id}})"
+                                    wire:click="setTaskStatus({{$status->id}})"
                                     x-on:click="toggle"
                                     class="text-xs font-bold">
                                     <div class="flex items-center">
@@ -240,7 +240,7 @@
                         <x-filament::dropdown.list>
                             @foreach(\App\Models\Priority::all() as $priority)
                                 <x-filament::dropdown.list.item
-                                    wire:click="setTaskPriority({{$task->id}}, {{$priority->id}})"
+                                    wire:click="setTaskPriority({{$priority->id}})"
                                     x-on:click="toggle"
                                     class="text-xs font-bold">
                                     <div class="flex items-center">

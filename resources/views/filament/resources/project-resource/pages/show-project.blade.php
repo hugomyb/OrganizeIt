@@ -18,7 +18,7 @@
     }"
 >
 
-    @vite('resources/js/app.js')
+    @vite(['resources/js/app.js'])
 
     <div class="flex justify-center items-start w-full gap-6">
         <div style="width: 78%"
@@ -27,10 +27,9 @@
             @foreach($groups as $group)
                 <div
                     class="w-full"
-                    wire:key="group-{{ $group->id }}"
                     id="group-{{ $group->id }}">
 
-                    <livewire:tasks-group :group="$group" :key="'group-' . $group->id" />
+                    <livewire:tasks-group :group="$group" :sortBy="$sortBy" :key="'group-' . $group->id . '-' . Illuminate\Support\Str::uuid()" />
                 </div>
             @endforeach
 

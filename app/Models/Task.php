@@ -34,7 +34,7 @@ class Task extends Model
         'due_date' => 'date',
     ];
 
-    protected $with = ['priority', 'status', 'creator', 'children', 'comments', 'users'];
+    protected $with = ['priority', 'status', 'creator', 'children', 'comments', 'users', 'project'];
 
     public function users(): BelongsToMany
     {

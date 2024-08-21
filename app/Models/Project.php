@@ -18,6 +18,8 @@ class Project extends Model
 
     protected $appends = ['url'];
 
+    protected $with = ['groups', 'users'];
+
     public function tasks()
     {
         return $this->hasMany(Task::class);
