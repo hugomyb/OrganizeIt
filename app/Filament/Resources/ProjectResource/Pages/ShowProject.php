@@ -48,6 +48,7 @@ use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
@@ -235,6 +236,14 @@ class ShowProject extends Page implements HasForms, HasActions
     public function getTitle(): string|Htmlable
     {
         return $this->record->name;
+    }
+
+    public function getHeader(): ?View
+    {
+        return \view('vendor.filament.filament.resources.views.components.header.index', [
+            'heading' => $this->getHeading(),
+            'actions' => $this->getHeaderActions(),
+        ]);
     }
 
     /**
