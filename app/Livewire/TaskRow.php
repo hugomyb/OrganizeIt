@@ -36,14 +36,15 @@ use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Isolate;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
-class TaskRow extends Component implements HasForms
+class TaskRow extends Component implements HasForms, HasActions
 {
     use InteractsWithTaskForm;
-//    use InteractsWithActions;
+    use InteractsWithActions;
     use InteractsWithForms;
     use CanProcessDescription;
     use CanShowNotification;
@@ -70,17 +71,19 @@ class TaskRow extends Component implements HasForms
         ]);
     }
 
-    public function placeholder()
+    public function viewTaskAction(): Action
     {
-        return <<<'HTML'
-            <li wire:key="now()">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4 py-2" style="padding-left: 8px">
-                        <div class="h-2.5 bg-gray-200 rounded-full w-48"></div>
-                    </div>
-                </div>
-            </li>
-        HTML;
+        return ViewAction::make('viewTask')
+            ->mountUsing(function (array $arguments) {
+                $this->fillRichEditorField($arguments['task_id']);
+            })
+            ->modalHeading('')
+            ->modal()
+            ->closeModalByClickingAway(false)
+            ->slideOver()
+            ->modalWidth('6xl')
+            ->record(fn (array $arguments) => Task::find($arguments['task_id']))
+            ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
     }
 
     public function setTaskStatus($statusId)

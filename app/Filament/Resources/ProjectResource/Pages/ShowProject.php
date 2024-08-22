@@ -134,7 +134,8 @@ class ShowProject extends Page implements HasForms, HasActions
         // Charger toutes les relations nécessaires pour éviter les problèmes de lazy loading
         $this->groups = Group::with([
             'tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-                $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
+                $query
+                    ->where(function ($query) use ($statusIds, $priorityIds, $search) {
                     if (!empty($statusIds)) {
                         $query->whereIn('status_id', $statusIds);
                     }
@@ -182,55 +183,6 @@ class ShowProject extends Page implements HasForms, HasActions
                 $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
             });
         });
-    }
-
-    protected function applyRecursiveFilters($query, $statusIds, $priorityIds, $sortBy, $search)
-    {
-        $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
-            if (!empty($statusIds)) {
-                $query->whereIn('status_id', $statusIds);
-            }
-            if (!empty($priorityIds)) {
-                $query->whereIn('priority_id', $priorityIds);
-            }
-            if (!empty($search)) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('title', 'like', '%' . $search . '%')
-                        ->orWhere('id', $search);
-                });
-            }
-        })
-            ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-                $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                    if (!empty($statusIds)) {
-                        $query->whereIn('status_id', $statusIds);
-                    }
-                    if (!empty($priorityIds)) {
-                        $query->whereIn('priority_id', $priorityIds);
-                    }
-                    if (!empty($search)) {
-                        $query->where(function ($query) use ($search) {
-                            $query->where('title', 'like', '%' . $search . '%')
-                                ->orWhere('id', $search);
-                        });
-                    }
-                });
-
-                if ($sortBy === 'priority') {
-                    $query->orderByDesc('priority_id');
-                } else {
-                    $query->orderBy('order');
-                }
-
-                // Appel récursif pour les enfants
-                $query->with(['children', 'users', 'status', 'comments', 'priority', 'creator', 'project']);
-            });
-
-        if ($sortBy === 'priority') {
-            $query->orderBy('priority_id');
-        } else {
-            $query->orderBy('order');
-        }
     }
 
     public function getTitle(): string|Htmlable

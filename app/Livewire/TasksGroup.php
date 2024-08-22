@@ -238,21 +238,6 @@ class TasksGroup extends Component implements HasActions, HasForms
             });
     }
 
-    public function viewTaskAction(): Action
-    {
-        return ViewAction::make('viewTask')
-            ->mountUsing(function (array $arguments) {
-                $this->fillRichEditorField($arguments['task_id']);
-            })
-            ->modalHeading('')
-            ->modal()
-            ->closeModalByClickingAway(false)
-            ->slideOver()
-            ->modalWidth('6xl')
-            ->record(fn (array $arguments) => Task::find($arguments['task_id']))
-            ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
-    }
-
     public function fillRichEditorField($taskId)
     {
         $task = Task::find($taskId);
@@ -287,7 +272,7 @@ class TasksGroup extends Component implements HasActions, HasForms
     {
         $richData = $this->richEditorFieldForm->getState();
 
-        $task = $this->task;
+        $task = Task::find($task);
 
         if (isset($richData['description']) && trim($richData['description']) != '') {
             $modifiedDescription = $this->processDescription($richData['description']);

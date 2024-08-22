@@ -29,7 +29,7 @@
     <ul wire:sortable-group.item-group="group-{{ $group->id }}" wire:sortable-group.options="{ animation: 100 }"
         class="py-1">
         @foreach($tasks->whereNull('parent_id') as $task)
-            <livewire:task-row :$task :$sortBy :key="$task->id . '-' . Illuminate\Support\Str::uuid()"/>
+            <livewire:task-row :$task :$sortBy :key="'task-' . $task->id . '-' . Illuminate\Support\Str::uuid()"/>
         @endforeach
     </ul>
 

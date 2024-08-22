@@ -104,7 +104,7 @@
         <div class="flex gap-2 items-center flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}"
-                wire:click="$parent.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
+                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
 
             @if($task->children->count() > 0)
                 <x-filament::badge color="gray" class="cursor-default"
@@ -258,7 +258,7 @@
         style="margin-left: 20px"
         class="child-list">
         @foreach ($sortedChildren as $childTask)
-            <livewire:task-row :task="$childTask" :sortBy="$sortBy" :key="$childTask->id . '-' . Illuminate\Support\Str::uuid()"/>
+            <livewire:task-row :task="$childTask" :sortBy="$sortBy" :key="'task-' . $childTask->id . '-' . Illuminate\Support\Str::uuid() . '-child'"/>
         @endforeach
     </ul>
 
