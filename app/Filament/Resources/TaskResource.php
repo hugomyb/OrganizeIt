@@ -111,13 +111,19 @@ class TaskResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('status.status'))
                     ->preload()
-                    ->relationship('status', 'name', fn (Builder $query) => $query->orderBy('name'))
+                    ->relationship(
+                        'status',
+                        fn () => app()->getLocale() === 'en' ? 'en_name' : 'name',
+                        fn (Builder $query) => $query->orderBy('name'))
                     ->multiple(),
 
                 Tables\Filters\SelectFilter::make('priority')
                     ->label(__('task.form.priority'))
                     ->preload()
-                    ->relationship('priority', 'name', fn (Builder $query) => $query->orderBy('name'))
+                    ->relationship(
+                        'priority',
+                        fn () => app()->getLocale() === 'en' ? 'en_name' : 'name',
+                        fn (Builder $query) => $query->orderBy('name'))
                     ->multiple(),
             ])
             ->defaultSort('project.color', 'asc')
