@@ -114,13 +114,6 @@ class ShowProject extends Page implements HasForms, HasActions
         }
     }
 
-    public function openTaskById($taskId)
-    {
-        if (Task::where('id', $taskId)->exists() && Task::where('id', $taskId)->where('project_id', $this->record->id)->exists()) {
-            $this->mountAction('viewTask', ['task_id' => $taskId]);
-        }
-    }
-
     public function loadGroups()
     {
         $statusIds = $this->statusFilters->pluck('id')->toArray();

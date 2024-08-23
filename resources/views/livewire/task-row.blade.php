@@ -2,7 +2,25 @@
     wire:sortable-group.item="{{ $task->id }}"
     class="flex flex-col justify-between dark:hover:bg-white/5 text-sm
     {{ (!$task->parent_id) ? 'border-b' : '' }}"
-    style="padding-left: 8px;">
+    style="padding-left: 8px;"
+    x-init="init"
+    x-data="{
+        taskId: '{{ request()->has('task') ? request()->get('task') : null }}',
+
+        init() {
+            if(this.taskId && this.taskId == '{{ $task->id }}') {
+                $wire.openTaskById();
+            }
+
+            Livewire.on('close-modal', () => {
+                this.taskId = null;
+
+                window.history.pushState({}, document.title, window.location.pathname);
+                $wire.dispatch('modal-closed');
+            });
+        }
+    }"
+>
     <div class="flex py-3 content-item"
          x-data="{ isOver: false }"
          x-on:drop.prevent="
@@ -157,7 +175,8 @@
                             <x-slot name="trigger" class="flex gap-1 items-center"
                                     style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}">
                                 @foreach($task->users as $user)
-                                    <div class="flex gap-1 items-center cursor-pointer" wire:key="avatar-{{ $user->id }}">
+                                    <div class="flex gap-1 items-center cursor-pointer"
+                                         wire:key="avatar-{{ $user->id }}">
                                         <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                              class="w-5 h-5 rounded-full border-1 border-white dark:border-gray-900 dark:hover:border-white/10">
                                         @if($task->users()->count() == 1)
@@ -231,24 +250,9 @@
         <!-- actions task -->
         @can('manageTasks', \App\Models\User::class)
             <div class="task-buttons absolute hidden group-hover:flex">
-{{--                --}}{{--                {{ $this->editTaskTooltipAction }}--}}{{-- // $parent.mountAction('editTaskAction', { 'task_id': '{{$task->id}}' })--}}
-{{--                --}}{{--                {{ $this->addSubtaskTooltipAction }}--}}{{-- // $parent.mountAction('addSubtaskAction', { 'task_id': '{{$task->id}}' })--}}
-{{--                --}}{{--                {{ $this->deleteTaskTooltipAction }}--}}{{-- // $parent.mountAction('deleteTaskAction', { 'task_id': '{{$task->id}}' })--}}
-                <x-filament::icon-button
-                    icon="heroicon-o-pencil"
-                    wire:click="$parent.mountAction('editTaskTooltipAction', { 'task_id': '{{$task->id}}' })"
-                    size="sm"
-                />
-
-                <x-filament::icon-button
-                    icon="heroicon-o-plus"
-                    size="sm"
-                />
-
-                <x-filament::icon-button
-                    icon="heroicon-o-trash"
-                    size="sm"
-                />
+                {{ $this->editTaskTooltipAction }}
+                {{ $this->addSubtaskTooltipAction }}
+                {{ $this->deleteTaskTooltipAction }}
             </div>
         @endcan
     </div>
@@ -258,7 +262,8 @@
         style="margin-left: 20px"
         class="child-list">
         @foreach ($sortedChildren as $childTask)
-            <livewire:task-row :task="$childTask" :sortBy="$sortBy" :key="'task-' . $childTask->id . '-' . Illuminate\Support\Str::uuid() . '-child'"/>
+            <livewire:task-row :task="$childTask" :sortBy="$sortBy"
+                               :key="'task-' . $childTask->id . '-child'"/>
         @endforeach
     </ul>
 

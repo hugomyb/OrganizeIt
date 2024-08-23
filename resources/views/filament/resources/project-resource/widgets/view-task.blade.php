@@ -44,7 +44,7 @@
               }"
               x-ref="taskTitle"
               contenteditable="false"
-              x-on:blur="$wire.saveTaskTitle({{ $task->id }}, $event.target.innerText)"
+              x-on:blur="$wire.saveTaskTitle($event.target.innerText)"
               @keyup.enter.prevent="$event.target.blur()">
             {{ $task->title }}
 

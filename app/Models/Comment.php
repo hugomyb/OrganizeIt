@@ -16,6 +16,8 @@ class Comment extends Model
         'content',
     ];
 
+    protected $with = ['user'];
+
     public function task()
     {
         return $this->belongsTo(Task::class);

@@ -1,22 +1,4 @@
-<x-filament-panels::page
-    x-init="init"
-    x-data="{
-        taskId: '{{ request()->has('task') ? request()->get('task') : null }}',
-
-        init() {
-            if(this.taskId) {
-                $wire.openTaskById(this.taskId);
-            }
-
-            Livewire.on('close-modal', () => {
-                this.taskId = null;
-
-                window.history.pushState({}, document.title, window.location.pathname);
-                $wire.dispatch('modal-closed');
-            });
-        }
-    }"
->
+<x-filament-panels::page>
 
     @vite(['resources/js/app.js'])
 
@@ -29,7 +11,8 @@
                     class="w-full"
                     id="group-{{ $group->id }}">
 
-                    <livewire:tasks-group :group="$group" :sortBy="$sortBy" :key="'group-' . $group->id . '-' . Illuminate\Support\Str::uuid()" />
+                    <livewire:tasks-group :group="$group" :sortBy="$sortBy"
+                                          :key="'group-' . $group->id . '-' . Illuminate\Support\Str::uuid()"/>
                 </div>
             @endforeach
 
@@ -178,7 +161,8 @@
                                                                                         style="color: {{ $status->color }}"/>
                                                             @break
                                                     @endswitch
-                                                    <span class="mx-1">{{ \Illuminate\Support\Str::limit($status->name, 20) }}</span>
+                                                    <span
+                                                        class="mx-1">{{ \Illuminate\Support\Str::limit($status->name, 20) }}</span>
                                                 </div>
 
                                                 @if(in_array($status->id, collect($statusFilters)->pluck('id')->toArray()))
@@ -300,11 +284,12 @@
 
                 <div class="flex flex-col px-6 py-3 gap-3">
                     <div class="text-xs font-semibold">
-                        <div style="font-weight: 500; {{ $sortBy === 'priority' ? 'background-color: #2563eb; color: #fff !important' : '' }}"
-                             wire:click="toggleSortByPriority()"
-                             class="w-full cursor-pointer border border-gray-100 dark:border-gray-700 px-3 py-2 rounded-lg flex items-center text-xs justify-between">
+                        <div
+                            style="font-weight: 500; {{ $sortBy === 'priority' ? 'background-color: #2563eb; color: #fff !important' : '' }}"
+                            wire:click="toggleSortByPriority()"
+                            class="w-full cursor-pointer border border-gray-100 dark:border-gray-700 px-3 py-2 rounded-lg flex items-center text-xs justify-between">
                             <div class="flex items-center">
-                                <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1" />
+                                <x-iconsax-bol-flag-2 class="h-5 w-5 mx-1"/>
                                 <span class="mx-1">{{ __('priority.priority') }}</span>
                             </div>
                         </div>
