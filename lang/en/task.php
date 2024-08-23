@@ -30,6 +30,8 @@ return [
         'status' => 'Status',
         'priority' => 'Priority',
         'attachments' => 'Attachments',
+        'project' => 'Project',
+        'created_at' => 'Created At',
 
         'start_date' => 'Start Date',
         'end_date' => 'End Date',
@@ -44,6 +46,8 @@ return [
         'last_month' => 'Last Month',
         'custom' => 'Custom',
     ],
+
+    'my_tasks' => 'My Assigned Tasks',
 
     'export' => 'Export',
     'exported_tasks' => 'Exported Tasks',

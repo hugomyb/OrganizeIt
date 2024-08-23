@@ -30,6 +30,8 @@ return [
         'status' => 'Statut',
         'priority' => 'Priorité',
         'attachments' => 'Pièces jointes',
+        'project' => 'Projet',
+        'created_at' => 'Créé le',
 
         'start_date' => 'Date de début',
         'end_date' => 'Date de fin',
@@ -44,6 +46,8 @@ return [
         'last_month' => 'Le mois dernier',
         'custom' => 'Personnalisé',
     ],
+
+    'my_tasks' => 'Mes tâches assignées',
 
     'export' => 'Exporter',
     'exported_tasks' => 'Tâches exportées',
