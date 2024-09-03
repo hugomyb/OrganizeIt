@@ -106,11 +106,13 @@ class TaskResource extends Resource
                     ->searchable(),
             ])
             ->recordUrl(fn ($record) => ProjectResource::getUrl('show', ['record' => $record->project]) . '?task=' . $record->id)
-            ->persistFiltersInSession()
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('status.status'))
                     ->preload()
+                    ->default(function () {
+                        return Status::where('name', '!=', 'Terminé')->pluck('id')->toArray();
+                    })
                     ->relationship(
                         'status',
                         fn () => app()->getLocale() === 'en' ? 'en_name' : 'name',
@@ -126,7 +128,7 @@ class TaskResource extends Resource
                         fn (Builder $query) => $query->orderBy('name'))
                     ->multiple(),
             ])
-            ->defaultSort('project.color', 'asc')
+            ->defaultSort('priority_id', 'desc')
             ->defaultGroup('project.name')
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -140,7 +142,7 @@ class TaskResource extends Resource
     {
         return static::getModel()::query()->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->count();
+        })->where('status_id', '!=', Status::where('name', 'Terminé')->first()->id)->count();
     }
 
     public static function getRelations(): array
