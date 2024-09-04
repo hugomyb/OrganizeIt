@@ -141,7 +141,7 @@ class ShowProject extends Page implements HasForms, HasActions
                                 });
                             }
                         });
-                    })->with(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
+                    })->with(['status', 'priority']);
 
                 if ($sortBy === 'priority') {
                     $query->orderByDesc('priority_id');
