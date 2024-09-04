@@ -144,7 +144,7 @@ class ShowProject extends Page implements HasForms, HasActions
                     ->orderBy($sortBy === 'priority' ? 'priority_id' : 'order');
             }
         ])->where('project_id', $this->record->id)
-            ->chunk(40, function ($groups) use ($completedStatusId) {
+            ->chunk(100, function ($groups) use ($completedStatusId) {
                 foreach ($groups as $group) {
                     $group->tasks->each(function ($task) use ($completedStatusId) {
                         $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
