@@ -63,6 +63,10 @@ class TaskRow extends Component implements HasForms, HasActions
 
     public function refreshTask()
     {
+        if ($this->task->parent_id) {
+            $this->dispatch('modal-closed:' . $this->task->parent_id);
+        }
+
         $this->render();
     }
 

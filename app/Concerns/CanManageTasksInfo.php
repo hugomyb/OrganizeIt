@@ -62,6 +62,10 @@ trait CanManageTasksInfo
                 }
             }
 
+            if ($task->parent_id) {
+                $this->dispatch('modal-closed:' . $this->task->parent_id);
+            }
+
             $this->showNotification(__('status.status_updated'));
         }
     }
