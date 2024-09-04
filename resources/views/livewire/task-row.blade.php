@@ -3,30 +3,13 @@
     class="flex flex-col justify-between dark:hover:bg-white/5 text-sm
     {{ (!$task->parent_id) ? 'border-b' : '' }}"
     style="padding-left: 8px;"
-    x-init="init"
-    x-data="{
-        taskId: '{{ request()->has('task') ? request()->get('task') : null }}',
-
-        init() {
-            if(this.taskId && this.taskId == '{{ $task->id }}') {
-                $wire.openTaskById();
-            }
-
-            Livewire.on('close-modal', () => {
-                this.taskId = null;
-
-                window.history.pushState({}, document.title, window.location.pathname);
-                $wire.dispatch('modal-closed');
-            });
-        }
-    }"
 >
     <div class="flex py-3 content-item"
          x-data="{ isOver: false }"
          x-on:drop.prevent="
             const userId = event.dataTransfer.getData('user-id');
             if (userId) {
-                $wire.assignUserToTask(userId, '{{ $task->id }}');
+                $wire.assignUserToTask(userId);
             }
             const priorityId = event.dataTransfer.getData('priority-id');
             if (priorityId) {
@@ -122,7 +105,7 @@
         <div class="flex gap-2 items-center flex-wrap">
             <h3 class="font-medium mx-1 cursor-pointer hover:text-primary"
                 style="{{ $task->status->id == \App\Models\Status::where('name', 'Terminé')->first()->id ? 'opacity: 0.4;' : '' }}"
-                wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })">{{ $task->title }}</h3>
+                wire:click="$dispatch('openTask', { taskId: '{{ $task->id }}' })">{{ $task->title }}</h3>
 
             @if($task->children->count() > 0)
                 <x-filament::badge color="gray" class="cursor-default"
@@ -223,7 +206,7 @@
 
             @if($task->description)
                 <x-gmdi-description-o
-                    wire:click="mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' })"
+                    wire:click="$dispatch('openTask', { taskId: '{{ $task->id }}' })"
                     icon="gmdi-description-o"
                     class="h-5 w-5 cursor-pointer tooltip-link relative text-gray-400 hover:text-gray-700/75"/>
             @endif
@@ -231,7 +214,7 @@
             @if(count($task->attachments) > 0)
                 <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
                     <x-heroicon-o-folder
-                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' });"
+                        wire:click="$dispatch('openTask', { taskId: '{{ $task->id }}' })"
                         class="h-5 w-5 cursor-pointer tooltip-link relative"/>
                     <span class="text-xs">{{ count($task->attachments) }}</span>
                 </div>
@@ -240,7 +223,7 @@
             @if($task->comments->count() > 0)
                 <div class="text-gray-400 hover:text-gray-700/75 flex items-center gap-1">
                     <x-forkawesome-comments-o
-                        x-on:click="$wire.mountAction('viewTaskAction', { 'task_id': '{{$task->id}}' });"
+                        wire:click="$dispatch('openTask', { taskId: '{{ $task->id }}' })"
                         class="h-5 w-5 cursor-pointer tooltip-link relative"/>
                     <span class="text-xs">{{ $task->comments->count() }}</span>
                 </div>

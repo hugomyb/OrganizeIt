@@ -1,4 +1,24 @@
-<x-filament-panels::page>
+<x-filament-panels::page
+    x-init="init"
+    x-data="{
+        taskId: null,
+
+        init() {
+            this.taskId = new URLSearchParams(window.location.search).get('task');
+            if(this.taskId) {
+                $wire.openTaskById(this.taskId);
+            }
+
+            Livewire.on('close-modal', () => {
+                this.taskId = new URLSearchParams(window.location.search).get('task');
+                let event = 'modal-closed:' + this.taskId;
+                $wire.dispatch(event);
+
+                this.taskId = null;
+                window.history.pushState({}, document.title, window.location.pathname);
+            });
+        }
+    }">
 
     @vite(['resources/js/app.js'])
 
@@ -12,7 +32,7 @@
                     id="group-{{ $group->id }}">
 
                     <livewire:tasks-group :group="$group" :sortBy="$sortBy"
-                                          :key="'group-' . $group->id . '-' . Illuminate\Support\Str::uuid()"/>
+                                          :key="'group-' . $group->id"/>
                 </div>
             @endforeach
 

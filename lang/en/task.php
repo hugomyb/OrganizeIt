@@ -92,4 +92,8 @@ return [
     'dates_updated' => 'Dates Updated',
 
     'task_updated' => 'Task Updated',
+
+    'commit' => [
+        'error' => 'This commit number already exists for this task'
+    ]
 ];

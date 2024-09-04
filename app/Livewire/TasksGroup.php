@@ -126,4 +126,37 @@ class TasksGroup extends Component implements HasActions, HasForms
             Storage::deleteDirectory('tasks/' . Task::latest()->first()->id + 1);
         }
     }
+
+    public function editGroupAction(): Action
+    {
+        return EditAction::make('editGroup')
+            ->record($this->group)
+            ->modalHeading(__('group.edit_group'))
+            ->form([
+                TextInput::make('name')
+                    ->autofocus()
+                    ->label(__('group.name'))
+                    ->required(),
+            ])
+            ->action(function (array $data): void {
+                $this->group->update($data);
+
+                $this->showNotification(__('group.group_updated'));
+            });
+    }
+
+    public function deleteGroupAction(): Action
+    {
+        return Action::make('deleteGroup')
+            ->color('danger')
+            ->icon('heroicon-o-trash')
+            ->requiresConfirmation()
+            ->modalHeading(__('group.delete_group') . ' "' . Str::limit($this->group->name, 20) . '" ?')
+            ->record($this->group)
+            ->action(function (array $arguments): void {
+                $this->group->delete();
+
+                $this->showNotification(__('group.group_deleted'));
+            });
+    }
 }

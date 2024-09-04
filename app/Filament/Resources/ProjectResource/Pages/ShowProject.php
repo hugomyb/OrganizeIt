@@ -44,6 +44,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
@@ -359,39 +360,6 @@ class ShowProject extends Page implements HasForms, HasActions
             });
     }
 
-    public function editGroupAction(): Action
-    {
-        return EditAction::make('editGroup')
-            ->record(fn(array $arguments) => Group::find($arguments['group_id']))
-            ->modalHeading(__('group.edit_group'))
-            ->form([
-                TextInput::make('name')
-                    ->autofocus()
-                    ->label(__('group.name'))
-                    ->required(),
-            ])
-            ->action(function (array $data, array $arguments): void {
-                Group::find($arguments['group_id'])->update($data);
-
-                $this->showNotification(__('group.group_updated'));
-            });
-    }
-
-    public function deleteGroupAction(): Action
-    {
-        return Action::make('deleteGroup')
-            ->color('danger')
-            ->icon('heroicon-o-trash')
-            ->requiresConfirmation()
-            ->modalHeading(fn(array $arguments) => __('group.delete_group') . ' "' . Str::limit(Group::find($arguments['group_id'])->name, 20) . '" ?')
-            ->record(fn(array $arguments) => Group::find($arguments['group_id']))
-            ->action(function (array $arguments): void {
-                Group::find($arguments['group_id'])->delete();
-
-                $this->showNotification(__('group.group_deleted'));
-            });
-    }
-
     public function cancelCreateTask()
     {
         if (Storage::exists('tasks/' . Task::latest()->first()->id + 1)) {
@@ -597,6 +565,148 @@ class ShowProject extends Page implements HasForms, HasActions
         } else {
             $this->sortBy = 'priority';
             Cookie::queue('sort_by', 'priority', 60 * 24 * 30);
+        }
+    }
+
+    #[On('openTask')]
+    public function openTaskAction($taskId)
+    {
+        $this->mountAction('viewTask', ['task_id' => $taskId]);
+    }
+
+    public function viewTaskAction(): Action
+    {
+        return ViewAction::make('viewTask')
+            ->modalHeading('')
+            ->modal()
+            ->closeModalByClickingAway(false)
+            ->slideOver()
+            ->modalWidth('6xl')
+            ->record(fn (array $arguments) => Task::find($arguments['task_id']))
+            ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
+    }
+
+    #[On('openCommitModal')]
+    public function openCommitAction($taskId)
+    {
+        $this->replaceMountedAction('addCommit', ['task_id' => $taskId]);
+    }
+
+    public function addCommitAction(): Action
+    {
+        return Action::make('addCommit')
+            ->hiddenLabel()
+            ->modal()
+            ->icon('heroicon-o-plus')
+            ->tooltip(__('task.add_commit_number'))
+            ->modalHeading(__('task.add_commit'))
+            ->form([
+                TextInput::make('commitNumber')
+                    ->label(__('task.number'))
+                    ->required(),
+            ])
+            ->action(function (array $data, array $arguments, Action $action): void {
+                $task = Task::find($arguments['task_id']);
+
+                $commitNumbers = $task->commit_numbers ?? [];
+
+                if ($data['commitNumber'] && !in_array($data['commitNumber'], $commitNumbers)) {
+                    if ($commitNumbers) {
+                        $commitNumbers[] = $data['commitNumber'];
+                    } else {
+                        $commitNumbers = [$data['commitNumber']];
+                    }
+
+                    $task->update([
+                        'commit_numbers' => $commitNumbers
+                    ]);
+
+                    if ($task->creator && !$task->creator->hasRole('Client'))
+                        SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
+
+                    $this->showNotification(__('task.commit_number_added'));
+
+                    $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
+                } else {
+                    Notification::make()
+                        ->danger()
+                        ->title(__('task.commit.error'))
+                        ->send();
+
+                    $action->halt();
+                }
+            })
+            ->modalCloseButton(false)
+            ->modalCancelAction(false)
+            ->closeModalByClickingAway(false)
+            ->extraModalFooterActions(function (array $arguments) {
+                return [
+                    Action::make('closeModal')
+                        ->label(__('general.cancel'))
+                        ->color('gray')
+                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task_id']]))
+                ];
+            });
+    }
+
+    #[On('openDatesModal')]
+    public function openDatesAction($taskId)
+    {
+        $this->replaceMountedAction('updateDates', ['task_id' => $taskId]);
+    }
+
+    public function updateDatesAction(): Action
+    {
+        return Action::make('updateDates')
+            ->fillForm(function (array $arguments) {
+                $record = Task::find($arguments['task_id']);
+
+                return [
+                    'start_date' => $record->start_date,
+                    'due_date' => $record->due_date
+                ];
+            })
+            ->modal()
+            ->modalHeading(__('task.update_dates'))
+            ->form([
+                Grid::make(2)
+                    ->schema([
+                        DatePicker::make('start_date')
+                            ->label(__('task.start_date')),
+
+                        DatePicker::make('due_date')
+                            ->label(__('task.end_date')),
+                    ])
+            ])
+            ->action(function ($data, array $arguments): void {
+                $task = Task::find($arguments['task_id']);
+
+                $task->update([
+                    'start_date' => $data['start_date'] ?? null,
+                    'due_date' => $data['due_date'] ?? null
+                ]);
+
+                $this->showNotification(__('task.dates_updated'));
+
+                $this->replaceMountedAction('viewTask', ['task_id' => $task->id]);
+            })
+            ->modalCloseButton(false)
+            ->modalCancelAction(false)
+            ->closeModalByClickingAway(false)
+            ->extraModalFooterActions(function (array $arguments) {
+                return [
+                    Action::make('closeModal')
+                        ->label(__('general.cancel'))
+                        ->color('gray')
+                        ->action(fn() => $this->replaceMountedAction('viewTask', ['task_id' => $arguments['task_id']]))
+                ];
+            });
+    }
+
+    public function openTaskById($taskId)
+    {
+        if (Task::find($taskId)) {
+            $this->mountAction('viewTask', ['task_id' => $taskId]);
         }
     }
 }
