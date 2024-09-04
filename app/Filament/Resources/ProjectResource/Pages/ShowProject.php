@@ -150,7 +150,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 }
 
                 // Précharger toutes les relations nécessaires
-                $query->with(['children', 'users', 'status', 'comments', 'priority', 'creator', 'project']);
+                $query->with(['status', 'priority']);
             }
         ])->where('project_id', $this->record->id)->get();
 
