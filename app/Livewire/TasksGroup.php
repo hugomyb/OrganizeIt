@@ -41,7 +41,7 @@ class TasksGroup extends Component implements HasActions, HasForms
     protected function getListeners()
     {
         return [
-            'refreshGroup:' . $this->group->id => 'refreshTasks',
+            'refreshGroup:' . $this->group->id => 'refreshGroup',
         ];
     }
 
@@ -51,13 +51,16 @@ class TasksGroup extends Component implements HasActions, HasForms
         $this->tasks = $group->tasks;
     }
 
-    public function refreshTasks($tasks)
+    public function refreshGroup($tasks, $sortBy)
     {
+        $this->sortBy = $sortBy;
         $this->tasks = Task::hydrate($tasks);
 
         $this->tasks = $this->tasks->map(function ($task) {
             return $task->fresh(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
         });
+
+        $this->dispatch('refreshedGroup', ['sortBy' => $this->sortBy])->to(TaskRow::class);
 
         $this->render();
     }
@@ -66,6 +69,7 @@ class TasksGroup extends Component implements HasActions, HasForms
     {
         return view('livewire.tasks-group', [
             'tasks' => $this->tasks,
+            'sortBy' => $this->sortBy,
         ]);
     }
 

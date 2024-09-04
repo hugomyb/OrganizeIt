@@ -35,9 +35,10 @@ class TaskRow extends Component implements HasForms, HasActions
     public Task $task;
     public $sortBy;
 
-    public function mount(Task $task)
+    public function mount(Task $task, $sortBy)
     {
         $this->task = $task;
+        $this->sortBy = $sortBy;
     }
 
     public function render()
@@ -57,6 +58,7 @@ class TaskRow extends Component implements HasForms, HasActions
     protected function getListeners()
     {
         return [
+            'refreshedGroup' => 'updateSortBy',
             'modal-closed:' . $this->task->id => 'refreshTask'
         ];
     }
@@ -68,6 +70,11 @@ class TaskRow extends Component implements HasForms, HasActions
         }
 
         $this->render();
+    }
+
+    public function updateSortBy($data)
+    {
+        $this->sortBy = $data['sortBy'];
     }
 
     public function editTaskTooltipAction(): Action

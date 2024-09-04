@@ -160,7 +160,7 @@ class ShowProject extends Page implements HasForms, HasActions
                 $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
             });
 
-            $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray())->to(TasksGroup::class);
+            $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray(), $this->sortBy)->to(TasksGroup::class);
         });
     }
 
@@ -506,7 +506,7 @@ class ShowProject extends Page implements HasForms, HasActions
         if ($cookie) {
             $this->sortBy = $cookie;
         } else {
-            $this->sortBy = 'default'; // Par défaut, pas de filtres
+            $this->sortBy = 'default';
         }
     }
 
