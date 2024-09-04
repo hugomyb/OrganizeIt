@@ -86,7 +86,7 @@
                                         <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"
                                              title="{{ $user->name }}"
                                              class="rounded-full" style="height: 20px">
-                                        @if($task->users()->count() < 2)
+                                        @if($loop->count < 2)
                                             <span>{{ $user->name }}</span>
                                         @endif
                                     @empty
@@ -99,7 +99,7 @@
                                 <x-filament::dropdown.list>
                                     @foreach($task->project->users as $user)
                                         <x-filament::dropdown.list.item
-                                            wire:click="toggleUserToTask({{$user->id}}, {{$task->id}})">
+                                            wire:click="toggleUserToTask({{$user->id}});">
                                             <div class="text-xs font-bold flex justify-between items-center">
                                                 <div class="flex items center gap-1 items-center">
                                                     <img src="/storage/{{ $user->avatar_url }}" alt="{{ $user->name }}"

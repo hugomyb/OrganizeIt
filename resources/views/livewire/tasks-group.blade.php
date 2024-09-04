@@ -26,7 +26,8 @@
         </x-slot>
     @endcan
 
-    <ul wire:sortable-group.item-group="group-{{ $group->id }}" wire:sortable-group.options="{ animation: 100 }"
+    <ul wire:sortable-group.item-group="group-{{ $group->id }}"
+        wire:sortable-group.options="{ animation: 100 }"
         class="py-1">
         @foreach($tasks->whereNull('parent_id') as $task)
             <livewire:task-row :$task :$sortBy :key="'task-' . $task->id"/>

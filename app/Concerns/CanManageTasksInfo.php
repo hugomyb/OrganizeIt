@@ -30,6 +30,10 @@ trait CanManageTasksInfo
 
                 $this->showNotification(__('user.assigned'));
             }
+
+            $this->task = $task->fresh('users');
+
+            $this->dispatch('modal-closed:' . $this->task->id);
         }
     }
 
@@ -101,13 +105,15 @@ trait CanManageTasksInfo
         if ($task) {
             if (!$task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->attach($userId);
+
+                if (!auth()->user()->hasRole('Client')) {
+                    SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+                }
+
+                $this->showNotification(__('user.assigned'));
             }
-        }
 
-        if (!auth()->user()->hasRole('Client')) {
-            SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
+            $this->dispatch('modal-closed:' . $this->task->id);
         }
-
-        $this->showNotification(__('user.assigned'));
     }
 }

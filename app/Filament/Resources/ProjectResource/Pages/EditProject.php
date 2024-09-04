@@ -28,6 +28,16 @@ class EditProject extends EditRecord
             $user = User::find($userId);
             Mail::to($user)->send(new AssignToProjectMail($project, $author));
         }
+
+        // supprimer toute les assignations aux taches des utilisateurs enlevés sur ce projet
+        $usersToRemove = array_diff($oldUsers, $newUsers);
+
+        foreach ($usersToRemove as $userId) {
+            $user = User::find($userId);
+            $project->tasks->each(function ($task) use ($user) {
+                $task->users()->detach($user);
+            });
+        }
     }
 
     protected function getHeaderActions(): array
