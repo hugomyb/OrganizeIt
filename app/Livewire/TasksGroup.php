@@ -6,9 +6,10 @@ use App\Concerns\CanProcessDescription;
 use App\Concerns\CanShowNotification;
 use App\Concerns\InteractsWithTaskForm;
 use App\Jobs\SendEmailJob;
-use App\Mail\NewCommitMail;
 use App\Mail\NewTaskMail;
 use App\Models\Group;
+use App\Models\Priority;
+use App\Models\Status;
 use App\Models\Task;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -16,20 +17,11 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Notifications\Notification;
-use Filament\Support\Enums\IconSize;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
 class TasksGroup extends Component implements HasActions, HasForms
@@ -44,38 +36,37 @@ class TasksGroup extends Component implements HasActions, HasForms
     public $tasks;
 
     public $sortBy;
+    public $search;
+
+    protected function getListeners()
+    {
+        return [
+            'refreshGroup:' . $this->group->id => 'refreshTasks',
+        ];
+    }
 
     public function mount(Group $group)
     {
         $this->group = $group;
+        $this->tasks = $group->tasks;
+    }
+
+    public function refreshTasks($tasks)
+    {
+        $this->tasks = Task::hydrate($tasks);
+
+        $this->tasks = $this->tasks->map(function ($task) {
+            return $task->fresh(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
+        });
+
+        $this->render();
     }
 
     public function render()
     {
-        $this->tasks = $this->group->tasks->sortBy('order');
-        return view('livewire.tasks-group');
-    }
-
-    public function placeholder()
-    {
-        return <<<'HTML'
-            <x-filament::section
-                collapsible
-                persist-collapsed
-                id="group-{{ $group->id }}"
-                style="margin-bottom: 30px; width: 100%">
-
-                <x-slot name="heading">
-                    <div role="status" class="max-w-sm animate-pulse">
-                        <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48"></div>
-                    </div>
-                </x-slot>
-
-                <div class="flex justify-center items-center py-4">
-                    <x-filament::loading-indicator class="h-6 w-6" />
-                </div>
-            </x-filament::section>
-        HTML;
+        return view('livewire.tasks-group', [
+            'tasks' => $this->tasks,
+        ]);
     }
 
     public function createTaskAction(): Action

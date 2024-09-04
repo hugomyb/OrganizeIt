@@ -31,7 +31,11 @@
                     class="w-full"
                     id="group-{{ $group->id }}">
 
-                    <livewire:tasks-group :group="$group" :sortBy="$sortBy"
+                    <livewire:tasks-group :group="$group"
+                                          :statusFilters="$statusFilters"
+                                          :priorityFilters="$priorityFilters"
+                                          :search="$search"
+                                          :sortBy="$sortBy"
                                           :key="'group-' . $group->id"/>
                 </div>
             @endforeach

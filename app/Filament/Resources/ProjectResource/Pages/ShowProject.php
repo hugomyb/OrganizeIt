@@ -7,16 +7,10 @@ use App\Concerns\CanShowNotification;
 use App\Concerns\InteractsWithTaskForm;
 use App\Filament\Resources\ProjectResource;
 use App\Jobs\SendEmailJob;
-use App\Livewire\TaskRow;
 use App\Livewire\TasksGroup;
 use App\Mail\AssignToProjectMail;
-use App\Mail\AssignToTaskMail;
-use App\Mail\ChangeTaskPriorityMail;
-use App\Mail\ChangeTaskStatusMail;
-use App\Mail\NewCommentMail;
 use App\Mail\NewCommitMail;
 use App\Mail\NewTaskMail;
-use App\Models\Comment;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Project;
@@ -27,36 +21,25 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\CreateAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\CanAuthorizeResourceAccess;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
-use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ShowProject extends Page implements HasForms, HasActions
 {
@@ -130,19 +113,19 @@ class ShowProject extends Page implements HasForms, HasActions
             'tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
                 $query
                     ->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                    if (!empty($statusIds)) {
-                        $query->whereIn('status_id', $statusIds);
-                    }
-                    if (!empty($priorityIds)) {
-                        $query->whereIn('priority_id', $priorityIds);
-                    }
-                    if (!empty($search)) {
-                        $query->where(function ($query) use ($search) {
-                            $query->where('title', 'like', '%' . $search . '%')
-                                ->orWhere('id', $search);
-                        });
-                    }
-                })
+                        if (!empty($statusIds)) {
+                            $query->whereIn('status_id', $statusIds);
+                        }
+                        if (!empty($priorityIds)) {
+                            $query->whereIn('priority_id', $priorityIds);
+                        }
+                        if (!empty($search)) {
+                            $query->where(function ($query) use ($search) {
+                                $query->where('title', 'like', '%' . $search . '%')
+                                    ->orWhere('id', $search);
+                            });
+                        }
+                    })
                     ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
                         $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
                             if (!empty($statusIds)) {
@@ -158,7 +141,7 @@ class ShowProject extends Page implements HasForms, HasActions
                                 });
                             }
                         });
-                    });
+                    })->with(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
 
                 if ($sortBy === 'priority') {
                     $query->orderByDesc('priority_id');
@@ -176,6 +159,8 @@ class ShowProject extends Page implements HasForms, HasActions
             $group->tasks->each(function ($task) use ($completedStatusId) {
                 $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
             });
+
+            $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray())->to(TasksGroup::class);
         });
     }
 
@@ -474,6 +459,8 @@ class ShowProject extends Page implements HasForms, HasActions
             $filters = $this->statusFilters->toArray();
             Cookie::queue('status_filters', json_encode($filters), 60 * 24 * 30);
         }
+
+        $this->loadGroups();
     }
 
     public function getStatusFilters()
@@ -499,6 +486,8 @@ class ShowProject extends Page implements HasForms, HasActions
             $filters = $this->priorityFilters->toArray();
             Cookie::queue('priority_filters', json_encode($filters), 60 * 24 * 30);
         }
+
+        $this->loadGroups();
     }
 
     public function getPriorityFilters()
@@ -545,6 +534,8 @@ class ShowProject extends Page implements HasForms, HasActions
 
         SendEmailJob::dispatch(AssignToProjectMail::class, $user, $this->record, auth()->user());
 
+        $this->record = $this->record->fresh('users');
+
         $this->showNotification(__('user.added'));
     }
 
@@ -582,7 +573,7 @@ class ShowProject extends Page implements HasForms, HasActions
             ->closeModalByClickingAway(false)
             ->slideOver()
             ->modalWidth('6xl')
-            ->record(fn (array $arguments) => Task::find($arguments['task_id']))
+            ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
     }
 
