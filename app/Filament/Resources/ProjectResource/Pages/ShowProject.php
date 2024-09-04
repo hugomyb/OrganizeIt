@@ -108,8 +108,10 @@ class ShowProject extends Page implements HasForms, HasActions
         $completedStatus = Status::where('name', 'Terminé')->first();
         $completedStatusId = $completedStatus ? $completedStatus->id : null;
 
-        // Charger toutes les relations nécessaires pour éviter les problèmes de lazy loading
-        $this->groups = Group::with([
+        // Initialiser une collection vide pour stocker les groupes
+        $this->groups = collect();
+
+        Group::with([
             'tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
                 $query
                     ->where(function ($query) use ($statusIds, $priorityIds, $search) {
@@ -120,10 +122,8 @@ class ShowProject extends Page implements HasForms, HasActions
                             $query->whereIn('priority_id', $priorityIds);
                         }
                         if (!empty($search)) {
-                            $query->where(function ($query) use ($search) {
-                                $query->where('title', 'like', '%' . $search . '%')
-                                    ->orWhere('id', $search);
-                            });
+                            $query->where('title', 'like', '%' . $search . '%')
+                                ->orWhere('id', $search);
                         }
                     })
                     ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
@@ -135,33 +135,26 @@ class ShowProject extends Page implements HasForms, HasActions
                                 $query->whereIn('priority_id', $priorityIds);
                             }
                             if (!empty($search)) {
-                                $query->where(function ($query) use ($search) {
-                                    $query->where('title', 'like', '%' . $search . '%')
-                                        ->orWhere('id', $search);
-                                });
+                                $query->where('title', 'like', '%' . $search . '%')
+                                    ->orWhere('id', $search);
                             }
                         });
-                    })->with(['status', 'priority']);
-
-                if ($sortBy === 'priority') {
-                    $query->orderByDesc('priority_id');
-                } else {
-                    $query->orderBy('order');
-                }
-
-                // Précharger toutes les relations nécessaires
-                $query->with(['status', 'priority']);
+                    })
+                    ->with(['status', 'priority'])
+                    ->orderBy($sortBy === 'priority' ? 'priority_id' : 'order');
             }
-        ])->where('project_id', $this->record->id)->get();
+        ])->where('project_id', $this->record->id)
+            ->chunk(50, function ($groups) use ($completedStatusId) {
+                foreach ($groups as $group) {
+                    $group->tasks->each(function ($task) use ($completedStatusId) {
+                        $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
+                    });
 
-        // Préparez les styles pour chaque tâche
-        $this->groups->each(function ($group) use ($completedStatusId) {
-            $group->tasks->each(function ($task) use ($completedStatusId) {
-                $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
+                    $this->groups->push($group);
+
+                    $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray(), $this->sortBy)->to(TasksGroup::class);
+                }
             });
-
-            $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray(), $this->sortBy)->to(TasksGroup::class);
-        });
     }
 
     public function getTitle(): string|Htmlable
