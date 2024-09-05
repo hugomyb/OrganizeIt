@@ -113,9 +113,7 @@ class TasksGroup extends Component implements HasActions, HasForms
 
                 $this->group->fresh('tasks');
 
-                $this->tasks = $this->group->tasks;
-
-                $this->dispatch('$refresh');
+                $this->tasks = $this->tasks->push($task);
 
                 $this->showNotification(__('task.task_added'));
 
