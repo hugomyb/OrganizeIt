@@ -95,7 +95,7 @@ class TasksGroup extends Component implements HasActions, HasForms
                 if (isset($data['description']) && trim($data['description']) != '') {
                     $data['description'] = $this->processDescription($data['description']);
                 }
-                $task = $this->record->tasks()->create(array_merge($data, [
+                $task = $this->group->project->tasks()->create(array_merge($data, [
                     'order' => $lastTask ? $lastTask->order + 1 : 0,
                     'created_by' => auth()->id()
                 ]));
@@ -103,7 +103,7 @@ class TasksGroup extends Component implements HasActions, HasForms
                 $usersToAssign = $data['users'] ?? [];
                 $task->users()->sync($usersToAssign);
 
-                $users = $this->record->users;
+                $users = $this->group->project->users;
                 $author = auth()->user();
 
                 foreach ($users as $user) {
@@ -111,7 +111,15 @@ class TasksGroup extends Component implements HasActions, HasForms
                         SendEmailJob::dispatch(NewTaskMail::class, $user, $task, $author);
                 }
 
+                $this->group->fresh('tasks');
+
+                $this->tasks = $this->group->tasks;
+
+                $this->dispatch('$refresh');
+
                 $this->showNotification(__('task.task_added'));
+
+                $this->render();
             });
     }
 
