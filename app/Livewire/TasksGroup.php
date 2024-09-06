@@ -60,6 +60,10 @@ class TasksGroup extends Component implements HasActions, HasForms
             return $task->fresh(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
         });
 
+        if ($this->sortBy === 'priority') {
+            $this->tasks = $this->tasks->sortByDesc('priority_id');
+        }
+
         $this->dispatch('refreshedGroup', ['sortBy' => $this->sortBy])->to(TaskRow::class);
 
         $this->render();
