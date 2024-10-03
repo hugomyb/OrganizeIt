@@ -44,8 +44,12 @@ class ListTasks extends ListRecords
                     } else {
                         $users = \App\Models\User::whereIn('id', $usersFilterState)->get();
 
-                        $lastUser = $users->pop();
-                        $this->pageTitle = __('task.assigned_tasks_to') . ' ' . $users->implode('name', ', ') . ' & ' . $lastUser->name;
+                        if (count($users) === 1) {
+                            $this->pageTitle = __('task.assigned_tasks_to') . ' ' . $users->first()->name;
+                        } else {
+                            $lastUser = $users->pop();
+                            $this->pageTitle = __('task.assigned_tasks_to') . ' ' . $users->implode('name', ', ') . ' & ' . $lastUser->name;
+                        }
                     }
                 } else {
                     $this->pageTitle = 'Toutes les tâches assignées';
