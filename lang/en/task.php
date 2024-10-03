@@ -45,9 +45,16 @@ return [
         'this_month' => 'This Month',
         'last_month' => 'Last Month',
         'custom' => 'Custom',
+
+        'assigned_to' => 'Assigned to'
     ],
 
     'my_tasks' => 'My Assigned Tasks',
+    'assigned_tasks' => 'assigned tasks',
+    'assigned_tasks_to' => 'Assigned Tasks to',
+    'unassigned_tasks' => 'Unassigned Tasks',
+    'assign_users' => 'Assign Users',
+    'users_assigned' => 'User(s) Assigned',
 
     'export' => 'Export',
     'exported_tasks' => 'Exported Tasks',

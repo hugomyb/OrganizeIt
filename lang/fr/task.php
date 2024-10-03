@@ -45,9 +45,16 @@ return [
         'this_month' => 'Ce mois-ci',
         'last_month' => 'Le mois dernier',
         'custom' => 'Personnalisé',
+
+        'assigned_to' => 'Assigné à'
     ],
 
     'my_tasks' => 'Mes tâches assignées',
+    'assigned_tasks' => 'tâches assignées',
+    'assigned_tasks_to' => 'Tâches assignées à',
+    'unassigned_tasks' => 'Tâches non assignées',
+    'assign_users' => 'Assigner des utilisateurs',
+    'users_assigned' => 'Utilisateur(s) assignés',
 
     'export' => 'Exporter',
     'exported_tasks' => 'Tâches exportées',

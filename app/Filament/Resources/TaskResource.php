@@ -6,6 +6,7 @@ use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Status;
 use App\Models\Task;
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +15,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 // My Assigned Tasks
 class TaskResource extends Resource
@@ -27,7 +27,7 @@ class TaskResource extends Resource
 
     public static function getLabel(): ?string
     {
-        return __('task.my_tasks');
+        return __('task.tasks');
     }
 
     public static function form(Form $form): Form
@@ -41,12 +41,10 @@ class TaskResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function ($query) {
-                $query->whereHas('users', function ($query) {
-                    $query->where('user_id', auth()->id());
-                });
-            })
             ->columns([
+                Tables\Columns\TextColumn::make('users.id')
+                    ->hidden(),
+
                 Tables\Columns\TextColumn::make('id')
                     ->label('#')
                     ->sortable()
@@ -55,13 +53,25 @@ class TaskResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\ColorColumn::make('project.color')
-                    ->label(__('task.form.project'))
-                    ->sortable()
-                    ->searchable(),
+                    ->label(__('task.form.project')),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label(__('task.form.title'))
                     ->limit(70)
+                    ->searchable(),
+
+                Tables\Columns\ImageColumn::make('users.avatar_url')
+                    ->label(__('task.form.assigned_to'))
+                    ->visible(function ($livewire) {
+                        if ((int)$livewire->activeTab === 0) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    ->circular()
+                    ->toggleable()
+                    ->stacked()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('priority.name')
@@ -105,8 +115,31 @@ class TaskResource extends Resource
                     ->toggleable()
                     ->searchable(),
             ])
-            ->recordUrl(fn ($record) => ProjectResource::getUrl('show', ['record' => $record->project]) . '?task=' . $record->id)
+            ->recordUrl(fn($record) => ProjectResource::getUrl('show', ['record' => $record->project]) . '?task=' . $record->id)
             ->filters([
+                Tables\Filters\SelectFilter::make('users.id')
+                    ->label(__('task.form.assigned_to'))
+                    ->preload()
+                    ->visible(function ($livewire) {
+                        if ((int)$livewire->activeTab === 0) {
+                            if (auth()->user()->hasRole('Admin')) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    })
+                    ->default(function () {
+                        return [auth()->id()];
+                    })
+                    ->relationship(
+                        'users',
+                        'name',
+                        fn(Builder $query) => $query->orderBy('name'))
+                    ->multiple(),
+
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('status.status'))
                     ->preload()
@@ -115,8 +148,8 @@ class TaskResource extends Resource
                     })
                     ->relationship(
                         'status',
-                        fn () => app()->getLocale() === 'en' ? 'en_name' : 'name',
-                        fn (Builder $query) => $query->orderBy('name'))
+                        fn() => app()->getLocale() === 'en' ? 'en_name' : 'name',
+                        fn(Builder $query) => $query->orderBy('name'))
                     ->multiple(),
 
                 Tables\Filters\SelectFilter::make('priority')
@@ -124,17 +157,45 @@ class TaskResource extends Resource
                     ->preload()
                     ->relationship(
                         'priority',
-                        fn () => app()->getLocale() === 'en' ? 'en_name' : 'name',
-                        fn (Builder $query) => $query->orderBy('name'))
+                        fn() => app()->getLocale() === 'en' ? 'en_name' : 'name',
+                        fn(Builder $query) => $query->orderBy('name'))
                     ->multiple(),
             ])
             ->defaultSort('priority_id', 'desc')
             ->defaultGroup('project.name')
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                //
+                Tables\Actions\Action::make('attach-users')
+                    ->label(__('task.assign_users'))
+                    ->icon('carbon-add')
+                    ->color('primary')
+                    ->visible(function ($livewire) {
+                        if ((int)$livewire->activeTab === 1) {
+                            if (auth()->user()->hasRole('Admin')) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    })
+                    ->form(function ($form) {
+                        return $form
+                            ->schema([
+                                Select::make('users')
+                                    ->preload()
+                                    ->searchable()
+                                    ->required()
+                                    ->options(fn() => User::query()->orderBy('name')->pluck('name', 'id'))
+                                    ->multiple(),
+                            ]);
+                    })
+                    ->action(function (Task $record, array $data, Tables\Actions\Action $action) {
+                        $record->users()->sync($data['users']);
+
+                        $action->success();
+                    })
+                    ->successNotificationTitle(__('task.users_assigned')),
             ]);
     }
 
@@ -143,6 +204,12 @@ class TaskResource extends Resource
         return static::getModel()::query()->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->where('status_id', '!=', Status::where('name', 'Terminé')->first()->id)->count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        $number = static::getNavigationBadge();
+        return auth()->user()->name . ': ' . $number . ' ' . __('task.assigned_tasks');
     }
 
     public static function getRelations(): array
