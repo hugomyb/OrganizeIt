@@ -10,9 +10,9 @@
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0 w-5 h-5 rounded-full"
                              style="background-color: {{ $project->color }}; margin-right: 15px"></div>
-                        <div>
+                        <div class="flex flex-col gap-2">
                             <h3 class="text-sm font-medium">{{ $project->name }}</h3>
-                            <p class="text-sm text-gray-500">{{ $project->created_at->diffForHumans() }}</p>
+                            <p class="text-xs text-gray-500">{{ $project->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
                 </div>
