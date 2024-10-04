@@ -646,7 +646,7 @@
             @can('addComment', \App\Models\User::class)
                 <div id="input-comment">
                     <div class="flex px-3 py-2 rounded-lg bg-transparent gap-2">
-                        <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar_url }}"
+                        <img class="w-8 h-8 rounded-full my-2" src="/storage/{{ auth()->user()->avatar_url }}"
                              alt="{{ auth()->user()->name }}">
 
                         {{ $this->commentRichEditorFieldForm }}
@@ -654,7 +654,7 @@
                         <a
                             title="{{ __('general.send') }} (Shift+Enter)"
                             wire:click="sendComment({{ $task->id }})"
-                            class="inline-flex justify-center items-center p-2 text-blue-600 rounded-full cursor-pointer hover:opacity-50 dark:text-blue-500 w-8 h-8">
+                            class="inline-flex justify-center items-center my-2 p-2 text-blue-600 rounded-full cursor-pointer hover:opacity-50 dark:text-blue-500 w-8 h-8">
                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
                                  xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
                                 <path
