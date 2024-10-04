@@ -652,7 +652,7 @@
                         {{ $this->commentRichEditorFieldForm }}
 
                         <a
-                            title="{{ __('general.send') }} (Shift+Enter)"
+                            title="{{ __('general.send') }}"
                             wire:click="sendComment({{ $task->id }})"
                             class="inline-flex justify-center items-center my-2 p-2 text-blue-600 rounded-full cursor-pointer hover:opacity-50 dark:text-blue-500 w-8 h-8">
                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
