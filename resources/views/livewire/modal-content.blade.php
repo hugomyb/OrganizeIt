@@ -561,12 +561,6 @@
          x-init="init"
          x-data="{
             init() {
-                document.getElementById('comment').addEventListener('keypress', (evt) => {
-                    if (evt.which === 13 && evt.shiftKey) {
-                        evt.preventDefault();
-                    }
-                });
-
                 Livewire.on('commentSent', () => {
                     $nextTick(() => {
                         document.getElementById('comment').scrollIntoView({behavior: 'smooth'});
@@ -607,7 +601,7 @@
                                 <div class="flex items-center">
                                     <div
                                         class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
-                                        <p class="text-sm font-normal">{{ $comment->content }}</p>
+                                        <p class="">{!! $comment->content !!}</p>
                                     </div>
 
                                     @if(!$comment->trashed())
@@ -651,18 +645,16 @@
 
             @can('addComment', \App\Models\User::class)
                 <div id="input-comment">
-                    <div class="flex items-center px-3 py-2 rounded-lg bg-transparent gap-2">
+                    <div class="flex px-3 py-2 rounded-lg bg-transparent gap-2">
                         <img class="w-8 h-8 rounded-full" src="/storage/{{ auth()->user()->avatar_url }}"
                              alt="{{ auth()->user()->name }}">
-                        <textarea id="comment" rows="1"
-                                  wire:model="comment"
-                                  @keyup.shift.enter="$wire.sendComment({{ $task->id }})"
-                                  class="block mx-4 p-2.5 w-full text-sm bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                  placeholder="{{ __('task.your_comment') }}"></textarea>
+
+                        {{ $this->commentRichEditorFieldForm }}
+
                         <a
                             title="{{ __('general.send') }} (Shift+Enter)"
                             wire:click="sendComment({{ $task->id }})"
-                            class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
+                            class="inline-flex justify-center items-center p-2 text-blue-600 rounded-full cursor-pointer hover:opacity-50 dark:text-blue-500 w-8 h-8">
                             <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true"
                                  xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
                                 <path

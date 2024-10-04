@@ -46,12 +46,16 @@ class ModalContent extends Component implements HasForms, HasActions
         $this->task = $task;
 
         $this->fillRichEditorField();
+        $this->commentRichEditorFieldForm->fill([
+            'comment' => ''
+        ]);
     }
 
     protected function getForms(): array
     {
         return [
             'richEditorFieldForm',
+            'commentRichEditorFieldForm',
             'fileUploadFieldForm',
         ];
     }
@@ -99,6 +103,27 @@ class ModalContent extends Component implements HasForms, HasActions
             ]);
     }
 
+    public function commentRichEditorFieldForm(Form $form): Form
+    {
+        return $form
+            ->extraAttributes([
+                'class' => 'w-full'
+            ])
+            ->model(Task::class)
+            ->schema([
+                RichEditor::make('comment')
+                    ->extraAttributes([
+                        'id' => 'comment'
+                    ])
+                    ->placeholder(__('task.your_comment'))
+                    ->hiddenLabel()
+                    ->columnSpanFull()
+                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDirectory(fn() => $this->task ? 'tasks/' . $this->task->id . '/comments' : 'tasks/' . Task::latest()->first()->id + 1 . '/comments')
+                    ->label(__('task.form.comment')),
+            ]);
+    }
+
 
     public function deleteAttachment($taskId, $attachment)
     {
@@ -120,26 +145,38 @@ class ModalContent extends Component implements HasForms, HasActions
 
     public function sendComment()
     {
+        $richData = $this->commentRichEditorFieldForm->getState();
+
         $task = $this->task;
 
-        if ($this->comment !== null && trim($this->comment) !== '') {
+        if (isset($richData['comment']) && trim($richData['comment']) != '') {
+            $modifiedComment = $this->processDescription($richData['comment']);
+        } else {
+            $modifiedComment = '';
+        }
+
+        if ($modifiedComment !== null && trim($modifiedComment) !== '') {
             $comment = $task->comments()->create([
                 'user_id' => auth()->id(),
-                'content' => $this->comment
+                'content' => $modifiedComment
             ]);
-
-            $this->comment = '';
-
-            $users = $task->users;
-            foreach ($users as $user) {
-                if (!$user->hasRole('Client')) {
-                    SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
-                }
-            }
-
-            $this->showNotification(__('task.comment_added'));
-            $this->dispatch('commentSent');
         }
+
+        $this->comment = '';
+
+        $this->commentRichEditorFieldForm->fill([
+            'comment' => ''
+        ]);
+
+        $users = $task->users;
+        foreach ($users as $user) {
+            if (!$user->hasRole('Client')) {
+                SendEmailJob::dispatch(NewCommentMail::class, $user, $task, $comment);
+            }
+        }
+
+        $this->showNotification(__('task.comment_added'));
+        $this->dispatch('commentSent');
     }
 
     public function deleteComment($commentId)
