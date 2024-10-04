@@ -678,4 +678,11 @@
     </div>
 
     <x-filament-actions::modals/>
+
+
+    <style>
+        .fi-modal-footer-actions {
+            justify-content: space-between;
+        }
+    </style>
 </div>

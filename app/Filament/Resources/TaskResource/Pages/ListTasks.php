@@ -72,7 +72,7 @@ class ListTasks extends ListRecords
     public function getTabs(): array
     {
         return [
-            Tab::make('Assignés')
+            Tab::make(__('general.assigned'))
                 ->modifyQueryUsing(function ($query) {
                     if (auth()->user()->hasRole('Admin')) {
                         $query->whereHas('users');
@@ -83,7 +83,7 @@ class ListTasks extends ListRecords
                     }
                 }),
 
-            Tab::make('Non assignées')
+            Tab::make(__('general.unassigned'))
                 ->modifyQueryUsing(function ($query) {
                     $query->whereDoesntHave('users')
                         ->whereHas('project.users', function ($q) {

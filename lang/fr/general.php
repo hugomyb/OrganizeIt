@@ -52,4 +52,9 @@ return [
     'search_task_placeholder' => 'Rechercher une tâche',
     'research_placeholder' => 'Rechercher un projet',
     'no_results' => 'Aucun résultat trouvé',
+
+    'assigned' => 'Assignées',
+    'unassigned' => 'Non assignées',
+
+    'last_updated_at' => 'Dernière mise à jour le',
 ];

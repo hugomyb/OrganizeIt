@@ -567,7 +567,17 @@ class ShowProject extends Page implements HasForms, HasActions
             ->slideOver()
             ->modalWidth('6xl')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
-            ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]));
+            ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]))
+            ->modalFooterActions(function (array $arguments, ViewAction $action) {
+                return [
+                    $action->getModalCancelAction(),
+                    Action::make('updated_at')
+                        ->link()
+                        ->disabled()
+                        ->label(__('general.last_updated_at') . ' ' . Task::find($arguments['task_id'])->updated_at->translatedFormat('d M Y - H:i'))
+                        ->color('gray')
+                ];
+            });
     }
 
     #[On('openCommitModal')]
