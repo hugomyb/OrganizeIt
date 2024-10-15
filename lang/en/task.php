@@ -46,7 +46,9 @@ return [
         'last_month' => 'Last Month',
         'custom' => 'Custom',
 
-        'assigned_to' => 'Assigned to'
+        'assigned_to' => 'Assigned to',
+
+        'translate' => 'Translate to English',
     ],
 
     'my_tasks' => 'My Assigned Tasks',

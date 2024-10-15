@@ -6,6 +6,7 @@ use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -44,6 +45,24 @@ trait InteractsWithTaskForm
                 ->label(__('task.form.title'))
                 ->columnSpanFull()
                 ->live()
+                ->suffixAction(
+                    Action::make('translate-to-en')
+                        ->extraAttributes([
+                            'title' => ''
+                        ])
+                        ->iconButton()
+                        ->icon('heroicon-o-language')
+                        ->tooltip(__('task.form.translate'))
+                        ->action(function (GoogleTranslate $translate, $set, $get, $state, Action $action) {
+                            $translate->setSource();
+                            $translate->setTarget('en');
+                            $result = $translate->translate($state);
+
+                            $set('title', $result);
+
+                            $action->success();
+                        })
+                )
                 ->required(),
 
             RichEditor::make('description')
@@ -108,7 +127,7 @@ trait InteractsWithTaskForm
                 ->relationship(
                     name: 'users',
                     titleAttribute: 'name',
-                    modifyQueryUsing: fn (Builder $query) => $project->users()->getQuery()
+                    modifyQueryUsing: fn(Builder $query) => $project->users()->getQuery()
                 )
                 ->label(__('task.assign_to'))
                 ->dehydrated()

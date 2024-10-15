@@ -46,7 +46,9 @@ return [
         'last_month' => 'Le mois dernier',
         'custom' => 'Personnalisé',
 
-        'assigned_to' => 'Assigné à'
+        'assigned_to' => 'Assigné à',
+
+        'translate' => 'Traduire en anglais',
     ],
 
     'my_tasks' => 'Mes tâches assignées',
