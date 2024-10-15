@@ -54,6 +54,11 @@ trait InteractsWithTaskForm
                         ->icon('heroicon-o-language')
                         ->tooltip(__('task.form.translate'))
                         ->action(function (GoogleTranslate $translate, $set, $get, $state, Action $action) {
+                            if (!$state) {
+                                $action->success();
+                                return;
+                            }
+
                             $translate->setSource();
                             $translate->setTarget('en');
                             $result = $translate->translate($state);
