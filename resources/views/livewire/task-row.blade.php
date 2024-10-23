@@ -235,7 +235,12 @@
             <div class="task-buttons absolute hidden group-hover:flex">
                 {{ $this->editTaskTooltipAction }}
                 {{ $this->addSubtaskTooltipAction }}
-                {{ $this->deleteTaskTooltipAction }}
+                <div x-on:click="$wire.$parent.mountDeleteTaskAction({{$task->id}})">
+                    <x-filament::icon-button
+                        size="sm"
+                        icon="heroicon-o-trash"
+                        class="text-gray-400 hover:text-red-500/75"/>
+                </div>
             </div>
         @endcan
     </div>

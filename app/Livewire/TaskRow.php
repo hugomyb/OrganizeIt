@@ -155,30 +155,4 @@ class TaskRow extends Component implements HasForms, HasActions
                     ->send();
             });
     }
-
-    public function deleteTaskTooltipAction(): Action
-    {
-        return Action::make('deleteTaskTooltip')
-            ->tooltip(__('task.delete'))
-            ->iconButton()
-            ->iconSize(IconSize::Small)
-            ->color('danger')
-            ->modal()
-            ->icon('heroicon-o-trash')
-            ->requiresConfirmation()
-            ->modalHeading(fn() => __('task.delete_task') . ' "' . Str::limit($this->task->title, 20) . '" ?')
-            ->modalDescription(fn() => $this->task->children()->count()
-                ? __('task.delete_description') . $this->task->children()->count() . __('task.delete_description_subtasks')
-                : __('task.confirm_delete'))
-            ->record($this->task)
-            ->action(function (): void {
-                $this->task->delete();
-
-                Notification::make()
-                    ->success()
-                    ->duration(2000)
-                    ->title(__('task.task_deleted'))
-                    ->send();
-            });
-    }
 }
