@@ -95,6 +95,11 @@ php artisan make:filament-user
 npm run build
 ```
 
+Then, cache all icons to speed up site loading, with this following command : 
+```bash
+php artisan icons:cache
+```
+
 ### 9. Start the development server
 
 You can start the development server with:
