@@ -41,7 +41,26 @@ Copy the `.env.example` file to `.env`:
 cp .env.example .env
 ```
 
-Then configure your database settings and Algolia API keys.
+Then configure your **database settings**, **mail settings**, and **Algolia API keys**.
+
+#### Mail Configuration
+
+In the `.env` file, configure your mail server settings like so:
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mail_username
+MAIL_PASSWORD=your_mail_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="no-reply@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+You can use a service like [Mailtrap](https://mailtrap.io/) for local development or any other SMTP provider.
+
+#### Algolia API Configuration
 
 You will need to create an account on [Algolia](https://www.algolia.com/) and retrieve your `ALGOLIA_APP_ID` and `ALGOLIA_SECRET` to add to the `.env` file:
 
@@ -83,3 +102,13 @@ You can start the development server with:
 ```bash
 php artisan serve
 ```
+
+### 10. Start the queue worker
+
+To process jobs such as sending emails, you will need to start a queue worker. Run the following command to start it:
+
+```bash
+php artisan queue:work
+```
+
+Make sure this worker is always running to handle queued jobs like email sending.
