@@ -56,7 +56,13 @@ ALGOLIA_SECRET=your_algolia_secret_key
 php artisan migrate --seed
 ```
 
-### 6. Create the first user account
+### 6. Link the storage folder
+
+```bash
+php artisan storage:link
+```
+
+### 7. Create the first user account
 
 Use the following command to create an administrator user to access the management interface:
 
@@ -64,13 +70,13 @@ Use the following command to create an administrator user to access the manageme
 php artisan make:filament-user
 ```
 
-### 7. Build frontend assets
+### 8. Build frontend assets
 
 ```bash
 npm run build
 ```
 
-### 8. Start the development server
+### 9. Start the development server
 
 You can start the development server with:
 
