@@ -1,7 +1,7 @@
 <li data-id="{{ $task->id }}"
     wire:sortable-group.item="{{ $task->id }}"
     class="flex flex-col justify-between dark:hover:bg-white/5 text-sm
-    {{ (!$task->parent_id) ? 'border-b' : '' }}"
+    {{ (!$task->parent_id) ? 'border-b border-gray-200 dark:border-gray-700' : '' }}"
     style="padding-left: 8px;"
 >
     <div class="flex py-3 content-item"
