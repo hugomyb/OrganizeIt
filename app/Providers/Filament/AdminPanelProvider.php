@@ -73,7 +73,11 @@ class AdminPanelProvider extends PanelProvider
                 'profile' => MenuItem::make()
                     ->label(fn() => auth()->user()->name)
                     ->url(fn(): string => EditProfilePage::getUrl())
-                    ->icon('heroicon-m-user-circle')
+                    ->icon('heroicon-m-user-circle'),
+                'settings' => MenuItem::make()
+                    ->label(__('profile.settings'))
+                    ->url(fn(): string => EditProfilePage::getUrl() . '#settings')
+                    ->icon('heroicon-m-cog'),
             ])
             ->plugins([
                 FilamentErrorMailerPlugin::make()

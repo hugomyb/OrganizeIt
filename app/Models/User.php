@@ -73,6 +73,15 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->belongsToMany(Task::class);
     }
 
+    public function settings($key = null)
+    {
+        $settings = $this->hasMany(Setting::class);
+
+        return $key
+            ? $settings->where('key', $key)->value('value')
+            : $settings;
+    }
+
     public function hasRole(string $role): bool
     {
         return $this->role->name === $role;
