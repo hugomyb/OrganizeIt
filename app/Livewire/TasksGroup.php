@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Concerns\CanProcessDescription;
 use App\Concerns\CanShowNotification;
+use App\Concerns\HasDeletableTaskAction;
 use App\Concerns\InteractsWithTaskForm;
 use App\Jobs\SendEmailJob;
 use App\Mail\NewTaskMail;
@@ -18,8 +19,6 @@ use Filament\Actions\StaticAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
-use Filament\Support\Enums\IconSize;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -31,6 +30,7 @@ class TasksGroup extends Component implements HasActions, HasForms
     use InteractsWithTaskForm;
     use CanProcessDescription;
     use CanShowNotification;
+    use HasDeletableTaskAction;
 
     public Group $group;
     public $tasks;
@@ -163,45 +163,5 @@ class TasksGroup extends Component implements HasActions, HasForms
 
                 $this->showNotification(__('group.group_deleted'));
             });
-    }
-
-    public function mountDeleteTaskAction($taskId)
-    {
-        $this->mountAction('deleteTaskTooltip', ['task_id' => $taskId]);
-    }
-
-    public function deleteTaskTooltipAction(): Action
-    {
-        return Action::make('deleteTaskTooltip')
-            ->tooltip(__('task.delete'))
-            ->iconButton()
-            ->iconSize(IconSize::Small)
-            ->color('danger')
-            ->modal()
-            ->icon('heroicon-o-trash')
-            ->requiresConfirmation()
-            ->modalHeading(function (array $arguments) {
-                $task = Task::find($arguments['task_id']);
-                return __('task.delete_task') . ' "' . Str::limit($task->title, 20) . '" ?';
-            })
-            ->modalDescription(function (array $arguments) {
-                $task = Task::find($arguments['task_id']);
-
-                return $task->children()->count()
-                    ? __('task.delete_description') . $task->children()->count() . __('task.delete_description_subtasks')
-                    : __('task.confirm_delete');
-            })
-            ->action(function (array $arguments, Action $action): void {
-                $task = Task::find($arguments['task_id']);
-
-                $task->delete();
-
-                $action->success();
-            })->successNotification(
-                Notification::make()
-                    ->success()
-                    ->duration(2000)
-                    ->title(__('task.task_deleted'))
-            );
     }
 }

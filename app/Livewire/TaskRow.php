@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Concerns\CanManageTasksInfo;
 use App\Concerns\CanProcessDescription;
 use App\Concerns\CanShowNotification;
+use App\Concerns\HasDeletableTaskAction;
 use App\Concerns\InteractsWithTaskForm;
 use App\Jobs\SendEmailJob;
 use App\Mail\NewTaskMail;
@@ -19,8 +20,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
-use Illuminate\Support\Str;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class TaskRow extends Component implements HasForms, HasActions
@@ -31,6 +30,7 @@ class TaskRow extends Component implements HasForms, HasActions
     use CanProcessDescription;
     use CanShowNotification;
     use CanManageTasksInfo;
+    use HasDeletableTaskAction;
 
     public Task $task;
     public $sortBy;
