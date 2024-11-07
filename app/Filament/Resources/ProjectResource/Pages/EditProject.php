@@ -44,6 +44,7 @@ class EditProject extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+            Actions\RestoreAction::make()
         ];
     }
 
@@ -51,8 +52,8 @@ class EditProject extends EditRecord
     {
         $record = request()->route()->parameter('record');
 
-        $project = Project::find($record);
+        $project = Project::withTrashed()->find($record);
 
-        return auth()->user()->hasRole('Admin') && auth()->user()->projects->contains($project);
+        return auth()->user()->hasRole('Admin') && $project->users->contains(auth()->user());
     }
 }

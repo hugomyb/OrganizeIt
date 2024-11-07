@@ -19,6 +19,9 @@ return [
         'color' => 'Couleur',
         'users' => [
             'assigns' => 'Utilisateurs assignés'
-        ]
+        ],
+        'status' => 'Statut',
+        'archived' => 'Archivé',
+        'active' => 'Actif'
     ]
 ];
