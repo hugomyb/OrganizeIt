@@ -93,7 +93,7 @@ class TasksGroup extends Component implements HasActions, HasForms
             })
             ->closeModalByClickingAway(false)
             ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
-            ->action(function (array $data): void {
+            ->action(function (array $data, CreateAction $action, array $arguments, $form): void {
                 $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
 
                 if (isset($data['description']) && trim($data['description']) != '') {
@@ -122,6 +122,18 @@ class TasksGroup extends Component implements HasActions, HasForms
                 $this->showNotification(__('task.task_added'));
 
                 $this->render();
+
+                if ($arguments['another'] ?? false) {
+                    $action->callAfter();
+
+                    $action->record(null);
+
+                    $form->model(Task::class);
+
+                    $form->fill();
+
+                    $action->halt();
+                }
             });
     }
 

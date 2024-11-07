@@ -124,7 +124,7 @@ class TaskRow extends Component implements HasForms, HasActions
                     Hidden::make('project_id')->default($this->task->project->id),
                 ]);
             })
-            ->action(function (array $data): void {
+            ->action(function (array $data, array $arguments, CreateAction $action, $form): void {
                 $parentTask = $this->task;
                 $lastTask = $parentTask->children()->orderBy('order', 'desc')->first();
 
@@ -153,6 +153,18 @@ class TaskRow extends Component implements HasForms, HasActions
                     ->duration(2000)
                     ->title(__('task.subtask_added'))
                     ->send();
+
+                if ($arguments['another'] ?? false) {
+                    $action->callAfter();
+
+                    $action->record(null);
+
+                    $form->model(Task::class);
+
+                    $form->fill();
+
+                    $action->halt();
+                }
             });
     }
 }

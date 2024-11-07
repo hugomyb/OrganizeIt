@@ -21,6 +21,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\CreateAction;
 use Filament\Actions\StaticAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -186,7 +187,7 @@ class ShowProject extends Page implements HasForms, HasActions
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('headerCreateTask')
+            CreateAction::make('headerCreateTask')
                 ->visible(auth()->user()->hasPermission('manage_tasks'))
                 ->modalWidth('7xl')
                 ->model(Task::class)
@@ -196,8 +197,9 @@ class ShowProject extends Page implements HasForms, HasActions
                 ->modalHeading(__('task.add_task'))
                 ->form($this->getTaskForm($this->record))
                 ->modalSubmitActionLabel(__('task.add'))
+                ->createAnother()
                 ->modalCancelAction(fn(StaticAction $action, $data) => $action->action('cancelCreateTask'))
-                ->action(function (array $data): void {
+                ->action(function (array $data, CreateAction $action, $form, array $arguments): void {
                     $lastTask = Task::where('group_id', $data['group_id'])->orderBy('order', 'desc')->first();
                     if (isset($data['description']) && trim($data['description']) != '') {
                         $data['description'] = $this->processDescription($data['description']);
@@ -219,6 +221,18 @@ class ShowProject extends Page implements HasForms, HasActions
                     }
 
                     $this->showNotification(__('task.task_added'));
+
+                    if ($arguments['another'] ?? false) {
+                        $action->callAfter();
+
+                        $action->record(null);
+
+                        $form->model(Task::class);
+
+                        $form->fill();
+
+                        $action->halt();
+                    }
                 }),
 
             ActionGroup::make([
