@@ -9,6 +9,7 @@
         "@nextapps-be/livewire-sortablejs": "^0.4.1",
         "autoprefixer": "^10.4.20",
         "axios": "^1.6.4",
+        "esbuild": "^0.24.0",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.45",
         "tailwindcss": "^3.4.10",

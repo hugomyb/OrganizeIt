@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Filament\Resources\ProjectResource\Pages\ShowProject;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -45,6 +46,10 @@ class AppServiceProvider extends ServiceProvider
             Css::make('app-css', Vite::asset('resources/css/app.css')),
             Js::make('app-js', Vite::asset('resources/js/app.js')),
             Css::make('custom-css', Vite::asset('resources/css/custom.css')),
+
+            Js::make('tui-calendar-js', 'https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js'),
+            Css::make('tui-calendar-css', 'https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css'),
+            AlpineComponent::make('calendar-component', __DIR__ . '/../../resources/js/dist/components/calendar-component.js'),
         ]);
 
         FilamentView::registerRenderHook(
