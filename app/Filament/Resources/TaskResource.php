@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 // My Assigned Tasks
 class TaskResource extends Resource
@@ -36,6 +37,11 @@ class TaskResource extends Resource
             ->schema([
                 //
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereHas('project');
     }
 
     public static function table(Table $table): Table
