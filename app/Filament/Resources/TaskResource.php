@@ -15,7 +15,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 // My Assigned Tasks
 class TaskResource extends Resource
@@ -209,7 +208,9 @@ class TaskResource extends Resource
     {
         return static::getModel()::query()->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->where('status_id', '!=', Status::where('name', 'Terminé')->first()->id)->count();
+        })
+            ->whereHas('project')
+            ->where('status_id', '!=', Status::where('name', 'Terminé')->first()->id)->count();
     }
 
     public static function getNavigationBadgeTooltip(): ?string
