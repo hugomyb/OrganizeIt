@@ -265,7 +265,7 @@
 
                             <x-filament::dropdown.list>
                                 <x-filament::dropdown.list.item
-                                    wire:click="deleteCommitNumber({{$task->id}}, '{{ $commit }}')"
+                                    wire:click="deleteCommitNumber('{{ $commit }}')"
                                     x-on:click="toggle"
                                     class="text-xs font-bold">
                                     <div class="flex items-center">
