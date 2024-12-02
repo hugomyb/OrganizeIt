@@ -32,6 +32,10 @@ class TasksGroup extends Component implements HasActions, HasForms
     use CanShowNotification;
     use HasDeletableTaskAction;
 
+    public $defaultAction;
+
+    public $defaultActionArguments;
+
     public Group $group;
     public $tasks;
 

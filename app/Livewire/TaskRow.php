@@ -32,6 +32,10 @@ class TaskRow extends Component implements HasForms, HasActions
     use CanManageTasksInfo;
     use HasDeletableTaskAction;
 
+    public $defaultAction;
+
+    public $defaultActionArguments;
+
     public Task $task;
     public $sortBy;
 
