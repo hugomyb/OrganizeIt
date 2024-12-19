@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - Lazy loading  (2024-12-19)
+### Added
+- (FEAT)[tasks] add lazy loading and improve task search performance.
+
+### Changed
+- Improved task search performance for large datasets.
+
 ## [1.3.0] - Advanced Task Management (2024-11-08)
 
 ### Added
