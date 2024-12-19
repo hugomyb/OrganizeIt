@@ -563,7 +563,9 @@
             init() {
                 Livewire.on('commentSent', () => {
                     $nextTick(() => {
-                        document.getElementById('comment').scrollIntoView({behavior: 'smooth'});
+                        if (document.getElementById('comment')) {
+                            document.getElementById('comment').scrollIntoView({behavior: 'smooth'});
+                        }
                     });
                 });
             }

@@ -37,7 +37,12 @@ class TasksGroup extends Component implements HasActions, HasForms
     public $defaultActionArguments;
 
     public Group $group;
-    public $tasks;
+    public $tasks = [];
+    public $visibleTaskCount = 10;
+    public $totalTaskCount;
+
+    public $statusFilters;
+    public $priorityFilters;
 
     public $sortBy;
     public $search;
@@ -46,29 +51,181 @@ class TasksGroup extends Component implements HasActions, HasForms
     {
         return [
             'refreshGroup:' . $this->group->id => 'refreshGroup',
+            'loadTaskById' => 'loadTaskById',
+            'reloadTasks:' . $this->group->id => 'reloadTasks',
         ];
     }
 
-    public function mount(Group $group)
+    public function mount(Group $group, $statusFilters, $priorityFilters, $search, $sortBy)
     {
         $this->group = $group;
-        $this->tasks = $group->tasks;
+        $this->statusFilters = $statusFilters;
+        $this->priorityFilters = $priorityFilters;
+        $this->search = $search;
+        $this->sortBy = $sortBy;
+
+        $this->loadVisibleTasks();
     }
 
-    public function refreshGroup($tasks, $sortBy)
+    private function getFilteredTasksQuery()
     {
-        $this->sortBy = $sortBy;
-        $this->tasks = Task::hydrate($tasks);
+        $statusFilterIds = collect($this->statusFilters)->pluck('id')->filter()->all();
+        $priorityFilterIds = collect($this->priorityFilters)->pluck('id')->filter()->all();
+        $searchTerm = $this->search ?? '';
 
-        $this->tasks = $this->tasks->map(function ($task) {
-            return $task->fresh(['status', 'priority', 'children', 'users', 'comments', 'creator', 'project']);
-        });
+        // Étape 1 : Récupérer les IDs des tâches enfants filtrées
+        $filteredChildTasks = $this->group->tasks()
+            ->where(function ($query) use ($statusFilterIds, $priorityFilterIds, $searchTerm) {
+                if (!empty($statusFilterIds)) {
+                    $query->whereIn('status_id', $statusFilterIds);
+                }
+                if (!empty($priorityFilterIds)) {
+                    $query->whereIn('priority_id', $priorityFilterIds);
+                }
+                if (!empty($searchTerm)) {
+                    $query->where('title', 'like', '%' . $searchTerm . '%');
+                }
+            })->get();
 
-        if ($this->sortBy === 'priority') {
-            $this->tasks = $this->tasks->sortByDesc('priority_id');
+        $filteredChildIds = $filteredChildTasks->pluck('id')->toArray();
+
+        // Étape 2 : Récupérer récursivement les parents jusqu'à la racine
+        $parentIds = $this->getParentTaskIds($filteredChildIds);
+
+        // Étape 3 : Charger les tâches parentes et enfants jusqu'à 4 niveaux de profondeur
+        return $this->group->tasks()
+            ->whereIn('id', array_merge($parentIds, $filteredChildIds))
+            ->whereNull('parent_id') // Récupérer les tâches racines
+            ->with([
+                'children' => function ($query) use ($filteredChildIds) {
+                    $query->whereIn('id', $filteredChildIds)
+                        ->with(['children' => function ($query) use ($filteredChildIds) {
+                            // Deuxième niveau
+                            $query->whereIn('id', $filteredChildIds)
+                                ->with(['children' => function ($query) use ($filteredChildIds) {
+                                    // Troisième niveau
+                                    $query->whereIn('id', $filteredChildIds);
+                                }]);
+                        }]);
+                }
+            ])
+            ->orderBy($this->sortBy === 'priority' ? 'priority_id' : 'order', $this->sortBy === 'priority' ? 'desc' : 'asc');
+    }
+
+    private function getParentTaskIds(array $childIds)
+    {
+        $parentIds = [];
+
+        while (!empty($childIds)) {
+            $parents = $this->group->tasks()
+                ->whereIn('id', $childIds)
+                ->pluck('parent_id')->filter()->all();
+
+            $parentIds = array_merge($parentIds, $childIds);
+            $childIds = $parents;
         }
 
-        $this->dispatch('refreshedGroup', ['sortBy' => $this->sortBy])->to(TaskRow::class);
+        return array_unique($parentIds);
+    }
+
+    public function loadTaskById($taskId)
+    {
+        if (!collect($this->tasks)->pluck('id')->contains($taskId)) {
+            $task = Task::find($taskId);
+
+            if ($task) {
+                $task->loadMissing(['project', 'priority', 'status', 'children', 'comments', 'users', 'creator']);
+                $this->tasks->push($task);
+            }
+        }
+    }
+
+    public function loadVisibleTasks(): void
+    {
+        $tasksQuery = $this->getFilteredTasksQuery();
+
+        $loadedTasks = collect();
+        $remainingLimit = $this->visibleTaskCount;
+        $processedTaskIds = [];
+
+        $tasksGroupedByParent = $tasksQuery
+            ->whereNull('parent_id')
+            ->with('children')
+            ->get();
+
+        foreach ($tasksGroupedByParent as $task) {
+            $this->addTaskWithChildren($task, $loadedTasks, $remainingLimit, $processedTaskIds);
+
+            if ($remainingLimit <= 0) {
+                break;
+            }
+        }
+
+        $this->tasks = $loadedTasks->whereNull('parent_id');
+        $this->totalTaskCount = $tasksQuery->count();
+        $this->render();
+    }
+
+    private function addTaskWithChildren($task, &$loadedTasks, &$remainingLimit, &$processedTaskIds)
+    {
+        if ($remainingLimit <= 0 || in_array($task->id, $processedTaskIds)) {
+            return;
+        }
+
+        $loadedTasks->push($task);
+        $processedTaskIds[] = $task->id;
+        $remainingLimit--;
+
+        $children = $task->children;
+
+        foreach ($children as $child) {
+            $this->addTaskWithChildren($child, $loadedTasks, $remainingLimit, $processedTaskIds);
+
+            if ($remainingLimit <= 0) {
+                break;
+            }
+        }
+    }
+
+    public function reloadTasks($statusFilters, $priorityFilters, $search, $sortBy): void
+    {
+        $this->statusFilters = $statusFilters;
+        $this->priorityFilters = $priorityFilters;
+        $this->search = $search;
+        $this->sortBy = $sortBy;
+
+        $this->visibleTaskCount = 10;
+
+        $this->loadVisibleTasks();
+    }
+
+    public function loadMoreTasks(): void
+    {
+        $tasksQuery = $this->getFilteredTasksQuery();
+
+        $newTasks = $tasksQuery
+            ->with('project')
+            ->skip($this->visibleTaskCount)
+            ->take(10)
+            ->get();
+
+        $this->tasks = $this->tasks->merge($newTasks);
+
+        $this->visibleTaskCount += $newTasks->count();
+    }
+
+    public function refreshGroup($tasks, $sortBy): void
+    {
+        $this->sortBy = $sortBy;
+
+        $hydratedTasks = Task::hydrate($tasks);
+
+        $existingTaskIds = $this->tasks->pluck('id');
+        $newTasks = $hydratedTasks->filter(fn($task) => !$existingTaskIds->contains($task->id));
+
+        $this->tasks = $this->tasks->merge($newTasks)->values();
+
+        $this->totalTaskCount = $hydratedTasks->count();
 
         $this->render();
     }
@@ -77,7 +234,7 @@ class TasksGroup extends Component implements HasActions, HasForms
     {
         return view('livewire.tasks-group', [
             'tasks' => $this->tasks,
-            'sortBy' => $this->sortBy,
+            'hasMoreTasks' => $this->visibleTaskCount < $this->totalTaskCount,
         ]);
     }
 

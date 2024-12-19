@@ -51,6 +51,30 @@ class ModalContent extends Component implements HasForms, HasActions
         ]);
     }
 
+    protected function getListeners(): array
+    {
+        return [
+            'modal-closed:' . $this->task->id => 'onModalClosed'
+        ];
+    }
+
+    public function onModalClosed()
+    {
+        if ($this->comment !== '') {
+            $this->sendComment();
+        }
+
+        $descriptionState = $this->richEditorFieldForm->getState();
+
+        if (isset($descriptionState['description']) && trim($descriptionState['description']) != '') {
+            $processedDescription = $this->processDescription($descriptionState['description']);
+
+            if ($processedDescription !== $this->task->description) {
+                $this->saveRichEditorDescription();
+            }
+        }
+    }
+
     protected function getForms(): array
     {
         return [

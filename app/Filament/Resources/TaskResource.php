@@ -115,11 +115,12 @@ class TaskResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('task.form.created_at'))
-                    ->date()
+                    ->date(app()->getLocale() === 'en' ? 'M d Y' : 'd M Y')
                     ->sortable()
                     ->toggleable()
                     ->searchable(),
             ])
+            ->persistFiltersInSession()
             ->recordUrl(fn($record) => ProjectResource::getUrl('show', ['record' => $record->project]) . '?task=' . $record->id)
             ->filters([
                 Tables\Filters\SelectFilter::make('users.id')

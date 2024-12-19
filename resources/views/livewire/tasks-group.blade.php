@@ -26,16 +26,29 @@
         </x-slot>
     @endcan
 
-    <ul wire:sortable-group.item-group="group-{{ $group->id }}"
-        wire:sortable-group.options="{ animation: 100 }"
-        class="py-1">
-        @foreach($tasks->whereNull('parent_id') as $task)
-            <livewire:task-row :$task :$sortBy :key="'task-' . $task->id"/>
+    <ul wire:sortable-group.item-group="group-{{ $group->id }}" class="task-list">
+        @foreach ($tasks as $task)
+            @if (is_array($task))
+                <div class="skeleton-task">
+                    <div class="skeleton-title"></div>
+                    <div class="skeleton-details"></div>
+                </div>
+            @else
+                <livewire:task-row :task="$task" :sortBy="$sortBy" :key="'task-' . $task->id . '-' . now()->timestamp"/>
+            @endif
         @endforeach
     </ul>
 
+    @if ($hasMoreTasks)
+        <div x-data
+             x-intersect="$wire.loadMoreTasks()"
+             class="load-more-trigger flex justify-center items-center mt-2">
+            @include('components.skeletons.task-skeleton')
+        </div>
+    @endif
+
     @can('manageTasks', \App\Models\User::class)
-        <div class="mx-3 mt-2 pb-2 text-xs">
+        <div class="mx-3 mt-3 pb-2 text-xs">
             {{ $this->createTaskAction }}
         </div>
     @endcan

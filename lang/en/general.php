@@ -49,7 +49,7 @@ return [
         'welcome_email_sent' => 'Welcome email sent'
     ],
 
-    'search_task_placeholder' => 'Search for a task',
+    'search_task_placeholder' => 'Search for a task by its title, ID, or associated commit number...',
     'research_placeholder' => 'Search project',
     'no_results' => 'No results found',
 

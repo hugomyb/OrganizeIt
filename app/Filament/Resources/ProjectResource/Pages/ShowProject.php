@@ -7,6 +7,7 @@ use App\Concerns\CanShowNotification;
 use App\Concerns\InteractsWithTaskForm;
 use App\Filament\Resources\ProjectResource;
 use App\Jobs\SendEmailJob;
+use App\Livewire\TaskRow;
 use App\Livewire\TasksGroup;
 use App\Mail\AssignToProjectMail;
 use App\Mail\NewCommitMail;
@@ -63,18 +64,28 @@ class ShowProject extends Page implements HasForms, HasActions
     }
 
     public $record;
-    public $groups;
+
+    public $groups = [];
+    public $loadedGroupCount = 0;
+    public $groupLoadLimit = 1;
 
     public $search;
+    public ?array $results = [];
+
     public $statusFilters;
     public $priorityFilters;
     public string $sortBy = 'default';
 
     public $toggleCompletedTasks;
 
+    public bool $shouldReloadGroups = true;
+
     public function render(): \Illuminate\Contracts\View\View
     {
-        $this->loadGroups();
+        if ($this->shouldReloadGroups) {
+            $this->loadGroups();
+            $this->shouldReloadGroups = false;
+        }
         return parent::render();
     }
 
@@ -85,7 +96,7 @@ class ShowProject extends Page implements HasForms, HasActions
 
     public function mount($record): void
     {
-        $this->record = Project::with(['users', 'groups.tasks.status', 'groups.tasks.priority'])->find($record);
+        $this->record = Project::with(['users', 'groups'])->find($record);
         $this->getStatusFilters();
         $this->getPriorityFilters();
         $this->getSortByFilter();
@@ -99,63 +110,48 @@ class ShowProject extends Page implements HasForms, HasActions
         }
     }
 
-    public function loadGroups()
+    public function loadGroups($append = false): void
     {
         $statusIds = $this->statusFilters->pluck('id')->toArray();
         $priorityIds = $this->priorityFilters->pluck('id')->toArray();
         $sortBy = $this->sortBy;
         $search = $this->search;
 
-        $completedStatus = Status::where('name', 'Terminé')->first();
-        $completedStatusId = $completedStatus ? $completedStatus->id : null;
-
-        // Initialiser une collection vide pour stocker les groupes
-        $this->groups = collect();
-
-        Group::with([
-            'tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
-                $query
-                    ->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                        if (!empty($statusIds)) {
-                            $query->whereIn('status_id', $statusIds);
-                        }
-                        if (!empty($priorityIds)) {
-                            $query->whereIn('priority_id', $priorityIds);
-                        }
-                        if (!empty($search)) {
-                            $query->where('title', 'like', '%' . $search . '%')
-                                ->orWhere('id', $search);
-                        }
-                    })
-                    ->orWhereHas('children', function ($query) use ($statusIds, $priorityIds, $search) {
-                        $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
-                            if (!empty($statusIds)) {
-                                $query->whereIn('status_id', $statusIds);
-                            }
-                            if (!empty($priorityIds)) {
-                                $query->whereIn('priority_id', $priorityIds);
-                            }
-                            if (!empty($search)) {
-                                $query->where('title', 'like', '%' . $search . '%')
-                                    ->orWhere('id', $search);
-                            }
-                        });
-                    })
-                    ->with(['status', 'priority'])
-                    ->orderBy($sortBy === 'priority' ? 'priority_id' : 'order');
-            }
-        ])->where('project_id', $this->record->id)
-            ->chunk(50, function ($groups) use ($completedStatusId) {
-                foreach ($groups as $group) {
-                    $group->tasks->each(function ($task) use ($completedStatusId) {
-                        $task->style = $task->status->id == $completedStatusId ? 'opacity: 0.4' : '';
-                    });
-
-                    $this->groups->push($group);
-
-                    $this->dispatch('refreshGroup:' . $group->id, $group->tasks->toArray(), $this->sortBy)->to(TasksGroup::class);
+        $newGroups = Group::with(['tasks' => function ($query) use ($statusIds, $priorityIds, $sortBy, $search) {
+            $query->where(function ($query) use ($statusIds, $priorityIds, $search) {
+                if (!empty($statusIds)) {
+                    $query->whereIn('status_id', $statusIds);
+                }
+                if (!empty($priorityIds)) {
+                    $query->whereIn('priority_id', $priorityIds);
+                }
+                if (!empty($search)) {
+                    $query->where('title', 'like', '%' . $search . '%');
                 }
             });
+
+            if ($sortBy === 'priority') {
+                $query->orderBy('priority_id', 'desc');
+            } else {
+                $query->orderBy('order', 'asc');
+            }
+        }])
+            ->where('project_id', $this->record->id)
+            ->skip($this->loadedGroupCount) // Sauter les groupes déjà chargés
+            ->take($this->groupLoadLimit)   // Charger un nombre limité de groupes
+            ->get();
+
+        if ($append) {
+            $this->groups = $this->groups->merge($newGroups);
+        } else {
+            $this->groups = $newGroups;
+        }
+
+        $this->loadedGroupCount += $newGroups->count();
+
+        foreach ($newGroups as $group) {
+            $this->dispatch('reloadTasks:' . $group->id, $this->statusFilters->toArray(), $this->priorityFilters->toArray(), $this->search, $this->sortBy)->to(TasksGroup::class);
+        }
     }
 
     public function getTitle(): string|Htmlable
@@ -467,7 +463,9 @@ class ShowProject extends Page implements HasForms, HasActions
             Cookie::queue('status_filters', json_encode($filters), 60 * 24 * 30);
         }
 
-        $this->loadGroups();
+        foreach ($this->groups as $group) {
+            $this->dispatch('reloadTasks:' . $group->id, $this->statusFilters->toArray(), $this->priorityFilters->toArray(), $this->search, $this->sortBy)->to(TasksGroup::class);
+        }
     }
 
     public function getStatusFilters()
@@ -494,7 +492,9 @@ class ShowProject extends Page implements HasForms, HasActions
             Cookie::queue('priority_filters', json_encode($filters), 60 * 24 * 30);
         }
 
-        $this->loadGroups();
+        foreach ($this->groups as $group) {
+            $this->dispatch('reloadTasks:' . $group->id, $this->statusFilters->toArray(), $this->priorityFilters->toArray(), $this->search, $this->sortBy)->to(TasksGroup::class);
+        }
     }
 
     public function getPriorityFilters()
@@ -531,6 +531,10 @@ class ShowProject extends Page implements HasForms, HasActions
 
         $filters = $this->statusFilters->toArray();
         Cookie::queue('status_filters', json_encode($filters), 60 * 24 * 30);
+
+        foreach ($this->groups as $group) {
+            $this->dispatch('reloadTasks:' . $group->id, $this->statusFilters->toArray(), $this->priorityFilters->toArray(), $this->search, $this->sortBy)->to(TasksGroup::class);
+        }
     }
 
     public function addUserToProject($userId)
@@ -564,6 +568,12 @@ class ShowProject extends Page implements HasForms, HasActions
             $this->sortBy = 'priority';
             Cookie::queue('sort_by', 'priority', 60 * 24 * 30);
         }
+
+        $this->dispatch('refreshedGroup', $this->sortBy)->to(TaskRow::class);
+
+        foreach ($this->groups as $group) {
+            $this->dispatch('reloadTasks:' . $group->id, $this->statusFilters->toArray(), $this->priorityFilters->toArray(), $this->search, $this->sortBy)->to(TasksGroup::class);
+        }
     }
 
     #[On('openTask')]
@@ -577,14 +587,14 @@ class ShowProject extends Page implements HasForms, HasActions
         return ViewAction::make('viewTask')
             ->modalHeading('')
             ->modal()
-            ->closeModalByClickingAway(false)
             ->slideOver()
             ->modalWidth('6xl')
             ->record(fn(array $arguments) => Task::find($arguments['task_id']))
             ->modalContent(fn($record, array $arguments) => view('filament.resources.project-resource.widgets.view-task', ['task' => $record]))
-            ->modalFooterActions(function (array $arguments, ViewAction $action) {
+            ->modalFooterActions(function (array $arguments, ViewAction $action, $livewire, $record) {
                 return [
-                    $action->getModalCancelAction(),
+                    $action->getModalCancelAction()
+                        ->alpineClickHandler("() => { \$dispatch('modal-closed:{$record->id}'); \$dispatch('close-modal', { id: '{$livewire->getId()}-action' }); }"),
                     Action::make('updated_at')
                         ->link()
                         ->disabled()
@@ -711,10 +721,27 @@ class ShowProject extends Page implements HasForms, HasActions
             });
     }
 
+    #[On('openTaskById')]
     public function openTaskById($taskId)
     {
         if (Task::find($taskId)) {
             $this->mountAction('viewTask', ['task_id' => $taskId]);
         }
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->record->load('groups.tasks');
+
+        $this->results = $this->record->groups->map(function ($group) {
+            return [
+                'group' => $group,
+                'tasks' => $group->tasks->filter(function ($task) {
+                    return stripos($task->title, $this->search) !== false;
+                })
+            ];
+        })->filter(function ($group) {
+            return $group['tasks']->isNotEmpty();
+        })->toArray();
     }
 }

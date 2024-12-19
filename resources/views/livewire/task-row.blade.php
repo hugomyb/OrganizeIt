@@ -1,6 +1,7 @@
-<li data-id="{{ $task->id }}"
+<li data-task-id="{{ $task->id }}"
+    id="task-{{ $task->id }}"
     wire:sortable-group.item="{{ $task->id }}"
-    class="flex flex-col justify-between dark:hover:bg-white/5 text-sm
+    class="flex flex-col justify-between dark:hover:bg-white/5 text-sm task-item
     {{ (!$task->parent_id) ? 'border-b border-gray-200 dark:border-gray-700' : '' }}"
     style="padding-left: 8px;"
 >
@@ -22,7 +23,7 @@
          :class="{ 'highlight': isOver }">
         <div class="flex">
             @can('reorderTasks', \App\Models\User::class)
-                @if($sortBy === 'default')
+                @if(Cookie::get('sort_by') === 'default')
                     <x-iconpark-drag
                         wire:sortable-group.handle
                         class="h-5 w-5 mx-1 text-gray-400 cursor-move"/>

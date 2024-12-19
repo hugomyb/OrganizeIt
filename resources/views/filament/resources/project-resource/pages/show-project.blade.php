@@ -7,23 +7,29 @@
             this.taskId = new URLSearchParams(window.location.search).get('task');
             if(this.taskId) {
                 $wire.openTaskById(this.taskId);
+                document.addEventListener('keydown', (event) => {
+                    if(event.key === 'Escape') {
+                        let event = 'modal-closed:' + this.taskId;
+                        $wire.$dispatch(event);
+                    }
+                });
             }
 
-            Livewire.on('close-modal', () => {
+            document.addEventListener('close-modal', (event) => {
                 this.taskId = new URLSearchParams(window.location.search).get('task');
-                let event = 'modal-closed:' + this.taskId;
-                $wire.dispatch(event);
+                let eventName = 'modal-closed:' + this.taskId;
+                Livewire.dispatch(eventName);
 
                 this.taskId = null;
                 window.history.pushState({}, document.title, window.location.pathname);
             });
-        }
+        },
     }">
 
     @vite(['resources/js/app.js'])
 
     <div class="flex justify-center items-start w-full gap-6">
-        <div style="width: 78%"
+        <div style="width: 78%" wire:ignore.self
              class="flex justify-center items-center flex-col"
              wire:sortable-group="updateTaskOrder">
             @foreach($groups as $group)
@@ -39,6 +45,12 @@
                                           :key="'group-' . $group->id"/>
                 </div>
             @endforeach
+
+            @if ($loadedGroupCount < $record->groups->count())
+                <div x-data x-intersect.half="$wire.loadGroups(true)" class="flex justify-center items-center mb-4" style="width: 100%">
+                    @include('components.skeletons.group-skeleton')
+                </div>
+            @endif
 
             @can('manageGroups', \App\Models\User::class)
                 {{ $this->createGroupAction }}

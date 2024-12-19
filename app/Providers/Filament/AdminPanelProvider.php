@@ -83,7 +83,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentErrorMailerPlugin::make()
             ])
             ->renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE,
-                fn () => view('components.searchbar'),
+                fn () => Blade::render('@livewire(\'searchbar\')'),
                 scopes: [ShowProject::class])
             ->renderHook(PanelsRenderHook::BODY_END,
                 fn () => Blade::render('@livewire(\'global-searchbar\')'));

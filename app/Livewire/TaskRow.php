@@ -20,6 +20,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
+use Illuminate\Support\Facades\Cookie;
 use Livewire\Component;
 
 class TaskRow extends Component implements HasForms, HasActions
@@ -48,8 +49,9 @@ class TaskRow extends Component implements HasForms, HasActions
     public function render()
     {
         $sortedChildren = $this->task->children;
+        $sort = Cookie::get('sort_by');
 
-        if ($this->sortBy === 'priority') {
+        if ($sort === 'priority') {
             $sortedChildren = $sortedChildren->sortByDesc('priority_id');
         }
 
@@ -62,7 +64,7 @@ class TaskRow extends Component implements HasForms, HasActions
     protected function getListeners()
     {
         return [
-            'refreshedGroup' => 'updateSortBy',
+            'refreshedGroup' => 'setSortBy',
             'modal-closed:' . $this->task->id => 'refreshTask'
         ];
     }
@@ -76,9 +78,9 @@ class TaskRow extends Component implements HasForms, HasActions
         $this->render();
     }
 
-    public function updateSortBy($data)
+    public function setSortBy($sortBy)
     {
-        $this->sortBy = $data['sortBy'];
+        $this->sortBy = $sortBy;
     }
 
     public function editTaskTooltipAction(): Action

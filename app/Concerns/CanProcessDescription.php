@@ -55,15 +55,20 @@ trait CanProcessDescription {
     {
         if ($node->nodeType == XML_TEXT_NODE) {
             $text = $node->nodeValue;
-            $newHtml = preg_replace(
-                '#(https?://[^\s<]+)#i',
-                '<a href="$1" target="_blank" style="color: blue;">$1</a>',
-                htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
-            );
-            if ($newHtml !== htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) {
-                $newFragment = $dom->createDocumentFragment();
-                $newFragment->appendXML($newHtml);
-                $node->parentNode->replaceChild($newFragment, $node);
+
+            // Vérifiez que le parent n'est pas déjà une balise <a>
+            if ($node->parentNode->nodeName !== 'a') {
+                $newHtml = preg_replace(
+                    '#(https?://[^\s<]+)#i',
+                    '<a href="$1" target="_blank" style="color: blue;">$1</a>',
+                    htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
+                );
+
+                if ($newHtml !== htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) {
+                    $newFragment = $dom->createDocumentFragment();
+                    $newFragment->appendXML($newHtml);
+                    $node->parentNode->replaceChild($newFragment, $node);
+                }
             }
         } elseif ($node->nodeType == XML_ELEMENT_NODE) {
             foreach ($node->childNodes as $child) {
