@@ -47,7 +47,7 @@
             @endforeach
 
             @if ($loadedGroupCount < $record->groups->count())
-                <div x-data x-intersect.half="$wire.loadGroups(true)" class="flex justify-center items-center mb-4" style="width: 100%">
+                <div x-data x-intersect="$wire.loadGroups(true)" class="flex justify-center items-center mb-4" style="width: 100%">
                     @include('components.skeletons.group-skeleton')
                 </div>
             @endif
