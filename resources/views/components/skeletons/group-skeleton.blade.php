@@ -15,6 +15,16 @@
 <style>
     :root {
         --loading-grey: #ededed;
+        --loading-gradient-start: rgba(255, 255, 255, 0);
+        --loading-gradient-middle: rgba(255, 255, 255, 0.5);
+        --loading-gradient-end: rgba(255, 255, 255, 0);
+    }
+
+    .dark {
+        --loading-grey: #2d2d2d;
+        --loading-gradient-start: rgba(0, 0, 0, 0);
+        --loading-gradient-middle: rgba(0, 0, 0, 0.3);
+        --loading-gradient-end: rgba(0, 0, 0, 0);
     }
 
     .group-loading .group-heading-skeleton,
@@ -22,9 +32,9 @@
         background-color: var(--loading-grey);
         background: linear-gradient(
             100deg,
-            rgba(255, 255, 255, 0) 40%,
-            rgba(255, 255, 255, .5) 50%,
-            rgba(255, 255, 255, 0) 60%
+            var(--loading-gradient-start) 40%,
+            var(--loading-gradient-middle) 50%,
+            var(--loading-gradient-end) 60%
         ) var(--loading-grey);
         background-size: 200% 100%;
         background-position-x: 180%;
@@ -40,6 +50,7 @@
     .group-loading .group-heading-skeleton {
         min-height: 1.3rem;
         border-radius: 4px;
-        animation-delay: .05s;
+        animation-delay: 0.05s;
     }
 </style>
+
