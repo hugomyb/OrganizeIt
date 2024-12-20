@@ -40,8 +40,23 @@
     </ul>
 
     @if ($hasMoreTasks)
-        <div x-data
-             x-intersect="$wire.loadMoreTasks()"
+        <div x-data="{
+                retryInterval: null,
+                checkTasksLoaded() {
+                    if ({{ $hasMoreTasks ? 'true' : 'false' }}) {
+                        $wire.loadMoreTasks();
+                    } else {
+                        clearInterval(this.retryInterval);
+                    }
+                }
+            }"
+             x-init="
+                $wire.loadMoreTasks();
+                this.retryInterval = setInterval(() => checkTasksLoaded(), 3000);
+             "
+             x-intersect.once="
+                $wire.loadMoreTasks();
+             "
              class="load-more-trigger flex justify-center items-center mt-2">
             @include('components.skeletons.task-skeleton')
         </div>

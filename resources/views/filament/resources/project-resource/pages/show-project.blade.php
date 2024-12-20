@@ -47,9 +47,24 @@
             @endforeach
 
             @if ($loadedGroupCount < $record->groups->count())
-                <div x-data
-                     x-init="$wire.loadGroups(true)"
-                     x-intersect="$wire.loadGroups(true)" class="flex justify-center items-center mb-4" style="width: 100%">
+                <div x-data="{
+                            retryInterval: null,
+                            checkLoaded() {
+                                if ({{$loadedGroupCount}} < {{ $record->groups->count() }}) {
+                                    $wire.loadGroups(true);
+                                } else {
+                                    clearInterval(this.retryInterval);
+                                }
+                            }
+                        }"
+                     x-init="
+                            $wire.loadGroups(true);
+                            this.retryInterval = setInterval(() => checkLoaded(), 3000);
+                        "
+                     x-intersect.once="
+                            $wire.loadGroups(true);
+                        "
+                     class="flex justify-center items-center mb-4" style="width: 100%">
                     @include('components.skeletons.group-skeleton')
                 </div>
             @endif
