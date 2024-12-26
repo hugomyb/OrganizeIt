@@ -164,6 +164,11 @@ class ModalContent extends Component implements HasForms, HasActions
             'attachments' => $attachments
         ]);
 
+        $task->histories()->create([
+            'user_id' => auth()->id(),
+            'action' => 'task.history.attachment_removed'
+        ]);
+
         $this->showNotification(__('task.attachment_removed'));
     }
 
@@ -183,6 +188,11 @@ class ModalContent extends Component implements HasForms, HasActions
             $comment = $task->comments()->create([
                 'user_id' => auth()->id(),
                 'content' => $modifiedComment
+            ]);
+
+            $task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'task.history.comment_added',
             ]);
         }
 
@@ -207,9 +217,16 @@ class ModalContent extends Component implements HasForms, HasActions
     {
         $comment = Comment::find($commentId);
 
-        $comment->delete();
+        if ($comment) {
+            $comment->task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'task.history.comment_removed',
+            ]);
 
-        $this->showNotification(__('task.comment_removed'));
+            $comment->delete();
+
+            $this->showNotification(__('task.comment_removed'));
+        }
     }
 
     public function deleteCommitNumber($commit)
@@ -226,6 +243,12 @@ class ModalContent extends Component implements HasForms, HasActions
             'commit_numbers' => $commitNumbers
         ]);
 
+        $task->histories()->create([
+            'user_id' => auth()->id(),
+            'action' => 'task.history.commit_number_removed',
+            'parameters' => json_encode(['commit_number' => $commit]),
+        ]);
+
         $this->showNotification(__('task.commit_number_removed'));
     }
 
@@ -239,6 +262,11 @@ class ModalContent extends Component implements HasForms, HasActions
 
         foreach ($fileData['attachments'] as $attachment) {
             $attachments[] = $attachment;
+
+            $task->histories()->create([
+                'user_id' => auth()->id(),
+                'action' => 'task.history.attachment_added',
+            ]);
         }
 
         $task->update([

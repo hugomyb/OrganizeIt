@@ -104,5 +104,29 @@ return [
 
     'commit' => [
         'error' => 'Ce numéro de commit existe déjà pour cette tâche'
+    ],
+
+    'history' => [
+        'label' => 'Historique',
+        'status_changed' => 'a changé le statut de ":old" à ":new"',
+        'priority_changed' => 'a changé la priorité de ":old" à ":new"',
+        'assigned_user_changed' => 'a assigné la tâche à ":new" (était ":old")',
+        'date_changed' => 'a modifié la :field au :new',
+        'description_changed' => 'a modifié la description',
+        'comment_added' => 'a ajouté un commentaire',
+        'comment_removed' => 'a supprimé un commentaire',
+        'attachment_added' => 'a ajouté une pièce jointe',
+        'attachment_removed' => 'a supprimé une pièce jointe',
+        'user_assigned' => 'a assigné :assigned_user à la tâche',
+        'user_unassigned' => 'a désassigné :unassigned_user de la tâche',
+        'unknown_user' => 'Utilisateur inconnu',
+        'created' => 'a créé la tâche',
+        'commit_number_added' => 'a ajouté un numéro de commit ":commit_number',
+        'commit_number_removed' => 'a supprimé le numéro de commit ":commit_number"',
+    ],
+
+    'fields' => [
+        'due_date' => 'Date d\'échéance',
+        'start_date' => 'Date de début',
     ]
 ];

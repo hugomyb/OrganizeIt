@@ -639,6 +639,12 @@ class ShowProject extends Page implements HasForms, HasActions
                         'commit_numbers' => $commitNumbers
                     ]);
 
+                    $task->histories()->create([
+                        'user_id' => auth()->id(),
+                        'action' => 'task.history.commit_number_added',
+                        'parameters' => json_encode(['commit_number' => $data['commitNumber']]),
+                    ]);
+
                     if ($task->creator && !$task->creator->hasRole('Client'))
                         SendEmailJob::dispatch(NewCommitMail::class, $task->creator, $task, auth()->user(), $data['commitNumber']);
 

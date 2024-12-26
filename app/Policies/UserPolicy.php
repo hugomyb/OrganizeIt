@@ -118,5 +118,10 @@ class UserPolicy
     {
         return $this->hasPermission($user, 'view_assigned_users');
     }
+
+    public function viewHistory(User $user)
+    {
+        return $this->hasPermission($user, 'view_history');
+    }
 }
 

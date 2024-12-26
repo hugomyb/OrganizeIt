@@ -97,6 +97,11 @@ class PermissionSeeder extends Seeder
                 'key' => 'view_assigned_users',
                 'name' => 'Voir les utilisateurs assignés à une tâche',
                 'description' => 'Voir les utilisateurs assignés à une tâche',
+            ],
+            [
+                'key' => 'view_history',
+                'name' => 'Voir l\'historique',
+                'description' => 'Voir l\'historique d\'une tâche',
             ]
         ];
 

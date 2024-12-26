@@ -669,6 +669,164 @@
             @endcan
 
         </x-filament::section>
+
+        @can('viewHistory', \App\Models\User::class)
+            <!-- History -->
+            <div class="mt-6">
+                <x-filament::section collapsible icon="heroicon-o-clock" style="width: 100%">
+                    <x-slot name="heading">
+                        <span style="height: 32px">{{ __('task.history.label') }}</span>
+                    </x-slot>
+
+                    <ol style="width: 85%; margin: 0 auto; display: flex; flex-direction: column; padding: 32px 0 32px 32px; border-left-width: 2px; border-left-style: solid"
+                        class="timeline-border">
+                        @foreach ($task->histories->sortByDesc('created_at') as $history)
+                            <li style="display: flex; gap: 24px; margin-bottom: 24px; position: relative;">
+                                <!-- Timeline Icon -->
+                                <span
+                                    class="dark:bg-gray-500 bg-gray-100 timeline-icon-container"
+                                    style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; border-radius: 50%; margin-left: -57px; flex-shrink: 0; overflow: hidden; border-width: 5px">
+                                @switch($history->action)
+                                        @case('task.history.created')
+                                            <!-- Icon for Task Created -->
+                                            <x-heroicon-m-plus class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.status_changed')
+                                            <!-- Icon for Status Changed -->
+                                            <x-pepicon-hourglass-circle class="h-5 w-5 "/>
+                                            @break
+
+                                        @case('task.history.priority_changed')
+                                            <!-- Icon for Priority Changed -->
+                                            <x-iconsax-bol-flag-2 class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.assigned_user_changed')
+                                        @case('task.history.user_assigned')
+                                        @case('task.history.user_unassigned')
+                                            <!-- Icon for User Assignment -->
+                                            <x-heroicon-m-user-plus class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.date_changed')
+                                            <!-- Icon for Date Changed -->
+                                            <x-heroicon-m-calendar class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.description_changed')
+                                            <!-- Icon for Description Changed -->
+                                            <x-heroicon-m-document-text class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.comment_added')
+                                        @case('task.history.comment_removed')
+                                            <!-- Icon for Comments -->
+                                            <x-uni-comment-alt-lines-o class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.attachment_added')
+                                        @case('task.history.attachment_removed')
+                                            <!-- Icon for Attachments -->
+                                            <x-heroicon-m-paper-clip class="h-5 w-5"/>
+                                            @break
+
+                                        @case('task.history.commit_number_added')
+                                        @case('task.history.commit_number_removed')
+                                            <x-heroicon-m-sparkles class="h-5 w-5"/>
+                                            @break
+                                        @default
+                                            <!-- Default Icon -->
+                                            <x-heroicon-m-question-mark-circle class="h-5 w-5"/>
+                                    @endswitch
+                            </span>
+
+                                <!-- Timeline Content -->
+                                <div class="flex items-center">
+                                    <div class="text-sm"
+                                         style="display: flex; align-items: center; gap: 2px; color: #7b7b7b;">
+                                        <i style="display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; width: 28px; height: 28px; flex-shrink: 0;">
+                                            @if($history->user)
+                                                <img src="/storage/{{ $history->user->avatar_url }}"
+                                                     alt="{{ $history->user->name }}"
+                                                     title="{{ $history->user->name }}"
+                                                     class="rounded-full" style="height: 20px">
+                                            @else
+                                                <img src="{{ asset('img/avatar.png') }}" alt=""
+                                                     class="rounded-full" style="height: 20px">
+                                            @endif
+                                        </i>
+                                        <span>
+                                        <span class="user-timeline" style="font-weight: 600; text-decoration: none;">
+                                            {{ $history->user?->name ?? __('task.history.unknown_user') }}
+                                        </span>
+                                        @php
+                                            $parameters = json_decode($history->parameters, true) ?? [];
+                                            $locale = app()->getLocale();
+
+                                            // Gestion des statuts
+                                            if ($history->action === 'task.history.status_changed') {
+                                                $newStatus = \App\Models\Status::find($parameters['new']);
+                                                $oldStatus = \App\Models\Status::find($parameters['old']);
+
+                                                $parameters['new'] = $newStatus ? sprintf(
+                                                    '<span style="color: %s; font-weight: 600;">%s</span>',
+                                                    $newStatus->color,
+                                                    $locale === 'fr' ? $newStatus->name : $newStatus->en_name
+                                                ) : __('task.history.unknown_status');
+
+                                                $parameters['old'] = $oldStatus ? sprintf(
+                                                    '<span style="color: %s; font-weight: 600;">%s</span>',
+                                                    $oldStatus->color,
+                                                    $locale === 'fr' ? $oldStatus->name : $oldStatus->en_name
+                                                ) : __('task.history.unknown_status');
+                                            }
+
+                                            // Gestion des priorités
+                                            if ($history->action === 'task.history.priority_changed') {
+                                                $newPriority = \App\Models\Priority::find($parameters['new']);
+                                                $oldPriority = \App\Models\Priority::find($parameters['old']);
+
+                                                $parameters['new'] = $newPriority ? sprintf(
+                                                    '<span style="color: %s; font-weight: 600;">%s</span>',
+                                                    $newPriority->color,
+                                                    $locale === 'fr' ? $newPriority->name : $newPriority->en_name
+                                                ) : __('task.history.unknown_priority');
+
+                                                $parameters['old'] = $oldPriority ? sprintf(
+                                                    '<span style="color: %s; font-weight: 600;">%s</span>',
+                                                    $oldPriority->color,
+                                                    $locale === 'fr' ? $oldPriority->name : $oldPriority->en_name
+                                                ) : __('task.history.unknown_priority');
+                                            }
+
+                                            if ($history->action === 'task.history.date_changed' && isset($parameters['field'])) {
+                                                $fieldNames = [
+                                                    'start_date' => __('task.fields.start_date'),
+                                                    'due_date' => __('task.fields.due_date'),
+                                                ];
+                                                $parameters['field'] = $fieldNames[$parameters['field']] ?? $parameters['field'];
+
+                                                // Formater la nouvelle date
+                                                $parameters['new'] = \Carbon\Carbon::parse($parameters['new'])->translatedFormat('d M Y');
+                                            }
+                                        @endphp
+                                            {!! __($history->action, $parameters) !!}
+                                        <time datetime="{{ $history->created_at->toDateString() }}"
+                                              style="color: #9ca3af; font-size: 0.775rem;">
+                                            • {{ $history->created_at->format('d M Y, H:i') }}
+                                        </time>
+                                    </span>
+
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ol>
+
+                </x-filament::section>
+            </div>
+        @endcan
     </div>
 
     <x-filament-actions::modals/>
@@ -677,6 +835,32 @@
     <style>
         .fi-modal-footer-actions {
             justify-content: space-between;
+        }
+
+        .dark .timeline-icon-container {
+            border-color: #17171a;
+            color: #ffffff;
+        }
+
+        .timeline-icon-container {
+            border-color: #ffffff;
+            color: #7b7b7b;
+        }
+
+        .dark .timeline-border {
+            border-left-color: #2d2d2d;
+        }
+
+        .timeline-border {
+            border-left-color: #f5f5f6;
+        }
+
+        .dark .user-timeline {
+            color: #fff;
+        }
+
+        .user-timeline {
+            color: #000;
         }
     </style>
 </div>

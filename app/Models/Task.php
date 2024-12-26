@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\TaskObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+#[ObservedBy(TaskObserver::class)]
 class Task extends Model
 {
     use HasFactory;
@@ -69,6 +72,11 @@ class Task extends Model
     public function status()
     {
         return $this->belongsTo(Status::class);
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(TaskHistory::class);
     }
 
     public function getDepthAttribute()

@@ -104,5 +104,29 @@ return [
 
     'commit' => [
         'error' => 'This commit number already exists for this task'
+    ],
+
+    'history' => [
+        'label' => 'History',
+        'status_changed' => 'changed the status from ":old" to ":new"',
+        'priority_changed' => 'changed the priority from ":old" to ":new"',
+        'assigned_user_changed' => 'assigned the task to ":new" (was ":old")',
+        'date_changed' => 'updated the :field to ":new"',
+        'description_changed' => 'updated the description',
+        'comment_added' => 'added a comment',
+        'comment_removed' => 'removed a comment',
+        'attachment_added' => 'added an attachment',
+        'attachment_removed' => 'removed an attachment',
+        'user_assigned' => 'assigned :assigned_user to the task',
+        'user_unassigned' => 'unassigned :unassigned_user from the task',
+        'unknown_user' => 'Unknown User',
+        'created' => 'created the task',
+        'commit_number_added' => 'added a commit number ":commit_number',
+        'commit_number_removed' => 'removed the commit number ":commit_number"',
+    ],
+
+    'fields' => [
+        'due_date' => 'Due Date',
+        'start_date' => 'Start Date',
     ]
 ];

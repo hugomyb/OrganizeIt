@@ -20,9 +20,21 @@ trait CanManageTasksInfo
             if ($task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->detach($userId);
 
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'task.history.user_unassigned',
+                    'parameters' => json_encode(['unassigned_user' => $user->name]),
+                ]);
+
                 $this->showNotification(__('user.unassigned'));
             } else {
                 $task->users()->attach($userId);
+
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'task.history.user_assigned',
+                    'parameters' => json_encode(['assigned_user' => $user->name]),
+                ]);
 
                 if (!auth()->user()->hasRole('Client')) {
                     SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());
@@ -105,6 +117,12 @@ trait CanManageTasksInfo
         if ($task) {
             if (!$task->users()->where('user_id', $userId)->exists()) {
                 $task->users()->attach($userId);
+
+                $task->histories()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'task.history.user_assigned',
+                    'parameters' => json_encode(['assigned_user' => $user->name]),
+                ]);
 
                 if (!auth()->user()->hasRole('Client')) {
                     SendEmailJob::dispatch(AssignToTaskMail::class, $user, $task, auth()->user());

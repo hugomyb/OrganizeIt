@@ -41,6 +41,7 @@ class RolesSeeder extends Seeder
                     Permission::where('key', 'manage_commit')->first()->id,
                     Permission::where('key', 'view_task_creator')->first()->id,
                     Permission::where('key', 'view_assigned_users')->first()->id,
+                    Permission::where('key', 'view_history')->first()->id,
                 ]
             ],
             [
