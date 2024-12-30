@@ -162,6 +162,7 @@ class TasksGroup extends Component implements HasActions, HasForms
         }
 
         $this->tasks = $loadedTasks->whereNull('parent_id');
+        $this->visibleTaskCount = $this->tasks->count();
         $this->totalTaskCount = $tasksQuery->count();
         $this->render();
     }
